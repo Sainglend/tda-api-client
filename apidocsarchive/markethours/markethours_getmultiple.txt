@@ -1,0 +1,121 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/market-hours/apis/get/marketdata/hours
+
+Market Hours Documentation Get Hours for Multiple Markets
+GETGet Hours for Multiple Markets
+Retrieve market hours for specified markets
+
+Resource URL
+https://api.tdameritrade.com/v1/marketdata/hours
+
+Query Parameters
+Name	Values	Description
+apikey	
+(Optional) Pass your Client ID if making an unauthenticated request
+
+markets	
+The markets for which you're requesting market hours, comma-separated. Valid markets are EQUITY, OPTION, FUTURE, BOND, or FOREX.
+
+date	
+"The date for which market hours information is requested. Valid ISO-8601 formats are : yyyy-MM-dd and yyyy-MM-dd'T'HH:mm:ssz."
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Content Type
+
+application/json
+
+Response Summary
+JSON
+//Hours:
+{
+  "category": "string",
+  "date": "string",
+  "exchange": "string",
+  "isOpen": false,
+  "marketType": "'BOND' or 'EQUITY' or 'ETF' or 'FOREX' or 'FUTURE' or 'FUTURE_OPTION' or 'INDEX' or 'INDICATOR' or 'MUTUAL_FUND' or 'OPTION' or 'UNKNOWN'",
+  "product": "string",
+  "productName": "string",
+  "sessionHours": "object"
+}
+
+Schema
+//Hours:
+{
+  "category": {
+    "type": "string"
+  },
+  "date": {
+    "type": "string"
+  },
+  "exchange": {
+    "type": "string"
+  },
+  "isOpen": {
+    "type": "boolean"
+  },
+  "marketType": {
+    "type": "string",
+    "enum": [
+      "BOND",
+      "EQUITY",
+      "ETF",
+      "FOREX",
+      "FUTURE",
+      "FUTURE_OPTION",
+      "INDEX",
+      "INDICATOR",
+      "MUTUAL_FUND",
+      "OPTION",
+      "UNKNOWN"
+    ]
+  },
+  "product": {
+    "type": "string"
+  },
+  "productName": {
+    "type": "string"
+  },
+  "sessionHours": {
+    "type": "object",
+    "additionalProperties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+401
+
+Unauthorized
+
+403
+
+Forbidden
+
+404
+
+Not Found

@@ -1,0 +1,206 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/user-principal/apis/get/accounts/%7BaccountId%7D/preferences-0
+
+User Info and Preferences Documentation Get Preferences
+GETGet Preferences
+Preferences for a specific account.
+
+Resource URL
+https://api.tdameritrade.com/v1/accounts/{accountId}/preferences
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Response Summary
+JSON
+//Preferences:
+{
+  "expressTrading": false,
+  "directOptionsRouting": false,
+  "directEquityRouting": false,
+  "defaultEquityOrderLegInstruction": "'BUY' or 'SELL' or 'BUY_TO_COVER' or 'SELL_SHORT' or 'NONE'",
+  "defaultEquityOrderType": "'MARKET' or 'LIMIT' or 'STOP' or 'STOP_LIMIT' or 'TRAILING_STOP' or 'MARKET_ON_CLOSE' or 'NONE'",
+  "defaultEquityOrderPriceLinkType": "'VALUE' or 'PERCENT' or 'NONE'",
+  "defaultEquityOrderDuration": "'DAY' or 'GOOD_TILL_CANCEL' or 'NONE'",
+  "defaultEquityOrderMarketSession": "'AM' or 'PM' or 'NORMAL' or 'SEAMLESS' or 'NONE'",
+  "defaultEquityQuantity": 0,
+  "mutualFundTaxLotMethod": "'FIFO' or 'LIFO' or 'HIGH_COST' or 'LOW_COST' or 'MINIMUM_TAX' or 'AVERAGE_COST' or 'NONE'",
+  "optionTaxLotMethod": "'FIFO' or 'LIFO' or 'HIGH_COST' or 'LOW_COST' or 'MINIMUM_TAX' or 'AVERAGE_COST' or 'NONE'",
+  "equityTaxLotMethod": "'FIFO' or 'LIFO' or 'HIGH_COST' or 'LOW_COST' or 'MINIMUM_TAX' or 'AVERAGE_COST' or 'NONE'",
+  "defaultAdvancedToolLaunch": "'TA' or 'N' or 'Y' or 'TOS' or 'NONE' or 'CC2'",
+  "authTokenTimeout": "'FIFTY_FIVE_MINUTES' or 'TWO_HOURS' or 'FOUR_HOURS' or 'EIGHT_HOURS'"
+}
+
+Schema
+//Preferences:
+{
+  "expressTrading": {
+    "type": "boolean",
+    "default": false,
+    "required": true
+  },
+  "directOptionsRouting": {
+    "type": "boolean",
+    "default": false
+  },
+  "directEquityRouting": {
+    "type": "boolean",
+    "default": false
+  },
+  "defaultEquityOrderLegInstruction": {
+    "type": "string",
+    "enum": [
+      "BUY",
+      "SELL",
+      "BUY_TO_COVER",
+      "SELL_SHORT",
+      "NONE"
+    ],
+    "required": true
+  },
+  "defaultEquityOrderType": {
+    "type": "string",
+    "enum": [
+      "MARKET",
+      "LIMIT",
+      "STOP",
+      "STOP_LIMIT",
+      "TRAILING_STOP",
+      "MARKET_ON_CLOSE",
+      "NONE"
+    ],
+    "required": true
+  },
+  "defaultEquityOrderPriceLinkType": {
+    "type": "string",
+    "enum": [
+      "VALUE",
+      "PERCENT",
+      "NONE"
+    ],
+    "required": true
+  },
+  "defaultEquityOrderDuration": {
+    "type": "string",
+    "enum": [
+      "DAY",
+      "GOOD_TILL_CANCEL",
+      "NONE"
+    ],
+    "required": true
+  },
+  "defaultEquityOrderMarketSession": {
+    "type": "string",
+    "enum": [
+      "AM",
+      "PM",
+      "NORMAL",
+      "SEAMLESS",
+      "NONE"
+    ],
+    "required": true
+  },
+  "defaultEquityQuantity": {
+    "type": "integer",
+    "format": "int32",
+    "minimum": 0,
+    "required": true
+  },
+  "mutualFundTaxLotMethod": {
+    "type": "string",
+    "enum": [
+      "FIFO",
+      "LIFO",
+      "HIGH_COST",
+      "LOW_COST",
+      "MINIMUM_TAX",
+      "AVERAGE_COST",
+      "NONE"
+    ],
+    "required": true
+  },
+  "optionTaxLotMethod": {
+    "type": "string",
+    "enum": [
+      "FIFO",
+      "LIFO",
+      "HIGH_COST",
+      "LOW_COST",
+      "MINIMUM_TAX",
+      "AVERAGE_COST",
+      "NONE"
+    ],
+    "required": true
+  },
+  "equityTaxLotMethod": {
+    "type": "string",
+    "enum": [
+      "FIFO",
+      "LIFO",
+      "HIGH_COST",
+      "LOW_COST",
+      "MINIMUM_TAX",
+      "AVERAGE_COST",
+      "NONE"
+    ],
+    "required": true
+  },
+  "defaultAdvancedToolLaunch": {
+    "type": "string",
+    "enum": [
+      "TA",
+      "N",
+      "Y",
+      "TOS",
+      "NONE",
+      "CC2"
+    ],
+    "required": true
+  },
+  "authTokenTimeout": {
+    "type": "string",
+    "enum": [
+      "FIFTY_FIVE_MINUTES",
+      "TWO_HOURS",
+      "FOUR_HOURS",
+      "EIGHT_HOURS"
+    ],
+    "required": true
+  }
+}
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating the validation problem with the request.
+
+401
+
+An error message indicating the caller must pass a valid AuthToken in the HTTP authorization request header.
+
+500
+
+An error message indicating there was an unexpected server error.
+
+503
+
+An error message indicating there is a temporary problem responding.

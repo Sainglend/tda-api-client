@@ -1,0 +1,15 @@
+{
+    "name": "test_watchlist",
+    "watchlistItems": [
+        {
+            "quantity": 1,
+            "averagePrice": 2,
+            "commission": 3,
+            "purchasedDate": "2020-08-21",
+            "instrument": {
+                "symbol": "T",
+                "assetType": "EQUITY"
+            }
+        }
+    ]
+}

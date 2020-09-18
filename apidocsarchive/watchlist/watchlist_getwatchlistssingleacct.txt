@@ -1,0 +1,157 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/watchlist/apis/get/accounts/%7BaccountId%7D/watchlists-0
+
+Watchlist Documentation Get Watchlists for Single Account
+GETGet Watchlists for Single Account
+All watchlists of an account.
+
+Resource URL
+https://api.tdameritrade.com/v1/accounts/{accountId}/watchlists
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Category
+
+Watchlist
+
+Response Summary
+JSON
+[
+//Watchlist:
+{
+  "name": "string",
+  "watchlistId": "string",
+  "accountId": "string",
+  "status": "'UNCHANGED' or 'CREATED' or 'UPDATED' or 'DELETED'",
+  "watchlistItems": [
+    {
+      "sequenceId": 0,
+      "quantity": 0,
+      "averagePrice": 0,
+      "commission": 0,
+      "purchasedDate": "DateParam\"",
+      "instrument": {
+        "symbol": "string",
+        "description": "string",
+        "assetType": "'EQUITY' or 'OPTION' or 'MUTUAL_FUND' or 'FIXED_INCOME' or 'INDEX'"
+      },
+      "status": "'UNCHANGED' or 'CREATED' or 'UPDATED' or 'DELETED'"
+    }
+  ]
+}
+]
+
+Schema
+[
+//Watchlist:
+{
+  "name": {
+    "type": "string"
+  },
+  "watchlistId": {
+    "type": "string"
+  },
+  "accountId": {
+    "type": "string"
+  },
+  "status": {
+    "type": "string",
+    "enum": [
+      "UNCHANGED",
+      "CREATED",
+      "UPDATED",
+      "DELETED"
+    ]
+  },
+  "watchlistItems": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "sequenceId": {
+          "type": "integer",
+          "format": "int32",
+          "minimum": 0
+        },
+        "quantity": {
+          "type": "number",
+          "format": "double"
+        },
+        "averagePrice": {
+          "type": "number",
+          "format": "double",
+          "minimum": 0
+        },
+        "commission": {
+          "type": "number",
+          "format": "double",
+          "minimum": 0
+        },
+        "purchasedDate": {
+          "type": "object"
+        },
+        "instrument": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "assetType": {
+              "type": "string",
+              "enum": [
+                "EQUITY",
+                "OPTION",
+                "MUTUAL_FUND",
+                "FIXED_INCOME",
+                "INDEX"
+              ]
+            }
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "UNCHANGED",
+            "CREATED",
+            "UPDATED",
+            "DELETED"
+          ]
+        }
+      }
+    },
+    "required": true
+  }
+}
+]
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+401
+
+An error message indicating the caller must pass a valid Authorization in the HTTP authorization request header.
+
+500
+
+An error message indicating there was an unexpected server error.

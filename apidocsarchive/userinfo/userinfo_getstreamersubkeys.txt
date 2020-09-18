@@ -1,0 +1,80 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/user-principal/apis/get/userprincipals/streamersubscriptionkeys-0
+
+User Info and Preferences Documentation Get Streamer Subscription Keys
+GETGet Streamer Subscription Keys
+SubscriptionKey for provided accounts or default accounts.
+
+Resource URL
+https://api.tdameritrade.com/v1/userprincipals/streamersubscriptionkeys
+
+Query Parameters
+Name	Values	Description
+accountIds	
+A comma separated string of account IDs, to fetch subscription keys for each of them.
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Response Summary
+JSON
+//SubscriptionKey:
+{
+  "keys": [
+    {
+      "key": "string"
+    }
+  ]
+}
+
+Schema
+//SubscriptionKey:
+{
+  "keys": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating the validation problem with the request.
+
+401
+
+An error message indicating the caller must pass a valid AuthToken in the HTTP authorization request header.
+
+500
+
+An error message indicating there was an unexpected server error.
+
+503
+
+An error message indicating there is a temporary problem responding.

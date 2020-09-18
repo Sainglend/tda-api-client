@@ -1,0 +1,666 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/instruments/apis/get/instruments
+
+Instruments Documentation Search Instruments
+GETSearch Instruments
+Search or retrieve instrument data, including fundamental data.
+
+Resource URL
+https://api.tdameritrade.com/v1/instruments
+
+Query Parameters
+Name	Values	Description
+apikey	
+Pass your OAuth User ID to make an unauthenticated request for delayed data.
+
+symbol
+(required)	
+Value to pass to the search. See projection description for more information.
+
+projection
+(required)	
+symbol-search
+'The type of request:
+
+symbol-search: Retrieve instrument data of a specific symbol or cusip
+
+symbol-regex: Retrieve instrument data for all symbols matching regex. Example: symbol=XYZ.* will return all symbols beginning with XYZ
+
+desc-search: Retrieve instrument data for instruments whose description contains the word supplied. Example: symbol=FakeCompany will return all instruments with FakeCompany in the description.
+
+desc-regex: Search description with full regex support. Example: symbol=XYZ.[A-C] returns all instruments whose descriptions contain a word beginning with XYZ followed by a character A through C.
+
+fundamental: Returns fundamental data for a single instrument specified by exact symbol.'
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Content Type
+
+application/json
+
+Category
+
+Instruments
+
+Response Summary
+JSON
+[
+
+ //Bond:
+{
+  "bondPrice": 0,
+  "cusip": "string",
+  "symbol": "string",
+  "description": "string",
+  "exchange": "string",
+  "assetType": "'BOND'"
+}
+ //FundamentalData:
+{
+  "symbol": "string",
+  "high52": 0,
+  "low52": 0,
+  "dividendAmount": 0,
+  "dividendYield": 0,
+  "dividendDate": "string",
+  "peRatio": 0,
+  "pegRatio": 0,
+  "pbRatio": 0,
+  "prRatio": 0,
+  "pcfRatio": 0,
+  "grossMarginTTM": 0,
+  "grossMarginMRQ": 0,
+  "netProfitMarginTTM": 0,
+  "netProfitMarginMRQ": 0,
+  "operatingMarginTTM": 0,
+  "operatingMarginMRQ": 0,
+  "returnOnEquity": 0,
+  "returnOnAssets": 0,
+  "returnOnInvestment": 0,
+  "quickRatio": 0,
+  "currentRatio": 0,
+  "interestCoverage": 0,
+  "totalDebtToCapital": 0,
+  "ltDebtToEquity": 0,
+  "totalDebtToEquity": 0,
+  "epsTTM": 0,
+  "epsChangePercentTTM": 0,
+  "epsChangeYear": 0,
+  "epsChange": 0,
+  "revChangeYear": 0,
+  "revChangeTTM": 0,
+  "revChangeIn": 0,
+  "sharesOutstanding": 0,
+  "marketCapFloat": 0,
+  "marketCap": 0,
+  "bookValuePerShare": 0,
+  "shortIntToFloat": 0,
+  "shortIntDayToCover": 0,
+  "divGrowthRate3Year": 0,
+  "dividendPayAmount": 0,
+  "dividendPayDate": "string",
+  "beta": 0,
+  "vol1DayAvg": 0,
+  "vol10DayAvg": 0,
+  "vol3MonthAvg": 0
+}
+ //Fundamental:
+{
+  "cusip": "string",
+  "symbol": "string",
+  "description": "string",
+  "exchange": "string",
+  "assetType": "'EQUITY' or 'ETF' or 'MUTUAL_FUND' or 'UNKNOWN'",
+  "fundamental": {
+    "symbol": "string",
+    "high52": 0,
+    "low52": 0,
+    "dividendAmount": 0,
+    "dividendYield": 0,
+    "dividendDate": "string",
+    "peRatio": 0,
+    "pegRatio": 0,
+    "pbRatio": 0,
+    "prRatio": 0,
+    "pcfRatio": 0,
+    "grossMarginTTM": 0,
+    "grossMarginMRQ": 0,
+    "netProfitMarginTTM": 0,
+    "netProfitMarginMRQ": 0,
+    "operatingMarginTTM": 0,
+    "operatingMarginMRQ": 0,
+    "returnOnEquity": 0,
+    "returnOnAssets": 0,
+    "returnOnInvestment": 0,
+    "quickRatio": 0,
+    "currentRatio": 0,
+    "interestCoverage": 0,
+    "totalDebtToCapital": 0,
+    "ltDebtToEquity": 0,
+    "totalDebtToEquity": 0,
+    "epsTTM": 0,
+    "epsChangePercentTTM": 0,
+    "epsChangeYear": 0,
+    "epsChange": 0,
+    "revChangeYear": 0,
+    "revChangeTTM": 0,
+    "revChangeIn": 0,
+    "sharesOutstanding": 0,
+    "marketCapFloat": 0,
+    "marketCap": 0,
+    "bookValuePerShare": 0,
+    "shortIntToFloat": 0,
+    "shortIntDayToCover": 0,
+    "divGrowthRate3Year": 0,
+    "dividendPayAmount": 0,
+    "dividendPayDate": "string",
+    "beta": 0,
+    "vol1DayAvg": 0,
+    "vol10DayAvg": 0,
+    "vol3MonthAvg": 0
+  }
+}
+ //Instrument:
+{
+  "cusip": "string",
+  "symbol": "string",
+  "description": "string",
+  "exchange": "string",
+  "assetType": "'EQUITY' or 'ETF' or 'FOREX' or 'FUTURE' or 'FUTURE_OPTION' or 'INDEX' or 'INDICATOR' or 'MUTUAL_FUND' or 'OPTION' or 'UNKNOWN'"
+}
+]
+
+Schema
+[
+
+ //Bond:
+{
+  "bondPrice": {
+    "type": "number",
+    "format": "double"
+  },
+  "cusip": {
+    "type": "string"
+  },
+  "symbol": {
+    "type": "string"
+  },
+  "description": {
+    "type": "string"
+  },
+  "exchange": {
+    "type": "string"
+  },
+  "assetType": {
+    "type": "string",
+    "enum": [
+      "BOND"
+    ]
+  }
+}
+ //FundamentalData:
+{
+  "symbol": {
+    "type": "string"
+  },
+  "high52": {
+    "type": "number",
+    "format": "double"
+  },
+  "low52": {
+    "type": "number",
+    "format": "double"
+  },
+  "dividendAmount": {
+    "type": "number",
+    "format": "double"
+  },
+  "dividendYield": {
+    "type": "number",
+    "format": "double"
+  },
+  "dividendDate": {
+    "type": "string"
+  },
+  "peRatio": {
+    "type": "number",
+    "format": "double"
+  },
+  "pegRatio": {
+    "type": "number",
+    "format": "double"
+  },
+  "pbRatio": {
+    "type": "number",
+    "format": "double"
+  },
+  "prRatio": {
+    "type": "number",
+    "format": "double"
+  },
+  "pcfRatio": {
+    "type": "number",
+    "format": "double"
+  },
+  "grossMarginTTM": {
+    "type": "number",
+    "format": "double"
+  },
+  "grossMarginMRQ": {
+    "type": "number",
+    "format": "double"
+  },
+  "netProfitMarginTTM": {
+    "type": "number",
+    "format": "double"
+  },
+  "netProfitMarginMRQ": {
+    "type": "number",
+    "format": "double"
+  },
+  "operatingMarginTTM": {
+    "type": "number",
+    "format": "double"
+  },
+  "operatingMarginMRQ": {
+    "type": "number",
+    "format": "double"
+  },
+  "returnOnEquity": {
+    "type": "number",
+    "format": "double"
+  },
+  "returnOnAssets": {
+    "type": "number",
+    "format": "double"
+  },
+  "returnOnInvestment": {
+    "type": "number",
+    "format": "double"
+  },
+  "quickRatio": {
+    "type": "number",
+    "format": "double"
+  },
+  "currentRatio": {
+    "type": "number",
+    "format": "double"
+  },
+  "interestCoverage": {
+    "type": "number",
+    "format": "double"
+  },
+  "totalDebtToCapital": {
+    "type": "number",
+    "format": "double"
+  },
+  "ltDebtToEquity": {
+    "type": "number",
+    "format": "double"
+  },
+  "totalDebtToEquity": {
+    "type": "number",
+    "format": "double"
+  },
+  "epsTTM": {
+    "type": "number",
+    "format": "double"
+  },
+  "epsChangePercentTTM": {
+    "type": "number",
+    "format": "double"
+  },
+  "epsChangeYear": {
+    "type": "number",
+    "format": "double"
+  },
+  "epsChange": {
+    "type": "number",
+    "format": "double"
+  },
+  "revChangeYear": {
+    "type": "number",
+    "format": "double"
+  },
+  "revChangeTTM": {
+    "type": "number",
+    "format": "double"
+  },
+  "revChangeIn": {
+    "type": "number",
+    "format": "double"
+  },
+  "sharesOutstanding": {
+    "type": "number",
+    "format": "double"
+  },
+  "marketCapFloat": {
+    "type": "number",
+    "format": "double"
+  },
+  "marketCap": {
+    "type": "number",
+    "format": "double"
+  },
+  "bookValuePerShare": {
+    "type": "number",
+    "format": "double"
+  },
+  "shortIntToFloat": {
+    "type": "number",
+    "format": "double"
+  },
+  "shortIntDayToCover": {
+    "type": "number",
+    "format": "double"
+  },
+  "divGrowthRate3Year": {
+    "type": "number",
+    "format": "double"
+  },
+  "dividendPayAmount": {
+    "type": "number",
+    "format": "double"
+  },
+  "dividendPayDate": {
+    "type": "string"
+  },
+  "beta": {
+    "type": "number",
+    "format": "double"
+  },
+  "vol1DayAvg": {
+    "type": "number",
+    "format": "double"
+  },
+  "vol10DayAvg": {
+    "type": "number",
+    "format": "double"
+  },
+  "vol3MonthAvg": {
+    "type": "number",
+    "format": "double"
+  }
+}
+ //Fundamental:
+{
+  "cusip": {
+    "type": "string"
+  },
+  "symbol": {
+    "type": "string"
+  },
+  "description": {
+    "type": "string"
+  },
+  "exchange": {
+    "type": "string"
+  },
+  "assetType": {
+    "type": "string",
+    "enum": [
+      "EQUITY",
+      "ETF",
+      "MUTUAL_FUND",
+      "UNKNOWN"
+    ]
+  },
+  "fundamental": {
+    "type": "object",
+    "properties": {
+      "symbol": {
+        "type": "string"
+      },
+      "high52": {
+        "type": "number",
+        "format": "double"
+      },
+      "low52": {
+        "type": "number",
+        "format": "double"
+      },
+      "dividendAmount": {
+        "type": "number",
+        "format": "double"
+      },
+      "dividendYield": {
+        "type": "number",
+        "format": "double"
+      },
+      "dividendDate": {
+        "type": "string"
+      },
+      "peRatio": {
+        "type": "number",
+        "format": "double"
+      },
+      "pegRatio": {
+        "type": "number",
+        "format": "double"
+      },
+      "pbRatio": {
+        "type": "number",
+        "format": "double"
+      },
+      "prRatio": {
+        "type": "number",
+        "format": "double"
+      },
+      "pcfRatio": {
+        "type": "number",
+        "format": "double"
+      },
+      "grossMarginTTM": {
+        "type": "number",
+        "format": "double"
+      },
+      "grossMarginMRQ": {
+        "type": "number",
+        "format": "double"
+      },
+      "netProfitMarginTTM": {
+        "type": "number",
+        "format": "double"
+      },
+      "netProfitMarginMRQ": {
+        "type": "number",
+        "format": "double"
+      },
+      "operatingMarginTTM": {
+        "type": "number",
+        "format": "double"
+      },
+      "operatingMarginMRQ": {
+        "type": "number",
+        "format": "double"
+      },
+      "returnOnEquity": {
+        "type": "number",
+        "format": "double"
+      },
+      "returnOnAssets": {
+        "type": "number",
+        "format": "double"
+      },
+      "returnOnInvestment": {
+        "type": "number",
+        "format": "double"
+      },
+      "quickRatio": {
+        "type": "number",
+        "format": "double"
+      },
+      "currentRatio": {
+        "type": "number",
+        "format": "double"
+      },
+      "interestCoverage": {
+        "type": "number",
+        "format": "double"
+      },
+      "totalDebtToCapital": {
+        "type": "number",
+        "format": "double"
+      },
+      "ltDebtToEquity": {
+        "type": "number",
+        "format": "double"
+      },
+      "totalDebtToEquity": {
+        "type": "number",
+        "format": "double"
+      },
+      "epsTTM": {
+        "type": "number",
+        "format": "double"
+      },
+      "epsChangePercentTTM": {
+        "type": "number",
+        "format": "double"
+      },
+      "epsChangeYear": {
+        "type": "number",
+        "format": "double"
+      },
+      "epsChange": {
+        "type": "number",
+        "format": "double"
+      },
+      "revChangeYear": {
+        "type": "number",
+        "format": "double"
+      },
+      "revChangeTTM": {
+        "type": "number",
+        "format": "double"
+      },
+      "revChangeIn": {
+        "type": "number",
+        "format": "double"
+      },
+      "sharesOutstanding": {
+        "type": "number",
+        "format": "double"
+      },
+      "marketCapFloat": {
+        "type": "number",
+        "format": "double"
+      },
+      "marketCap": {
+        "type": "number",
+        "format": "double"
+      },
+      "bookValuePerShare": {
+        "type": "number",
+        "format": "double"
+      },
+      "shortIntToFloat": {
+        "type": "number",
+        "format": "double"
+      },
+      "shortIntDayToCover": {
+        "type": "number",
+        "format": "double"
+      },
+      "divGrowthRate3Year": {
+        "type": "number",
+        "format": "double"
+      },
+      "dividendPayAmount": {
+        "type": "number",
+        "format": "double"
+      },
+      "dividendPayDate": {
+        "type": "string"
+      },
+      "beta": {
+        "type": "number",
+        "format": "double"
+      },
+      "vol1DayAvg": {
+        "type": "number",
+        "format": "double"
+      },
+      "vol10DayAvg": {
+        "type": "number",
+        "format": "double"
+      },
+      "vol3MonthAvg": {
+        "type": "number",
+        "format": "double"
+      }
+    }
+  }
+}
+ //Instrument:
+{
+  "cusip": {
+    "type": "string"
+  },
+  "symbol": {
+    "type": "string"
+  },
+  "description": {
+    "type": "string"
+  },
+  "exchange": {
+    "type": "string"
+  },
+  "assetType": {
+    "type": "string",
+    "enum": [
+      "EQUITY",
+      "ETF",
+      "FOREX",
+      "FUTURE",
+      "FUTURE_OPTION",
+      "INDEX",
+      "INDICATOR",
+      "MUTUAL_FUND",
+      "OPTION",
+      "UNKNOWN"
+    ]
+  }
+}
+]
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating the caller must pass a non null value in the parameter.
+
+401
+
+Unauthorized
+
+403
+
+Forbidden
+
+404
+
+An error message indicating the instrument for the symbol/cusip was not found.
+
+406
+
+An error message indicating an issue in the symbol regex, or number of symbols searched is over the maximum.

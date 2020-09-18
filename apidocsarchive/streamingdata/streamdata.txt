@@ -1,0 +1,7160 @@
+Last checked Sept 10 2020
+
+Quick Start
+
+Make a request to the User Info & Preferences API's Get User Principals method to retrieve the information found in the javascript example login request below. This can be run directly in the browser console.
+
+    // Utility
+    function jsonToQueryString(json) {
+        return Object.keys(json).map(function(key) {
+                return encodeURIComponent(key) + '=' +
+                    encodeURIComponent(json[key]);
+            }).join('&');
+    }
+
+var userPrincipalsResponse = /*FILL THIS IN - Get User Principals Response at https://developer.tdameritrade.com/user-principal/apis/get/userprincipals-0 with streamerSubscriptionKeys,streamerConnectionInfo in fields*/
+
+    //Converts ISO-8601 response in snapshot to ms since epoch accepted by Streamer
+    var tokenTimeStampAsDateObj = new Date(userPrincipalsResponse.streamerInfo.tokenTimestamp);
+    var tokenTimeStampAsMs = tokenTimeStampAsDateObj.getTime();
+
+var credentials = {
+    "userid": userPrincipalsResponse.accounts[0].accountId,
+    "token": userPrincipalsResponse.streamerInfo.token,
+    "company": userPrincipalsResponse.accounts[0].company,
+    "segment": userPrincipalsResponse.accounts[0].segment,
+    "cddomain": userPrincipalsResponse.accounts[0].accountCdDomainId,
+    "usergroup": userPrincipalsResponse.streamerInfo.userGroup,
+    "accesslevel": userPrincipalsResponse.streamerInfo.accessLevel,
+    "authorized": "Y",
+    "timestamp": tokenTimeStampAsMs,
+    "appid": userPrincipalsResponse.streamerInfo.appId,
+    "acl": userPrincipalsResponse.streamerInfo.acl
+}
+
+var request = {
+    "requests": [
+            {
+                "service": "ADMIN",
+                "command": "LOGIN",
+                "requestid": 0,
+                "account": userPrincipalsResponse.accounts[0].accountId,
+                "source": userPrincipalsResponse.streamerInfo.appId,
+                "parameters": {
+                    "credential": jsonToQueryString(credentials),
+                    "token": userPrincipalsResponse.streamerInfo.token,
+                    "version": "1.0"
+                }
+            }
+    ]
+}
+
+var mySock = new WebSocket("wss://" + userPrincipalsResponse.streamerInfo.streamerSocketUrl + "/ws"); 
+
+mySock.onmessage = function(evt) { console.log(evt.data); }; mySock.onclose = function() { console.log("CLOSED"); };
+ 
+
+Then, as a separate command, send:
+
+ 
+
+mySock.send(JSON.stringify(request));
+ 
+
+Streaming Market Data document Version 1 Draft 7
+
+Updated:  1/25/2018
+
+ 
+
+Contents
+ 
+
+Contents
+
+1.0        Introduction
+
+1.1        First Steps
+
+1.2        Source ID
+
+1.3        LogIn
+
+1.4        StreamerInfo
+
+2.0 Streamer Protocols
+
+2.1        HTTP
+
+2.2        Websocket
+
+2.3        HTTP Asynchronous
+
+3.0        Command Format
+
+3.1        Basic Request
+
+3.2        Basic Response
+
+4.0        Data
+
+4.1        Symbology Table
+
+4.2        Delivery Types
+
+4.3        Update Frequency
+
+4.4        Data Service Table
+
+4.5        Response Code Table
+
+5.0        ADMIN
+
+5.1        Available Commands
+
+5.2        LOGIN Request
+
+5.3        LOGIN Response
+
+5.4        LOGOUT Request
+
+5.5        LOGOUT Response
+
+5.6        QOS Request
+
+5.7        QOS Response
+
+6.0        ACCT_ACTIVITY
+
+6.1        Request
+
+7       Response
+
+7.0        ACTIVES
+
+7.1        Request
+
+8       Response
+
+8.0        CHART
+
+8.1        CHART_EQUITY
+
+8.1.1         Request
+
+8.1.2         Response
+
+8.2        CHART_FUTURES
+
+8.2.1         Request
+
+8.2.2         Response
+
+9.0        CHART HISTORY
+
+9.1        CHART_HISTORY_FUTURES
+
+9.1.1         Request
+
+9.1.2         Response
+
+10.0      LEVEL ONE
+
+10.1 QUOTE
+
+10.1.1       Request
+
+10.1.2       Response
+
+10.1 OPTION
+
+10.1.3       Request
+
+10.2      LEVELONE_FUTURES
+
+10.2.1       Request
+
+10.2.2       Response
+
+10.3      LEVELONE_FOREX
+
+10.3.1       Request
+
+10.3.2       Response
+
+10.4      LEVELONE_ FUTURES_OPTIONS
+
+10.4.1       Request
+
+10.4.2       Response
+
+11.0      BOOK
+
+11.1      FUTURES_BOOK
+
+11.2      FOREX_BOOK
+
+11.3      FUTURES_OPTIONS_BOOK
+
+11.4      LISTED_BOOK
+
+11.5      NASDAQ_BOOK
+
+11.6      OPTIONS_BOOK
+
+12.0      NEWS
+
+12.1      NEWS_HEADLINE
+
+12.1.1       Request
+
+12.1.2       Response
+
+12.2      NEWS_HEADLINELIST
+
+12.3      NEWS_STORY
+
+13.0      STREAMER_SERVER
+
+14.0      TIMESALE
+
+14.1      Request
+
+14.2      Response
+
+ 
+
+1.0 Introduction
+Streamer is a TD Ameritrade application that serves streaming market data to internal and external clients of TD Ameritrade.    
+
+To start receiving market data from Streamer, please follow these steps:
+
+Make a HTTP POST request to the User Info & Preferences API's Get User Principals method
+Open connection to Streamer Server and subscribe to data.
+ 
+
+1.1 First Steps
+Before client can connect to Streamer for streaming market data, it must first perform a user authentication dialog with TD Ameritrade’s Trading Platform. 
+
+ 
+
+1.2 Source ID
+This document refers to the OAuth User ID as Source ID
+
+ 
+
+1.3 LogIn
+This document may refer to LogIn, which refers either to the process of logging in which happens using the Authentication API (see our Getting Started guide) or the information returned which is available in the User Info & Preferences API's Get User Principals method
+
+ 
+
+1.4 StreamerInfo
+This document may refer to StreamerInfo, which refers to the information available in the User Info & Preferences API's Get User Principals method
+
+ 
+
+2.0 Streamer Protocols
+Streaming market data can be accessed via the following protocols.  Please note that WebSocket is the recommended protocol for use.  This document will only touch upon the WebSocket protocol and JSON format. 
+
+ 
+
+Note: For HTTP and binary format, please Contact Us
+
+ 
+
+Protocol
+
+Name
+
+Response Data Format
+
+HTTP
+
+Request
+
+Binary
+
+Response
+
+Binary
+
+WebSocket (recommended)
+
+Request
+
+JSON
+
+Response
+
+JSON
+
+HTTP Asynchronous
+
+Request
+
+JSON
+
+Response
+
+JSON
+
+ 
+
+ 
+
+2.1 HTTP
+The HTTP protocol provides asynchronous request/streaming communication between client and server.  Requests take the form of an HTTP GET or POST with parameters as required by the type of data requested.  The request opens a connection that returns a continuous stream of data in Java binary format.
+
+Note: If you are using a POST, you must add two newline characters (ASCII 10) to the end of the data being posted.
+
+ 
+
+2.2 Websocket
+WebSocket is a protocol providing full-duplex communication channels over a single TCP connection.  Once a WebSocket connection is established between the client and the server, all communication will go through this same connection.
+
+ 
+
+2.3 HTTP Asynchronous
+The HTTP asynchronous protocol with JSON data format is provides streaming data when a client’s browser doesn’t support WebSocket.  It is currently only available to TD Ameritrade tools.
+
+ 
+
+3.0 Command Format
+ 
+
+3.1 Basic Request
+A client request will consist of an array of one or more commands.  Each command will include:
+
+ 
+
+Request
+
+Name
+
+Parameter
+
+service
+
+Service Name (required)
+
+ADMIN, LEVELONE_EQUITY etc.  Please see Service Names table in section 5.
+
+requestid
+
+Request ID (required)
+
+Unique number that will identify this request.
+
+command
+
+Command (required)
+
+LOGIN, STREAM, QOS, SUBS, ADD, UNSUBS, VIEW, LOGOUT
+
+account
+
+Customer’s account name or number (required)
+
+Example: 123456789
+
+source
+
+Client source (required)
+
+Client app’s assigned source ID. 
+
+parameters
+
+Any parameter (optional)
+
+fields, version, credential, symbol, frequency, period etc
+
+ 
+
+ 
+
+Sample Request to subscribe to news headline:
+
+{
+    "requests": [
+        {
+            "service": "NEWS_HEADLINE", 
+            "requestid": "2", 
+            "command": "SUBS", 
+            "account": " your_account ", 
+            "source": "your_souce_id", 
+            "parameters": {
+                "keys": "GOOG", 
+                "fields": "0,1,2,3,4"
+            }
+        }
+    ]
+}
+ 
+
+3.2Basic Response
+ 
+
+There are currently four types of responses:
+
+Response – Response to a request
+Notify – Notification of heartbeats
+Snapshot –Snapshot of market data
+Data – Streaming market data
+ 
+
+A client response will consist of an array of one or more responses.  Each response will include:
+
+ 
+
+Request
+
+Name
+
+Parameter
+
+service
+
+Service Name
+
+ADMIN, LEVELONE_EQUITY etc.  Please see Service Names table in section 5.
+
+requestid
+
+Request ID
+
+Unique number that will identify the original request
+
+command
+
+Command from the request
+
+LOGIN, STREAM, QOS, SUBS, ADD, UNSUBS, VIEW, LOGOUT
+
+content
+
+Data content
+
+ 
+
+ 
+
+Sample response to a login command:
+
+{
+    "response": [
+        {
+            "service": "ADMIN", 
+            "requestid": "1", 
+            "command": "LOGIN", 
+            "timestamp": 1400593928788, 
+            "content": {
+                "code": 0, 
+                "msg": "29-3"
+            }
+        }
+    ]
+}
+ 
+
+Sample notify response:
+
+{
+    "notify": [
+        {
+            "heartbeat": "1400603717165"
+        }
+    ]
+}
+ 
+
+Sample data response:
+
+{
+    "data": [
+        {
+            "service": "NEWS_HEADLINE", 
+            "timestamp": 1400603717178, 
+            "command": "SUBS", 
+            "content": [
+                {
+                    "1": 0, 
+                    "2": 1400601121000, 
+                    "3": "SN20140520010154", 
+                    "4": "U", 
+                    "5": "MW Microsoft unveils Surface tablet meant to replace laptop", 
+                    "6": "SN20140520010154", 
+                    "7": 12, 
+                    "8": "I/XSLI,I/XFFX,I/SOF,M/NND,M/TEC,I/ISV,R/CA,I/XNQ1,GOOG,I/XRUS,I/XDJI,I/XSTX,I/CPR,I/XDJLC,*ALL*,R/NME,GOOGL,P/SGN,MSFT,AAPL,P/ABO,R/USW,R/PRM,I/XISL,P/AEQI,I/XGDW,I/XGTI,R/US,P/EWR,P/BFX,P/OAC,I/XDJGI,I/XSP1,R/WA,P/MWPB,I/XSP5", 
+                    "9": false, 
+                    "10": "DJCNEWS", 
+                    "seq": 0, 
+                    "key": "GOOG"
+                }
+            ]
+        }
+    ]
+}
+ 
+
+4.0 Data
+ 
+
+4.1 Symbology Table
+Service Name
+
+Display or
+
+Client Input
+
+Subscribe to
+
+Streamer
+
+Example
+
+Class
+
+.
+
+/
+
+BRK.A  -> BRK/A
+
+Index/Indicators
+
+$
+
+$
+
+$DJI
+
+Preferred
+
+-
+
+p
+
+PRE-A  -> PREpA
+
+Warrants
+
++
+
+/WS
+
+BOO+  ->  BOO/WS
+
+ 
+
+ 
+ 
+ 
+ 
+ 
+4.2 Delivery Types
+ 
+
+Data delivery method and frequency depends on the type of data.
+
+ 
+
+Delivery Types
+
+Description
+
+All Sequence
+
+All data are streamed to the client and includes a sequence number.  Data is conflated.
+
+Change
+
+Only fields that clients are interested in and have changed, are streamed to the client, in throttled mode.
+
+Snapshot
+
+Request and  one time response
+
+Stream
+
+Response from Streamer Server
+
+Whole
+
+Data is streamed as a whole unit to the client, in throttled mode.
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+4.3 Update Frequency
+Streaming data is updated approximately every 750 ms – 800 ms.
+
+ 
+
+4.4 Data Service Table
+ 
+
+The following streaming market data are supported for the JSON format. 
+
+GREEN denotes coming soon.
+
+Service Name
+
+Description
+
+Delivery Type
+
+Hours Available
+
+in ET
+
+ACCT_ACTIVITY
+
+Account Activity Notifications
+
+All Sequence
+
+24 hours
+
+ADMIN
+
+Admin requests: LOGIN, LOGOUT
+
+Snapshot
+
+24 hours
+
+ACTIVES_NASDAQ
+
+Actives for NASDAQ
+
+Whole
+
+7:30am – 8pm
+
+ACTIVES_NYSE
+
+Actives for NYSE
+
+Whole
+
+9:30am – 4pm
+
+ACTIVES_OTCBB
+
+Actives for OTCBB
+
+Whole
+
+9:30am – 4pm
+
+ACTIVES_OPTIONS
+
+Actives for Options
+
+Whole
+
+9:30am – 4pm
+
+FOREX_BOOK
+
+FUTURES_BOOK
+
+LISTED_BOOK
+
+NASDAQ_BOOK
+
+OPTIONS_BOOK
+
+FUTURES_OPTIONS_BOOK
+
+Level Two book
+
+Whole
+
+Futures - 24 hours
+
+NASDAQ - 7:30am – 8pm
+
+OPTIONS, LISTED –
+
+9:30am – 4pm
+
+CHART_EQUITY
+
+ 
+
+Chart candle for Equity and Index.
+
+All Sequence
+
+INDEX, LISTED –
+
+9:30am – 4pm
+
+NASDAQ –
+
+7:30am – 8pm
+
+ 
+
+ 	 	 
+CHART_ FUTURES
+
+Chart candle for Futures and Futures OPtions
+
+All Sequence
+
+24 hours
+
+CHART_HISTORY_ FUTURES
+
+Chart history for Futures
+
+Snapshot
+
+24 hours
+
+QUOTE
+
+Level 1 Equity
+
+Change
+
+7:30am – 8pm
+
+LEVELONE_FUTURES
+
+Level 1 Equity Futures
+
+Change
+
+24 hours
+
+LEVELONE_FOREX
+
+Level 1 Forex
+
+Change
+
+24 hours
+
+LEVELONE_FUTURES_OPTIONS
+
+Level 1 Futures Options
+
+Change
+
+24 hours
+
+OPTION
+
+Level 1 Options
+
+Change
+
+9:30am – 4pm
+
+LEVELTWO_FUTURES
+
+Level 2 Futures
+
+Whole
+
+24 hours
+
+NEWS_HEADLINE
+
+News headline
+
+All Sequence
+
+24 hours
+
+NEWS_STORY
+
+News Content
+
+All Sequence
+
+24 hours
+
+NEWS_HEADLINE_LIST
+
+Historical News
+
+Snapshot
+
+24 hours
+
+STREAMER_SERVER
+
+Streamer response
+
+Stream
+
+24 hours
+
+TIMESALE_EQUITY
+
+Time & sale for Equity
+
+All Sequence
+
+7:30am – 8pm
+
+TIMESALE_ FUTURES
+
+Time & sale for Futures and Futures Options
+
+All Sequence
+
+24 hours
+
+TIMESALE_FOREX
+
+Time & sale for Forex
+
+All Sequence
+
+24 hours
+
+TIMESALE_OPTIONS
+
+Time & sale for Options
+
+All Sequence
+
+9:30am – 4pm
+
+ 
+
+ 
+
+4.5 Response Code Table
+ 
+
+Service Name
+
+Description
+
+Delivery Type
+
+Hours Available
+
+in ET
+
+ACCT_ACTIVITY
+
+Account Activity Notifications
+
+All Sequence
+
+24 hours
+
+ADMIN
+
+Admin requests: LOGIN, LOGOUT
+
+Snapshot
+
+24 hours
+
+ACTIVES_NASDAQ
+
+Actives for NASDAQ
+
+Whole
+
+7:30am – 8pm
+
+ACTIVES_NYSE
+
+Actives for NYSE
+
+Whole
+
+9:30am – 4pm
+
+ACTIVES_OTCBB
+
+Actives for OTCBB
+
+Whole
+
+9:30am – 4pm
+
+ACTIVES_OPTIONS
+
+Actives for Options
+
+Whole
+
+9:30am – 4pm
+
+5.0 ADMIN
+ 
+
+5.1 Available Commands
+ 
+
+ 
+
+Command
+
+Description
+
+LOGIN
+
+Log in to Streamer Server to begin subscribing for data
+
+LOGOUT
+
+Log out of Streamer Server to end streaming session.
+
+QOS
+
+Change quality of service of data update rate.
+
+ 
+
+ 
+5.2 LOGIN Request
+When WebSocket connection is opened, the first command to the Streamer Server must be a LOGIN command with the following parameters. 
+
+ 
+
+ 
+
+LOGIN Request
+
+Request
+
+Value
+
+Description
+
+service
+
+ADMIN
+
+Name of service
+
+command
+
+LOGIN
+
+Login
+
+parameter
+
+account
+
+User’s account number – correspond to “account-id” returned from website’s Login command.
+
+source
+
+Source ID assigned to client application
+
+token
+
+Corresponds to “token” returned from StreamerInfo command.
+
+version
+
+ACL version 1.0
+
+credential
+
+company
+
+Corresponds to “company” returned from LogIn command.
+
+segment
+
+Corresponds to “segment” returned from LogIn command
+
+cddomain
+
+Corresponds to “cd-domain-id” returned from StreamerInfo command
+
+usergroup
+
+Corresponds to “usergroup” returned from StreamerInfo command
+
+accesslevel
+
+Corresponds to “access-level” returned from StreamerInfo command
+
+authorized
+
+Corresponds to “authorized” returned from StreamerInfo command
+
+acl
+
+Customer’s entitlement information – corresponds to “acl” returned from StreamerInfo command
+
+timestamp
+
+Application server generated timestamp – corresponds to “timestamp” from StreamerInfo command
+
+appid
+
+Application Server ID – corresponds to “app-id” returned from StreamerInfo command
+
+qoslevel
+
+(optional)
+
+ Quality of Service, or the rate the data will be sent to the client.
+
+ 0 = Express (500 ms)
+
+ 1 = Real-Time (750 ms) ß default value for http binary protocol
+
+ 2 = Fast (1,000 ms)  ßdefault value for websocket and http asynchronous protocol
+
+ 3 = Moderate (1,500 ms)
+
+ 4 = Slow (3,000 ms)
+
+ 5 = Delayed (5,000 ms)
+
+ 
+
+Sample login request:
+
+{
+    "service": "ADMIN", 
+    "requestid": "1", 
+    "command": "LOGIN", 
+    "account": "your_account", 
+    "source": "your_source_id", 
+    "parameters": {
+        "token": "027363a5a5acd542622c125e04ca674be3cc5d5b", 
+        "version": "1.0", 
+        "credential": "userid%3DMYUSER20%26token%3D027363a5a5acd542622c125e04ca674be3cc5d5b%26company%3DAMER%26segment%3DAMER%26cddomain%3DCDI%26usergroup%3DACCT%26accesslevel%3DACCT%26authorized%3DY%26acl%3DDADSDFA4%26timestamp%3D1400607504057%26appid%3DMYAPP"
+    }
+}
+ 
+5.3 LOGIN Response
+ 
+
+LOGIN  Response Content
+
+Name
+
+Type
+
+Description
+
+code
+
+Integer
+
+0 = Success, 3 = Login denied
+
+msg
+
+String
+
+XX-X for streamer server ID, for troubleshooting purposes
+
+Or error message if login denied
+
+ 
+
+Sample login successful response:
+
+{
+    "response": [
+        {
+            "service": "ADMIN", 
+            "requestid": "1", 
+            "command": "LOGIN", 
+            "timestamp": 1400607506478, 
+            "content": {
+                "code": 0, 
+                "msg": "02-1"
+            }
+        }
+    ]
+}
+ 
+
+ 
+
+Sample login denied response:
+
+{
+    "response": [
+        {
+            "service": "ADMIN", 
+            "requestid": "1", 
+            "command": "LOGIN", 
+            "timestamp": 1400615207643, 
+            "content": {
+                "code": 3, 
+                "msg": "Login Denied."
+            }
+        }
+    ]
+}
+ 
+
+5.4 LOGOUT Request
+Logout closes the WebSocket Session and cleans up all subscription for the client session.  It’s a good practice to logout when closing the client tool.
+
+ 
+
+LOGIN Request
+
+Request
+
+Value
+
+Description
+
+service
+
+ADMIN
+
+Name of service
+
+command
+
+LOGOUT
+
+Logout of streamer server
+
+parameter
+
+account
+
+User’s account number – correspond to “account-id” returned from website’s Login command.
+
+ 
+
+Sample logout request:
+
+{
+    "requests": [
+        {
+            "service": "ADMIN", 
+            "requestid": "1", 
+            "command": "LOGOUT", 
+            "account": "your_account", 
+            "source": "your_source_id", 
+            "parameters": { }
+        }
+    ]
+}
+ 
+
+5.5 LOGOUT Response
+ 
+
+LOGOUT  Response Content
+
+Name
+
+Type
+
+Description
+
+code
+
+Integer
+
+0 = Success
+
+msg
+
+String
+
+SUCCESS
+
+ 
+
+Sample logout response:
+
+{
+    "response": [
+        {
+            "service": "ADMIN", 
+            "requestid": "1", 
+            "command": "LOGOUT", 
+            "timestamp": 1400615556699, 
+            "content": {
+                "code": 0, 
+                "msg": "SUCCESS"
+            }
+        }
+    ]
+}
+ 
+
+5.6 QOS Request
+Quality of Service provides the different rates of data updates per protocol (binary, websocket etc), or per user based.
+
+ 
+
+QoS Request
+
+Request
+
+Value
+
+Description
+
+service
+
+ADMIN
+
+Name of service
+
+command
+
+QOS
+
+Login
+
+parameter
+
+account
+
+User’s account number – correspond to “account-id” returned from website’s Login command.
+
+source
+
+Source ID assigned to client application
+
+qoslevel
+
+Quality of Service, or the rate the data will be sent to the client.
+
+ 0 = Express (500 ms)
+
+ 1 = Real-Time (750 ms) ß default value for http binary protocol
+
+ 2 = Fast (1,000 ms)  ßdefault value for websocket and http asynchronous protocol
+
+ 3 = Moderate (1,500 ms)
+
+ 4 = Slow (3,000 ms)
+
+5= Delayed (5,000 ms)
+
+Sample qos request:
+
+{
+    "requests": [
+        {
+            "service": "ADMIN",
+            "requestid": "2",
+            "command": "QOS",
+            "account": "your_account0",
+            "source": "your_source_id",
+            "parameters": {
+                "qoslevel": "5"
+            }
+        }
+    ]
+}
+ 
+
+5.7 QOS Response
+ 
+
+LOGIN  Response Content
+
+Name
+
+Type
+
+Description
+
+code
+
+Integer
+
+0 = Success
+
+msg
+
+String
+
+QoS command succeeded. Set to level
+
+ 
+
+Sample qos response
+
+{
+    "response": [
+        {
+            "service": "ADMIN",
+            "requestid": "2",
+            "command": "QOS",
+            "timestamp": 1406573827679,
+            "content": {
+                "code": 0,
+                "msg": "QoS command succeeded. Set qoslevel=5"
+            }
+        }
+    ]
+}
+ 
+
+6.0 ACCT_ACTIVITY
+This service is used to request streaming updates for one or more accounts associated with the logged in User ID.  Common usage would involve issuing the OrderStatus API request to get all transactions for an account, and subscribing to ACCT_ACTIVITY to get any updates. 
+
+ 
+
+6.1 Request
+In order to subscribe to ACCT_ACTIVITY, you must first request a MessageKey API call for the accounts that you wish to get the updates on.
+
+ 
+
+Account Activity Request
+
+Request
+
+Value
+
+Description
+
+service
+
+ACCT_ACTIVITY
+
+Name of service
+
+command
+
+SUBS
+
+Subscription only
+
+parameter
+
+keys
+
+Token returned from the MessageKey API request
+
+fields
+
+0 = Subscription Key
+
+1 = Account #
+
+2 = Message Type
+
+3 = Message Data
+
+ 
+
+Sample subscription request:
+
+{
+    "requests": [
+        {
+            "service": "ACCT_ACTIVITY", 
+            "requestid": "2", 
+            "command": "SUBS", 
+            "account": "your_account", 
+            "source": "your_source_id", 
+            "parameters": {
+                "keys": " af9997149e43afba25d5a0050e16637d6c24c3493e911161bd7dd017a6f00b4f5", 
+                "fields": "0,1,2,3"
+            }
+        }
+    ]
+}
+ 
+
+7 Response
+ 
+
+ACCT_ACTIVITY  Response
+
+Fields
+
+Name
+
+Description
+
+1
+
+Account #
+
+Account # subscribed
+
+2
+
+Message Type
+
+Refer to Message Type table below
+
+3
+
+Message Data
+
+The core data for the message.  Either XML Message data describing the update, NULL in some cases, or plain text in case of ERROR
+
+ 
+
+Message Type Table
+
+Message Type
+
+Description
+
+SUBSCRIBED
+
+First message returned when a subscription for ACCT_ACTIVITY is returned. NOTE: NO XML DATA will be returned with this message type
+
+ERROR
+
+Indicates some sort of error. NOTE: For this message type, the core data would contain error type. It will NOT be XML.
+
+Currently, possible values are:
+
+               INVALID_KEY - If the Message Key used in the subscription is invalid
+
+               EXPIRED_KEY - If the key is more than 24 hours old at the time of          subscription (can also happen overnight).
+
+               You need to get a new Key from the MessageKey Command
+
+               SYSTEM_ERROR - Some internal server error
+
+BrokenTrade
+
+After an order was filled, the trade is reversed or "Broken" and the order is changed to Canceled.
+
+ManualExecution
+
+The order is manually entered (and filled) by the broker.  Usually due to some system issue.
+
+OrderActivation
+
+A Stop order has been Activated
+
+OrderCancelReplaceRequest
+
+A request to modify an order (Cancel/Replace) has been received (You will also get a UROUT for the original order)
+
+OrderCancelRequest
+
+A request to cancel an order has been received
+
+OrderEntryRequest
+
+A new order has been submitted
+
+OrderFill
+
+An order has been completely filled
+
+OrderPartialFill
+
+An order has been partial filled
+
+OrderRejection
+
+An order was rejected
+
+TooLateToCancel
+
+A request to cancel an order has been received but the order cannot be canceled either because it was already canceled, filled, or for some other reason
+
+UROUT
+
+Indicates "You Are Out" - that the order has been canceled
+
+ 
+
+ 
+
+General Account Activity XML Message Response Fields
+
+XML Attribute Name
+
+Type
+
+Type
+
+Message
+
+Complex
+
+The main container will be named the same as the Message Type, followed by "Message". For example OrderCancelReplaceRequestMessage
+
+OrderGroupID
+
+Complex
+
+ 
+
+Firm
+
+Integer
+
+Internal
+
+Branch
+
+Integer
+
+Internal
+
+ClientKey
+
+String
+
+Internal
+
+AccountKey
+
+String
+
+Account # of the account in which the order is in
+
+SubAccountType
+
+String
+
+One of the following values:
+
+               Cash                     Margin                 Income
+
+               Short                    DVP/RVP            Dividend
+
+ActivityTimestamp
+
+String
+
+ 
+
+Order
+
+Complex
+
+ 
+
+OrderKey
+
+String
+
+The Order Number of the order for which the activity message is sent
+
+Security
+
+Complex
+
+ 
+
+CUSIP
+
+String
+
+ 
+
+Symbol
+
+String
+
+ 
+
+Security Type
+
+String
+
+One of the following values:
+
+               Common Stock                               Preferred Stock                               Convertible
+
+               Preferred Stock
+
+               Rights                                  Warrant               Mutual Fund
+
+               Call Option                        Put Option          Bank Call Option
+
+(Other values are also possible)
+
+SecurityCategory
+
+String
+
+One of the following values:
+
+               Equity                                 Option
+
+               Hybrid                                 Rights
+
+               Warrant                              Mutual Fund
+
+               Fixed Income                    Commercial Paper
+
+               Other
+
+ShortDescription
+
+String
+
+Description of the Symbol. Particularly important for option symbols
+
+SymbolUnderlying
+
+String
+
+If the symbol is an option, then this field is the underlying symbol for that option
+
+OrderPricing
+
+Complex
+
+ 
+
+Last
+
+Float
+
+ 
+
+Ask
+
+Float
+
+ 
+
+Bid
+
+Float
+
+ 
+
+Limit
+
+Float
+
+Only returned for orders where LIMIT price is relevant
+
+Method
+
+String
+
+The Method for Trailing Stop orders: Points or Percent
+
+Amount
+
+Float
+
+The amount used for Trailing Stop. If trails 2%, it would be 2.
+
+OrderType
+
+String
+
+One of the following values:
+
+MarketLimit
+
+Stop                     Stop Limit
+
+On Close              Trailing Stop
+
+Excercised
+
+OrderDuration
+
+String
+
+Day                                      Good Till Date                   Good Till Cancel
+
+Good Till Night                 Fill Or Kill                            Immediate Or
+
+Cancel
+
+End Of Month                  End Of Week                     Market At Open
+
+Next End Of Month
+
+NOTE: Refer to MarketCode as well. OrderDuration and
+
+MarketCode together translate to the usually entered expiration
+
+values
+
+OrderEnteredDateTime
+
+String
+
+ 
+
+OrderInstructions
+
+String
+
+Buy                       Sell                        Short
+
+Short ExemptBuy To Cover
+
+Exchange            Exercise
+
+OriginalQuantity
+
+Float
+
+ 
+
+SpecialInstructions
+
+Complex
+
+Container for various special instructions flags
+
+            AllOrNone
+
+Integer
+
+Value will either be 1, or the tag will not be returned
+
+DoNotReduceIncrea
+
+seFlag
+
+String
+
+Value will either be "Do Not Reduce", or tag will not be
+
+returned
+
+               NotHeld
+
+Integer
+
+Value will either be 1, or the tag will not be returned
+
+               TryToStop
+
+Integer
+
+Value will either be 1, or the tag will not be returned
+
+Discretionary
+
+Integer
+
+Internal
+
+OrderSource
+
+String
+
+Internal
+
+Solicited
+
+Boolean
+
+Internal
+
+MarketCode
+
+String
+
+Normal Seamless
+
+Extended PreSession
+
+German
+
+NOTE: Seamless refers to DAY+Ext and GTC+Ext
+
+AM orders will be OrderDuration=DAY, MarketCode=PreSession
+
+PM orders will be OrderDuration=GTC, MarketCode=Extended
+
+Capacity
+
+String
+
+Internal
+
+GoodTilDate
+
+String
+
+Expiration date of the order
+
+ActivationPrice
+
+Float
+
+The price at which the order was activated
+
+Only returned for Message Type: OrderActivation
+
+LastUpdated
+
+String
+
+The date/time when the order was last updated
+
+Only returned for Message Type:
+
+OrderCancelReplaceRequest, OrderEntryRequest
+
+OriginalOrderId
+
+Integer
+
+The Order ID of the original order being replaced.
+
+Only returned for Message Type:
+
+OrderCancelReplaceRequest
+
+PendingCancelQuantity
+
+Float
+
+The Quantity of the order that being canceled.
+
+Only returned for Message Type:
+
+OrderCancelReplaceRequest, OrderCancelRequest
+
+CancelledQuantity
+
+Float
+
+The Quantity of the order that was canceled.
+
+Only returned for Message Type: UROUT
+
+RejectCode
+
+Integer
+
+The code indicating why the order was rejected
+
+Only returned for Message Type: OrderRejection
+
+RejectReason
+
+String
+
+Plain text reason why the order was rejected
+
+Only returned for Message Type: OrderRejection
+
+ReportedBy
+
+String
+
+The ID of the person reporting the order rejection
+
+Only returned for Message Type: OrderRejection
+
+RemainingQuantity
+
+Float
+
+The size of the order that remains to be filled
+
+Only returned for Message Type: OrderPartialFill
+
+OrderCompletionCode
+
+String
+
+Description of completion. For example: Normal Completion
+
+Only returned for Message Type: OrderFill and
+
+TooLateToCancel
+
+Charges
+
+Complex
+
+Container for multiple "Charge" entries
+
+               Charge
+
+Complex
+
+Container for a single Charge entry
+
+                              Type
+
+String
+
+The description of the type of charge
+
+Amount
+
+Float
+
+The amount of the chart
+
+OrderAssociation
+
+Complex
+
+Container for fields describing relationship of multiple legs of a Complex Option order
+
+               Type
+
+ 
+
+Complex - for Complex Options
+
+AssociatedOrders
+
+Complex
+
+Container for Associated order description fields
+
+OrderKey
+
+ 
+
+Order ID of the associated Order (child order)
+
+Relationship
+
+ 
+
+Parent, Child, Other Leg, Contingent, Enhanced, Cancel
+
+Other
+
+ComplexOrderType
+
+ 
+
+Spread                                Straddle
+
+Strangle                              Buy-Writes
+
+Combo                                              Exercise
+
+Swap                                   OCA
+
+Vertical                               Back Ratio
+
+Calendar                            Diagonal
+
+Butterfly                             Condor
+
+Iron Condor                      Vertical Roll
+
+Covered Stock                  Collar With Stock
+
+Collar Synthetic                Double Diagonal
+
+Custom
+
+CreditOrDebit
+
+ 
+
+Credit or Debit
+
+All subsequent tags are inside the ExecutionInformation container
+
+ExecutionInformation
+
+Complex
+
+Container for the Execution information
+
+All subsequent tags are inside this container
+
+only returned for Message Types: OrderPartialFill and OrderFill
+
+               Type
+
+Complex
+
+Bought                               Sold
+
+Sold Short           Sold Short Exempt
+
+Buy To CoverExchange
+
+Exercised
+
+               Timestamp
+
+String
+
+ 
+
+               Quantity
+
+Float
+
+ 
+
+ExecutionPrice
+
+Float
+
+ 
+
+AveragePriceIndicator
+
+Boolean
+
+true/false - Indicates if the price represents an average price
+
+of multiple fills
+
+LeavesQuantity
+
+Float
+
+The size of the order that remains to be filled
+
+ID
+
+String
+
+Execution ID
+
+ 
+
+Sample response:
+
+{
+    "data": [
+        {
+            "service": "ACCT_ACTIVITY", 
+            "timestamp": 1385480418394, 
+            "command": "SUBS", 
+            "content": [
+                {
+                    "1": "your_account", 
+                    "2": "UROUT", 
+                    "3": "
+        <?xml version=\"1.0\" encoding=\"iso-8859-1\"?>
+        <UROUTMessage xmlns=\"urn: xmlns:api.tdameritrade.com\">
+        <OrderGroupID>
+               <Firm/>
+               <Branch>785</Branch>
+               <ClientKey>ACCT</ClientKey>
+               <AccountKey>ACCT</AccountKey>
+               <SubAccountType>Margin</SubAccountType>
+               <CDDomainID>CDI</CDDomainID>
+        </OrderGroupID>
+        <ActivityTimestamp>2013-11-26T09:40:18.313-06:00</ActivityTimestamp>
+        <Order xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"EquityOrderT\">
+               <OrderKey>12345678</OrderKey>
+               <Security>
+                       <CUSIP>594918104</CUSIP>
+                       <Symbol>MSFT</Symbol>
+                       <SecurityType>Common Stock</SecurityType>
+                       <SecurityCategory>Equity</SecurityCategory>
+               </Security>
+               <OrderPricing xsi:type=\"LimitT\">
+                       <Limit>37.49</Limit>
+               </OrderPricing>
+               <OrderType>Limit</OrderType>
+               <OrderDuration>Day</OrderDuration>
+               <OrderEnteredDateTime>2013-11-26T09:40:02.629-06:00</OrderEnteredDateTime>
+               <OrderInstructions>Buy</OrderInstructions>
+               <OriginalQuantity>10</OriginalQuantity>
+               <Discretionary>false</Discretionary>
+               <OrderSource>Web</OrderSource>
+               <Solicited>false</Solicited>
+               <MarketCode>Normal</MarketCode>
+               <Capacity>Agency</Capacity>
+        </Order>
+        <CancelledQuantity>10</CancelledQuantity>
+        </UROUTMessage>", 
+                    "key": "af9997149e43afba25d5a0050e16637d6c24c3493e911161bd7dd017a6f00b4f5"
+                }
+            ]
+        }
+    ]
+}
+ 
+
+7.0 ACTIVES
+Actives shows the day’s top most traded symbols in the four exchanges.  Different duration can be selected.
+
+ 
+
+7.1Request
+ 
+
+Request
+
+Value
+
+Description
+
+service
+
+ACTIVES_NASDAQ
+
+ACTIVES_NYSE
+
+ACTIVES_OPTIONS
+
+ACTIVES_OTCBB
+
+Name of service
+
+command
+
+SUBS
+
+Subscribe to data
+
+parameter
+
+keys
+
+Please see Actives Venue Duration table below.  The key is combining Venue with the Duration.  For example, NASDAQ-ALL will return the most actives traded on NASDAQ for all day.
+
+fields
+
+1 = Actives Data
+
+ 
+
+Actives Venue Duration Table
+
+Actives Type
+
+Value
+
+Type
+
+Description
+
+Venue
+
+NASDAQ
+
+NYSE
+
+OTCBB
+
+CALLS*
+
+OPTS*
+
+PUTS*
+
+CALLS-DESC*
+
+OPTS-DESC*
+
+PUTS-DESC*
+
+String
+
+Parameter to determine which venue/exchange
+
+Duration
+
+ALL
+
+3600
+
+1800
+
+600
+
+300
+
+60
+
+String
+
+ALL= all day
+
+3600 = 60 min
+
+1800 = 30 min
+
+600 = 10 min
+
+300 = 5 min
+
+60 = 1 min
+
+               *Options
+
+ 
+
+Sample request:
+
+{
+    "requests": [
+        {
+            "service": "ACTIVES_NASDAQ", 
+            "requestid": "3", 
+            "command": "SUBS", 
+            "account": "your_account", 
+            "source": "your_source_id", 
+            "parameters": {
+                "keys": "NASDAQ-60", 
+                "fields": "0,1"
+            }
+        }, 
+        {
+            "service": "ACTIVES_OTCBB", 
+            "requestid": "5", 
+            "command": "SUBS", 
+            "account": "your_account", 
+            "source": "your_source_id", 
+            "parameters": {
+                "keys": "OTCBB-1800", 
+                "fields": "0,1"
+            }
+        }, 
+        {
+            "service": "ACTIVES_NYSE", 
+            "requestid": "2", 
+            "command": "SUBS", 
+            "account": "your_account", 
+            "source": "your_source_id", 
+            "parameters": {
+                "keys": "NYSE-ALL", 
+                "fields": "0,1"
+            }
+        }, 
+        {
+            "service": "ACTIVES_OPTIONS", 
+            "requestid": "4", 
+            "command": "SUBS", 
+            "account": "your_account", 
+            "source": "your_source_id",             
+            "parameters": {
+                "keys": "OPTS-DESC-ALL", 
+                "fields": "0,1"
+            }
+        }
+    ]
+}
+ 
+
+8 Response
+ 
+
+The actives data (field 1) follows this custom format:
+
+ 
+
+The data is returned in groups. Each group is delimited by a semicolon ‘;’. The returned groups
+
+are the following (in the order that they are returned:
+
+ 
+
+INITIAL GROUP: Descriptor Group. It contains information about the rest of the groups being
+
+returned
+
+If number of groups (not counting the first one) is 2, then:
+
+GROUP 0: Most Active Stocks based on “# of trades”
+
+GROUP 1: Most Active Stocks based on “# of Shares” traded
+
+ 
+
+If number of groups (not counting the first one) is 6, then:
+
+GROUP 0: Most Active Stocks based on “Buy # of Trades”
+
+GROUP 1: Most Active Stocks based on “Sell # of Trades”
+
+GROUP 2: Most Active Stocks based on “Buy # of Shares”
+
+GROUP 3: Most Active Stocks based on “Sell # of Shares”
+
+GROUP 4: Most Active Stocks based on “# of trades”
+
+GROUP 5: Most Active Stocks based on “# of Shares” traded
+
+NOTE: Groups 0, 1, 2, 3 are not returned now. Deprecated
+
+ 
+
+If the DATA parameter contains the following:
+
+57510;0;00:00:00;15:58:30;6;0:0:0;1:0:0;2:0:0;3:0:0;4:10:5234081:AAPL:230692:4.41:SYMC
+
+:87008:1.66:LVLT:86452:1.65:GOOG:79025:1.51:INTC:75896:1.45:QQQQ:73049:1.4:ATYT:7155
+
+4:1.37:BRCM:68573:1.31:CSCO:59819:1.14:VPHM:58947:1.13;5:10:2096769681:QQQQ:112137
+
+833:5.35:LVLT:101695066:4.85:SUNW:68187431:3.25:INTC:65462262:3.12:JDSU:55355659:2.
+
+64:CSCO:50843090:2.42:MSFT:49805550:2.38:AAPL:48921314:2.33:ORCL:47951340:2.29:SIRI:
+
+35386791:1.69;
+
+ 
+
+Then it should be interpreted as:
+
+ID: 57510
+
+sampleDuration: 0
+
+Start Time: 00:00:00
+
+Display Time: 15:58:30
+
+Num Groups: 6
+
+followed by the strings for each group
+
+0:0:0
+
+1:0:0
+
+2:0:0
+
+3:0:0
+
+4:
+
+10:5234081:AAPL:230692:4.41:SYMC:87008:1.66:LVLT:86452:1.65:GOOG:79025:1.51:INTC:75
+
+896:1.45:QQQQ:73049:1.4:ATYT:71554:1.37:BRCM:68573:1.31:CSCO:59819:1.14:VPHM:58947:
+
+1.13
+
+5:
+
+10:2096769681:QQQQ:112137833:5.35:LVLT:101695066:4.85:SUNW:68187431:3.25:INTC:654
+
+62262:3.12:JDSU:55355659:2.64:CSCO:50843090:2.42:MSFT:49805550:2.38:AAPL:48921314:2
+
+.33:ORCL:47951340:2.29:SIRI:35386791:1.69
+
+ 
+
+Data within each Group is separated by colons ‘:’
+
+ 
+
+FOR STOCKS:
+
+The first 3 entries are:
+
+Group #: (0-based, 0 to Num) - the Group Number - refer to the list above.
+
+NumEntries: # of actives entries (triplets) that follow
+
+TotVol: Total volume (or total # of trades) for the exchange
+
+ 
+
+followed by NumEntries of triplets, each of which is:
+
+Symbol
+
+Volume
+
+Percent - same as Volume/TotVol
+
+ 
+
+Example:
+
+4:10:5234081:AAPL:230692:4.41:SYMC:87008:1.66:LVLT:86452:1.65:GOOG:79025:1.51:INTC:7
+
+5896:1.45:QQQQ:73049:1.4:ATYT:71554:1.37:BRCM:68573:1.31:CSCO:59819:1.14:VPHM:5894
+
+7:1.13
+
+ 
+
+would be interpreted as:
+
+GROUP 4: Most Active Stocks based on “# of trades”
+
+10 Entries
+
+Total Volume is 5,234,081
+
+AAPL 230,692 trades 4.41%
+
+SYMC 87,008 trades 1.66%
+
+LVLT 86,452 trades 1.65%
+
+GOOG 79,025 trades 1.51%
+
+INTC 75,896 trades 1.45%
+
+QQQQ 73,049 trades 1.4%
+
+ATYT 71,554 trades 1.37%
+
+BRCM 68,573 trades 1.31%
+
+CSCO 59,819 trades 1.14%
+
+VPHM 58,947 trades 1.1%
+
+ 
+
+FOR OPTIONS:
+
+Actives for OPTIONS are handled almost the same way as for stocks. The difference is that the
+
+Symbol Description is returned as well as the symbol
+
+ 
+
+The first 3 entries are:
+
+Group #: (0-based, 0 to Num) - the Group Number - refer to the list above.
+
+NumEntries: # of actives entries (triplets) that follow
+
+TotVol: Total volume (or total # of trades) for the exchange
+
+followed by NumEntries of 4 value groups, each of which is:
+
+Symbol
+
+Symbol Description
+
+Volume
+
+Percent - same as Volume/TotVol
+
+ 
+
+Example:
+
+0:10:347642:APV_112109C200:APV Nov 21 2009 200.0 Call:3233:0.93:APV_112109P200:APV
+
+Nov 21 2009 200.0 Put:2669:0.77:SPY_112109C110:SPY Nov 21 2009 110.0
+
+Call:1973:0.57:SPY_112109P110:SPY Nov 21 2009 110.0 Put:1846:0.53:AJL_121909C210:AJL
+
+Dec 19 2009 210.0 Call:1708:0.49:SWG_112109P109:SWG Nov 21 2009 109.0
+
+Put:1651:0.47:SWG_112109C109:SWG Nov 21 2009 109.0 Call:1359:0.39:APV_121909C200:APV
+
+Dec 19 2009 200.0 Call:1276:0.37:SPY_112109C111:SPY Nov 21 2009 111.0
+
+Call:1227:0.35:SWG_121909P109:SWG Dec 19 2009 109.0 Put:1214:0.35;
+
+ 
+
+would be interpreted as:
+
+ 
+
+GROUP 0: Most Active Stocks based on “# of trades”
+
+10 Entries
+
+Total Volume is 347,642
+
+APV_112109C200 "APV Nov 21 2009 200.0 Call" 3233 trades 0.93%
+
+APV_112109P200 "APV Nov 21 2009 200.0 Put" 2669 trades 0.77%
+
+SPY_112109C110 "SPY Nov 21 2009 110.0 Call" 1973 trades 0.57%
+
+SPY_112109P110 "SPY Nov 21 2009 110.0 Put" 1846 trades 0.53%
+
+AJL_121909C210 "AJL Dec 19 2009 210.0 Call" 1708 trades 0.49%
+
+SWG_112109P109 "SWG Nov 21 2009 109.0 Put" 1651 trades 0.47%
+
+SWG_112109C109 "SWG Nov 21 2009 109.0 Call" 1359 trades 0.39%
+
+APV_121909C200 "APV Dec 19 2009 200.0 Call" 1276 trades 0.37%
+
+SPY_112109C111 "SPY Nov 21 2009 111.0 Call" 1227 trades 0.35%
+
+SWG_121909P109 "SWG Dec 19 2009 109.0 Put" 1214 trades 0.35;%
+
+ 
+
+Sample response
+
+{
+    "data": [
+        {
+            "service": "ACTIVES_OTCBB",
+            "timestamp": 1402000310945,
+            "command": "SUBS",
+            "content": [
+                {
+                    "1": "59510;1800;16:1:00;16:31:50;2;0:10:163:CSGKF:5:3.07:BCBAY:4:2.45:WTFPP:4:2.45:FNMA:4:2.45:NTDOY:3:1.84:STOHF:3:1.84:EMEZU:3:1.84:FUPBY:2:1.23:GAMRD:2:1.23:CICHY:2:1.23;1:10:183609368:HRDN:30000000:16.34:LATF:27566500:15.01:DOMK:16463700:8.97:FROZ:12510000:6.81:AEGY:11675000:6.36:WTWO:11210857:6.11:KGET:11200000:6.1:PCFG:10000000:5.45:PEII:8625000:4.7:ANAS:5629000:3.07;",
+                    "key": "OTCBB-1800"
+                }
+            ]
+        },
+        {
+            "service": "ACTIVES_NASDAQ",
+            "timestamp": 1402000310945,
+            "command": "SUBS",
+            "content": [
+                {
+                    "1": "59502;60;16:30:00;16:31:42;2;0:10:45:AAPL:8:17.78:XIV:7:15.56:PNRA:7:15.56:TVIX:2:4.44:SEAC:2:4.44:QTWW:2:4.44:FB:2:4.44:WYNN:2:4.44:QQQ:2:4.44:CSIQ:1:2.22;1:10:44379:FCEL:37500:84.5:XIV:1750:3.94:QQQ:900:2.03:PNRA:875:1.97:AAPL:617:1.39:ZNGA:500:1.13:VTUS:400:0.9:TVIX:320:0.72:FB:200:0.45:WYNN:200:0.45;",
+                    "key": "NASDAQ-60"
+                }
+            ]
+        },
+        {
+            "service": "ACTIVES_NYSE",
+            "timestamp": 1402000310945,
+            "command": "SUBS",
+            "content": [
+                {
+                    "1": "59504;0;16:31:00;16:31:44;2;0:10:18421069:SPY:293338:1.59:IWM:229227:1.24:RAD:172683:0.94:TWTR:129140:0.7:VXX:113697:0.62:GM:101309:0.55:BAC:84860:0.46:CIEN:82834:0.45:S:82521:0.45:BMY:79749:0.43;1:10:-238835680:RAD:104731724:-43.85:SPY:98033120:-41.05:IWM:67764773:-28.37:BAC:59583610:-24.95:EWJ:53006351:-22.19:EEM:42903933:-17.96:TWTR:40793308:-17.08:S:39680344:-16.61:BSBR:36359581:-15.22:F:34747357:-14.55;",
+                    "key": "NYSE-ALL"
+                }
+            ]
+        }
+    ]
+}
+ 
+
+Top of Form
+
+Bottom of Form
+
+ 
+
+8.0 CHART
+Chart provides  streaming one minute OHLCV (Open/High/Low/Close/Volume) for a one minute period .
+
+ 
+
+The one minute bar falls on the 0 second slot (ie. 9:30:00) and includes data from 0 second to 59 seconds.
+
+For example, a 9:30 bar includes data from 9:30:00 through 9:30:59.
+
+ 
+
+8.1 CHART_EQUITY
+ 
+
+8.1.1 Request
+ 
+
+Request
+
+Value
+
+Description
+
+service
+
+CHART_EQUITY
+
+Name of service
+
+command
+
+SUBS, ADD
+
+Subscribe to data
+
+parameter
+
+keys
+
+Symbols in upper case and separated by commas
+
+fields
+
+Please see Field Definition table below
+
+ 
+
+Sample Request:
+
+{
+    "requests": [
+        {
+            "service": "CHART_EQUITY",
+            "requestid": "2",
+            "command": "SUBS",
+            "account": "your_account",
+            "source": "your_source_id",
+            "parameters": {
+                "keys": "AAPL",
+                "fields": "0,1,2,3,4,5,6,7,8"
+            }
+        }
+    ]
+}
+ 
+
+8.1.2 Response
+ 
+
+CHART_FUTURES Field Definition
+
+ 
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+key
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Open Price
+
+double
+
+Opening price for the minute
+
+Yes
+
+Yes
+
+ 
+
+2
+
+High Price
+
+double
+
+Highest price for the minute
+
+Yes
+
+Yes
+
+ 
+
+3
+
+Low Price
+
+double
+
+Chart’s lowest price for the minute
+
+Yes
+
+Yes
+
+ 
+
+4
+
+Close Price
+
+double
+
+Closing price for the minute
+
+Yes
+
+Yes
+
+ 
+
+5
+
+Volume
+
+doulbe
+
+Total volume for the minute
+
+Yes
+
+Yes
+
+ 
+
+6
+
+Sequence
+
+long
+
+Identifies the candle minute
+
+Yes
+
+Yes
+
+Not useful
+
+7
+
+Chart Time
+
+long
+
+Milliseconds since Epoch
+
+Yes
+
+Yes
+
+ 
+
+8
+
+Chart Day
+
+int
+
+Not useful
+
+ 
+
+ 
+
+ 
+
+Top of Form
+
+8.2 CHART_FUTURES
+ 
+
+8.2.1 Request
+ 
+
+Request
+
+Value
+
+Description
+
+service
+
+ 
+
+CHART_FUTURES
+
+CHART_OPTIONS
+
+Name of service.
+
+Equity chart in new format may be supported later on (Date TBD).
+
+command
+
+SUBS
+
+Subscribe to data
+
+parameter
+
+keys
+
+Symbols in upper case and separated by commas
+
+fields
+
+Please see Field Definition table below
+
+ 
+
+Sample Request:
+
+{
+    "requests": [
+        {
+            "service": "CHART_FUTURES",
+            "requestid": "2",
+            "command": "SUBS",
+            "account": "your_account",
+            "source": "your_source_id",
+            "parameters": {
+                "keys": "/ES",
+                "fields": "0,1,2,3,4,5,6,7"
+            }
+        }
+    ]
+}
+ 
+
+8.2.2 Response
+ 
+
+CHART_FUTURES Field Definition
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+key
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Chart Time
+
+long
+
+Milliseconds since Epoch
+
+Yes
+
+Yes
+
+ 
+
+2
+
+Open Price
+
+double
+
+Opening price for the minute
+
+Yes
+
+Yes
+
+ 
+
+3
+
+High Price
+
+double
+
+Highest price for the minute
+
+Yes
+
+Yes
+
+ 
+
+4
+
+Low Price
+
+double
+
+Chart’s lowest price for the minute
+
+Yes
+
+Yes
+
+ 
+
+5
+
+Close Price
+
+double
+
+Closing price for the minute
+
+Yes
+
+Yes
+
+ 
+
+6
+
+Volume
+
+doulbe
+
+Total volume for the minute
+
+Yes
+
+Yes
+
+ 
+
+ 
+
+Sample response:
+
+{
+    "data": [
+        {
+            "service": "CHART_FUTURES", 
+            "timestamp": 1402059379776, 
+            "command": "SUBS", 
+            "content": [
+                {
+                    "1": 1402059300000, 
+                    "2": 1942.5, 
+                    "3": 1943, 
+                    "4": 1942.5, 
+                    "5": 1943, 
+                    "6": 2202, 
+                    "seq": 0, 
+                    "key": "/ES"
+                }
+            ]
+        }
+    ]
+}
+ 
+
+ Top of Form
+
+Bottom of Form
+
+ 
+
+9.0 CHART HISTORY
+Chart history for equities is available via requests to the MDMS services.  Only Futures chart history is available via Streamer Server.
+
+ 
+
+9.1 CHART_HISTORY_FUTURES
+ 
+
+9.1.1 Request
+ 
+
+Request
+
+Value
+
+Description
+
+service
+
+CHART_HISTORY_FUTURES
+
+Name of service.
+
+command
+
+GET
+
+Subscribe to data
+
+parameter
+
+symbol
+
+Symbols in upper case and separated by commas
+
+frequency
+
+Fixed frequency choices:
+
+m1, m5, m10, m30, h1, d1, w1, n1
+
+(m=minute, h=hour, d=day, w=week, n=month)
+
+Period (not required if START_TIME & END_TIME are sent)
+
+Flexible time period examples:
+
+d5, w4, n10, y1, y10
+
+(d=day, w=week, n=month, y=year)
+
+START_TIME (optional)
+
+Start time of chart in milliseconds since Epoch
+
+END_TIME (optional)
+
+End time of chart in milliseconds since Epoch
+
+ 
+
+Sample Request: With “Period”
+
+{
+    "requests": [
+        {
+            "service": "CHART_HISTORY_FUTURES",
+            "requestid": "2",
+            "command": "GET",
+            "account": "your_account",
+            "source": "your_source_id",
+            "parameters": {
+                "symbol": "/ES",
+                "frequency": "m1",
+                "period": "d1"
+            }
+        }
+    ]
+}
+Top of Form
+
+Sample Request: With  start and end time
+
+{
+    "requests": [
+        {
+            "service": "CHART_HISTORY_FUTURES",
+            "requestid": "2",
+            "command": "GET",
+            "account": "your_account",
+            "source": "your_source_id",
+            "parameters": {
+                "symbol": "/ES",
+                "END_TIME": "1403294400000",
+                "START_TIME": "1403265600000",
+                "frequency": "m1"
+            }
+        }
+    ]
+}
+ 
+
+9.1.2 Response
+ 
+
+CHART_HISTORY_FUTURES Field Definition
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+key
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Chart Time
+
+long
+
+Milliseconds since Epoch
+
+Yes
+
+Yes
+
+ 
+
+2
+
+Open Price
+
+double
+
+Opening price for the minute
+
+Yes
+
+Yes
+
+ 
+
+3
+
+High Price
+
+double
+
+Highest price for the minute
+
+Yes
+
+Yes
+
+ 
+
+4
+
+Low Price
+
+double
+
+Chart’s lowest price for the minute
+
+Yes
+
+Yes
+
+ 
+
+5
+
+Close Price
+
+double
+
+Closing price for the minute
+
+Yes
+
+Yes
+
+ 
+
+6
+
+Volume
+
+doulbe
+
+Total volume for the minute
+
+Yes
+
+Yes
+
+ 
+
+ 
+
+Sample Request: With “Period”:
+
+ 
+
+Sample Request: With  Start Time and End Time:
+
+{
+    "snapshot": [
+        {
+            "service": "CHART_HISTORY_FUTURES",
+            "timestamp": 1403296734640,
+            "command": "GET",
+            "content": [
+                {
+                    "0": "2",
+                    "1": 0,
+                    "2": 504,
+                    "3": [
+                        {
+                            "0": 1403265600000,
+                            "1": 1950.75,
+                            "2": 1951,
+                            "3": 1950.75,
+                            "4": 1951,
+                            "5": 82
+                        },
+                      ..
+                        {
+                            "0": 1403296680000,
+                            "1": 1953.5,
+                            "2": 1953.75,
+                            "3": 1953.5,
+                            "4": 1953.75,
+                            "5": 771
+                        }
+                    ],
+                    "key": "/ES"
+                }
+            ]
+        }
+    ]
+}
+ 
+
+Bottom of Form
+
+ 
+
+10.0 LEVEL ONE
+ 
+
+10.1 QUOTE
+Listed (NYSE, AMEX, Pacific Quotes and Trades)
+NASDAQ (Quotes and Trades)
+OTCBB (Quotes and Trades)
+Pinks (Quotes only)
+Mutual Fund (No quotes)
+Indices (Trades only)
+Indicators
+ 
+
+10.1.1Request
+ 
+
+QUOTE Request
+
+Request
+
+Value
+
+Description
+
+service
+
+QUOTE
+
+Level one equities quote and trade
+
+command
+
+SUBS
+
+Subscription only
+
+parameter
+
+keys
+
+Symbols in upper case and separated by commas
+
+fields
+
+Please see the QUOTE Field Defintiion table below
+
+ 
+
+ 
+
+QUOTE Field Definition
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+Symbol
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Bid Price
+
+float
+
+Current Best Bid Price
+
+Yes
+
+Yes
+
+From FH
+
+2
+
+Ask Price
+
+float
+
+Current Best Ask Price
+
+Yes
+
+Yes
+
+From FH
+
+3
+
+Last Price
+
+float
+
+Price at which the last trade was matched
+
+Yes
+
+Yes
+
+From FH
+
+4
+
+Bid Size
+
+float
+
+Number of shares for bid
+
+Yes
+
+Yes
+
+From FH
+
+5
+
+Ask Size
+
+float
+
+Number of shares for ask
+
+Yes
+
+Yes
+
+From FH
+
+6
+
+Ask ID
+
+char
+
+Exchange with the best ask
+
+Yes
+
+Yes
+
+From FH
+
+7
+
+Bid ID
+
+char
+
+Exchange with the best bid
+
+Yes
+
+Yes
+
+From FH
+
+8
+
+Total Volume
+
+long
+
+Aggregated shares traded throughout the day, including pre/post market hours.
+
+Yes
+
+Yes
+
+Volume is set to zero at 7:28am ET. 
+
+9
+
+Last Size
+
+float
+
+Number of shares traded with last trade
+
+Yes
+
+Yes
+
+Size in 100’s
+
+10
+
+Trade Time
+
+int
+
+Trade time of the last trade
+
+Yes
+
+Yes
+
+Seconds since midnight EST
+
+11
+
+Quote Time
+
+int
+
+Trade time of the last quote
+
+Yes
+
+Yes
+
+Seconds since midnight EST
+
+12
+
+High Price
+
+float
+
+Day’s high trade price
+
+Yes
+
+Yes
+
+According to industry standard, only regular session trades set the High and Low. 
+If a stock does not trade in the AM session, high and low will be zero.
+High/low reset to 0 at 7:28am ET
+13
+
+Low Price
+
+float
+
+Day’s low trade price
+
+Yes
+
+Yes
+
+See High Price notes
+
+14
+
+Bid Tick
+
+char
+
+Indicates Up or Downtick (NASDAQ NMS & Small Cap)
+
+Yes
+
+Yes
+
+Updates whenever bid updates.  Source=FH
+
+15
+
+Close Price
+
+float
+
+Previous day’s closing price
+
+No
+
+No
+
+Closing prices are updated from the DB when Pre-Market tasks are run at 7:29AM ET.
+16
+
+Exchange ID
+
+char
+
+Primary "listing" Exchange
+
+No
+
+No
+
+As long as the symbol is valid, this data is always present
+This field is updated every time the closing prices are loaded from DB
+NYSE = n             AMEX = a    
+
+NASDAQ = q      OTCBB =u           
+
+PACIFIC=p          INDICES = x         
+
+AMEX_INDEX=g
+
+    MUTUAL_FUND = m
+
+    PINK_SHEET = 9
+
+17
+
+Marginable
+
+boolean
+
+Stock approved by the Federal Reserve and an investor's broker as being suitable for providing collateral for margin debt.
+
+N/A
+
+N/A
+
+Load from DB
+
+18
+
+Shortable
+
+boolean
+
+Stock can be sold short.
+
+N/A
+
+N/A
+
+Load from DB
+
+19
+
+Island Bid
+
+float
+
+No longer used
+
+N/A
+
+N/A
+
+N/A
+
+20
+
+Island Ask
+
+float
+
+No longer used
+
+N/A
+
+N/A
+
+N/A
+
+21
+
+Island Volume
+
+Int
+
+No longer used
+
+N/A
+
+N/A
+
+N/A
+
+22
+
+Quote Day
+
+Int
+
+Day of the quote
+
+N/A
+
+N/A
+
+ 
+
+23
+
+Trade Day
+
+Int
+
+Day of the trade
+
+N/A
+
+N/A
+
+ 
+
+24
+
+Volatility
+
+float
+
+Option Risk/Volatility Measurement
+
+Yes
+
+Yes
+
+Volatility is reset to 0 when Pre-Market tasks are run at 7:28 AM ET
+
+25
+
+Description
+
+String
+
+A company, index or fund name
+
+Yes
+
+Yes
+
+Once per day descriptions are loaded from the database when Pre-Market tasks are run at 7:29:50 AM ET. 
+
+ 
+
+26
+
+Last ID
+
+char
+
+Exchange where last trade was executed
+
+Yes
+
+Yes
+
+ 
+
+27
+
+Digits
+
+int
+
+Valid decimal points
+
+Yes
+
+Yes
+
+AMEX, NASDAQ,OTCBB,PINKS =  4, others = 2
+
+28
+
+Open Price
+
+float
+
+Day's Open Price
+
+Yes
+
+Yes
+
+From FH
+
+Open is set to ZERO when Pre-Market tasks are run at 7:28.
+If a stock doesn’t trade the whole day, then the open price is 0.
+In the AM session, Open is blank because the AM session trades do not set the open.
+ 
+
+29
+
+Net Change
+
+float
+
+Current Last-Prev Close
+
+Yes
+
+Yes
+
+If(close>0)
+
+change = last – close
+
+Else change=0
+
+30
+
+52  Week High
+
+float
+
+Higest price traded in the past 12 months, or 52 weeks
+
+Yes
+
+Yes
+
+Calculated by merging dayHigh(from fh) and 52 week high from db
+
+31
+
+52 Week Low
+
+float
+
+Lowest price traded in the past 12 months, or 52 weeks
+
+Yes
+
+Yes
+
+Calculated by merging dayLow(from fh) and 52 week low from db
+
+32
+
+PE Ratio
+
+float
+
+ 
+
+N/A
+
+N/A
+
+From db
+
+33
+
+Dividend Amount
+
+float
+
+Earnings Per Share
+
+N/A
+
+N/A
+
+From db
+
+34
+
+Dividend Yield
+
+float
+
+Dividend Yield
+
+N/A
+
+N/A
+
+From db
+
+35
+
+Island Bid Size
+
+Int
+
+No longer used
+
+N/A
+
+N/A
+
+N/A
+
+36
+
+Island Ask Size
+
+Int
+
+No longer used
+
+N/A
+
+N/A
+
+N/A
+
+37
+
+NAV
+
+float
+
+Mutual Fund Net Asset Value
+
+N/A
+
+N/A
+
+load various times after market close
+
+38
+
+Fund Price
+
+float
+
+ 
+
+N/A
+
+N/A
+
+From db
+
+39
+
+Exchange Name
+
+String
+
+Display name of exchange
+
+N/A
+
+N/A
+
+From db
+
+40
+
+Dividend Date
+
+String
+
+ 
+
+N/A
+
+N/A
+
+From db
+
+41
+
+Regular Market Quote
+
+boolean
+
+ 
+
+Yes
+
+No
+
+Is last quote a regular quote
+
+42
+
+Regular Market Trade
+
+boolean
+
+ 
+
+Yes
+
+No
+
+Is last trade a regular trade
+
+43
+
+Regular Market Last Price
+
+float
+
+ 
+
+Yes
+
+No
+
+only records regular trade
+
+44
+
+Regular Market Last Size
+
+float
+
+ 
+
+Yes
+
+No
+
+Currently realize/100, only records regular trade
+
+45
+
+Regular Market Trade Time
+
+int
+
+ 
+
+Yes
+
+No
+
+only records regular trade
+
+46
+
+Regular Market Trade Day
+
+int
+
+ 
+
+ 
+
+ 
+
+ 
+
+47
+
+Regular Market Net Change
+
+float
+
+ 
+
+Yes
+
+No
+
+RegularMarketLastPrice - close
+
+48
+
+Security Status
+
+String
+
+ 
+
+Yes
+
+Yes
+
+Indicates a symbols current trading status, Normal, Halted, Closed
+
+49
+
+Mark
+
+double
+
+Mark Price
+
+Yes
+
+Yes
+
+ 
+
+50
+
+Quote Time in Long
+
+Long
+
+Last quote time in milliseconds since Epoch
+
+Yes
+
+Yes
+
+ 
+
+51
+
+Trade Time in Long
+
+Long
+
+Last trade time in milliseconds since Epoch
+
+Yes
+
+Yes
+
+ 
+
+52
+
+Regular Market Trade Time in Long
+
+Long
+
+Regular market trade time in milliseconds since Epoch
+
+Yes
+
+No
+
+ 
+
+ 
+
+Sample Request
+
+{
+    "requests": [
+        {
+            "service": "QUOTE",
+            "requestid": "2",
+            "command": "SUBS",
+            "account": "your_account",
+            "source": "your_source_id",
+            "parameters": {
+                "keys": "AAPL,MSFT",
+                "fields": "0,1,2,3,4,5,6,7,8"
+            }
+        }
+    ]
+}
+ 
+
+10.1.2Response
+ 
+
+Sample Response
+
+{
+    "data": [
+        {
+            "service": "QUOTE",
+            "timestamp": 1402072133226,
+            "command": "SUBS",
+            "content": [http://www.bodurov.com/JsonFormatter/images/Expanded.gif
+                {
+                    "1": 41.41,
+                    "2": 41.42,
+                    "3": 41.42,
+                    "4": 104,
+                    "5": 9,
+                    "6": "Q",
+                    "7": "Q",
+                    "8": 10315351,
+                    "key": "MSFT",
+                    "delayed": false
+                },
+                {
+                    "1": 650.52,
+                    "2": 650.58,
+                    "3": 650.52,
+                    "4": 2,
+                    "5": 2,
+                    "6": "K",
+                    "7": "Q",
+                    "8": 6031182,
+                    "key": "AAPL",
+                    "delayed": false
+                }
+            ]
+        }
+    ]
+}
+ 
+
+10.1 OPTION
+ 
+
+10.1.3Request
+ 
+
+QUOTE Request
+
+Request
+
+Value
+
+Description
+
+service
+
+OPTION
+
+Level one option quote and trade
+
+command
+
+SUBS
+
+Subscription only
+
+parameter
+
+keys
+
+Symbols in upper case and separated by commas
+
+fields
+
+Please see the OPTION Field Defintiion table below
+
+ 
+
+ 
+
+OPTION Field Definition
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+Symbol
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Description
+
+String
+
+A company, index or fund name
+
+Yes
+
+Yes
+
+Once per day descriptions are loaded from the database when Pre-Market tasks are run at 7:29:50 AM ET. 
+
+2
+
+Bid Price
+
+float
+
+Current Best Bid Price
+
+Yes
+
+No
+
+From FH
+
+3
+
+Ask Price
+
+float
+
+Current Best Ask Price
+
+Yes
+
+No
+
+From FH
+
+4
+
+Last Price
+
+float
+
+Price at which the last trade was matched
+
+Yes
+
+No
+
+From FH
+
+5
+
+High Price
+
+float
+
+Day’s high trade price
+
+Yes
+
+No
+
+According to industry standard, only regular session trades set the High and Low. 
+If a stock does not trade in the AM session, high and low will be zero.
+High/low reset to 0 at 7:28am ET
+6
+
+Low Price
+
+float
+
+Day’s low trade price
+
+Yes
+
+No
+
+See High Price notes
+
+7
+
+Close Price
+
+float
+
+Previous day’s closing price
+
+No
+
+No
+
+Closing prices are updated from the DB when Pre-Market tasks are run at 7:29AM ET.
+8
+
+Total Volume
+
+long
+
+Aggregated shares traded throughout the day, including pre/post market hours.
+
+Yes
+
+No
+
+Volume is set to zero at 7:28am ET. 
+
+9
+
+Open Interest
+
+int
+
+ 
+
+Yes
+
+No
+
+ 
+
+10
+
+Volatility
+
+float
+
+Option Risk/Volatility Measurement
+
+Yes
+
+No
+
+Volatility is reset to 0 when Pre-Market tasks are run at 7:28 AM ET
+
+11
+
+Quote Time
+
+long
+
+Trade time of the last quote
+
+Yes
+
+No
+
+Seconds since midnight EST
+
+12
+
+Trade Time
+
+long
+
+Trade time of the last trade
+
+Yes
+
+No
+
+Seconds since midnight EST
+
+13
+
+Money Intrinsic Value
+
+float
+
+ 
+
+ 
+
+ 
+
+ 
+
+14
+
+Quote Day
+
+Int
+
+Day of the quote
+
+N/A
+
+N/A
+
+ 
+
+15
+
+Trade Day
+
+Int
+
+Day of the trade
+
+N/A
+
+N/A
+
+ 
+
+16
+
+Expiration Year
+
+int
+
+ 
+
+Yes
+
+No
+
+ 
+
+17
+
+Multiplier
+
+float
+
+ 
+
+Yes
+
+No
+
+ 
+
+18
+
+Digits
+
+int
+
+Valid decimal points
+
+Yes
+
+No
+
+AMEX, NASDAQ,OTCBB,PINKS =  4, others = 2
+
+19
+
+Open Price
+
+float
+
+Day's Open Price
+
+Yes
+
+No
+
+From FH
+
+Open is set to ZERO when Pre-Market tasks are run at 7:28.
+If a stock doesn’t trade the whole day, then the open price is 0.
+In the AM session, Open is blank because the AM session trades do not set the open.
+ 
+
+20
+
+Bid Size
+
+float
+
+Number of shares for bid
+
+Yes
+
+No
+
+From FH
+
+21
+
+Ask Size
+
+float
+
+Number of shares for ask
+
+Yes
+
+No
+
+From FH
+
+22
+
+Last Size
+
+float
+
+Number of shares traded with last trade
+
+Yes
+
+No
+
+Size in 100’s
+
+23
+
+Net Change
+
+float
+
+Current Last-Prev Close
+
+Yes
+
+No
+
+If(close>0)
+
+change = last – close
+
+Else change=0
+
+24
+
+Strike Price
+
+float
+
+ 
+
+Yes
+
+No
+
+ 
+
+25
+
+Contract Type
+
+char
+
+ 
+
+ 
+
+ 
+
+ 
+
+26
+
+Underlying
+
+String
+
+ 
+
+ 
+
+ 
+
+ 
+
+27
+
+Expiration Month
+
+int
+
+ 
+
+ 
+
+ 
+
+ 
+
+28
+
+Deliverables
+
+String
+
+ 
+
+ 
+
+ 
+
+ 
+
+29
+
+Time Value
+
+float
+
+ 
+
+ 
+
+ 
+
+ 
+
+30
+
+Expiration Day
+
+int
+
+ 
+
+ 
+
+ 
+
+ 
+
+31
+
+Days to Expiration
+
+int
+
+ 
+
+ 
+
+ 
+
+ 
+
+32
+
+Delta
+
+float
+
+ 
+
+ 
+
+ 
+
+ 
+
+33
+
+Gamma
+
+float
+
+ 
+
+ 
+
+ 
+
+ 
+
+34
+
+Theta
+
+float
+
+ 
+
+ 
+
+ 
+
+ 
+
+35
+
+Vega
+
+float
+
+ 
+
+ 
+
+ 
+
+ 
+
+36
+
+Rho
+
+float
+
+ 
+
+ 
+
+ 
+
+ 
+
+37
+
+Security Status
+
+String
+
+ 
+
+Yes
+
+Yes
+
+Indicates a symbols current trading status, Normal, Halted, Closed
+
+38
+
+Theoretical Option Value
+
+float
+
+ 
+
+ 
+
+ 
+
+ 
+
+39
+
+Underlying Price
+
+double
+
+ 
+
+ 
+
+ 
+
+ 
+
+40
+
+UV Expiration Type
+
+char
+
+ 
+
+ 
+
+ 
+
+ 
+
+41
+
+Mark
+
+double
+
+Mark Price
+
+Yes
+
+Yes
+
+ 
+
+ 
+
+ 
+
+ 
+10.2 LEVELONE_FUTURES
+ 
+
+10.2.1 Request
+ 
+
+Request
+
+Value
+
+Description
+
+service
+
+LEVELONE_FUTURES
+
+Name of service
+
+command
+
+SUBS
+
+Subscribe to data
+
+parameter
+
+keys
+
+Futures symbol as a product or active symbol (ie. /ES or /ESM4)
+
+fields
+
+Please see the LEVELONE_FUTURES Field Defintiion table below
+
+ 
+
+LEVELONE_FUTURES Field Definition
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+Symbol
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Bid Price
+
+double
+
+Current Best Bid Price
+
+Yes
+
+Yes
+
+From FH
+
+2
+
+Ask Price
+
+double
+
+Current Best Ask Price
+
+Yes
+
+Yes
+
+From FH
+
+3
+
+Last Price
+
+double
+
+Price at which the last trade was matched
+
+Yes
+
+Yes
+
+From FH
+
+4
+
+Bid Size
+
+long
+
+Number of shares for bid
+
+Yes
+
+Yes
+
+From FH
+
+5
+
+Ask Size
+
+long
+
+Number of shares for ask
+
+Yes
+
+Yes
+
+From FH
+
+6
+
+Ask ID
+
+char
+
+Exchange with the best ask
+
+Yes
+
+Yes
+
+From FH
+
+7
+
+Bid ID
+
+char
+
+Exchange with the best bid
+
+Yes
+
+Yes
+
+From FH
+
+8
+
+Total Volume
+
+double
+
+Aggregated shares traded throughout the day, including pre/post market hours.
+
+Yes
+
+Yes
+
+From FH
+
+9
+
+Last Size
+
+long
+
+Number of shares traded with last trade
+
+Yes
+
+Yes
+
+From FH
+
+10
+
+Quote Time
+
+long
+
+Trade time of the last quote in milliseconds since epoch
+
+Yes
+
+Yes
+
+From FH
+
+11
+
+Trade Time
+
+long
+
+Trade time of the last trade in milliseconds since epoch
+
+Yes
+
+Yes
+
+From FH
+
+12
+
+High Price
+
+double
+
+Day’s high trade price
+
+Yes
+
+Yes
+
+From FH
+
+13
+
+Low Price
+
+double
+
+Day’s low trade price
+
+Yes
+
+Yes
+
+From FH
+
+14
+
+Close Price
+
+double
+
+Previous day’s closing price
+
+N/A
+
+N/A
+
+From FH
+
+15
+
+Exchange ID
+
+char
+
+Primary "listing" Exchange
+
+N/A
+
+N/A
+
+I = ICE, E = CME, L=LIFFEUS
+
+16
+
+Description
+
+String
+
+Description of the product
+
+N/A
+
+N/A
+
+Database and IPF file
+
+17
+
+Last ID
+
+char
+
+Exchange where last trade was executed
+
+Yes
+
+Yes
+
+From FH
+
+18
+
+Open Price
+
+double
+
+Day's Open Price
+
+Yes
+
+Yes
+
+From FH
+
+19
+
+Net Change
+
+double
+
+Current Last-Prev Close
+
+Yes
+
+Yes
+
+If(close>0)
+
+change = last – close
+
+else change=0
+
+20
+
+Future Percent Change
+
+double
+
+Current percent change
+
+Yes
+
+Yes
+
+ If(close>0)
+
+ pctChange = (last – close)/close
+
+else pctChange=0
+
+21
+
+Exhange Name
+
+String
+
+Name of exchange
+
+ 
+
+ 
+
+ 
+
+22
+
+Security Status
+
+String
+
+Trading status of the symbol
+
+Yes
+
+Yes
+
+Indicates a symbols current trading status, Normal, Halted, Closed
+
+23
+
+Open Interest
+
+int
+
+The total number of futures ontracts that are not closed or delivered on a particular day
+
+Yes
+
+Yes
+
+From FH
+
+24
+
+Mark
+
+double
+
+Mark-to-Market value is calculated daily using current prices to determine profit/loss
+
+Yes
+
+Yes
+
+If lastprice is within spread,   
+
+  value = lastprice
+
+else
+
+  value=(bid+ask)/2
+
+25
+
+Tick
+
+double
+
+Minimum price movement
+
+N/A
+
+N/A
+
+ From Database (priceIncrement)
+
+26
+
+Tick Amount
+
+double
+
+Minimum amount that the price of the market can change
+
+N/A
+
+N/A
+
+Tick * multiplier field from database
+
+27
+
+Product
+
+String
+
+Futures product
+
+N/A
+
+N/A
+
+From Database
+
+28
+
+Future Price Format
+
+String
+
+Display in fraction or decimal format.
+
+N/A
+
+N/A
+
+Config
+
+29
+
+Future Trading Hours
+
+String
+
+Trading hours
+
+N/A
+
+N/A
+
+days: 0 = monday-friday, 1 = sunday,
+
+7 = Saturday
+
+0 = [-2000,1700] ==> open, close
+
+1= [-1530,-1630,-1700,1515] ==>      open, close, open, close
+
+0 = [-1800,1700,d,-1700,1900] ==> open, close, DST-flag, open, close
+
+ 
+
+If the DST-flag is present, the following hours are for DST days.
+
+http://www.cmegroup.com/trading_hours/
+
+30
+
+Future Is Tradable
+
+boolean
+
+Flag to indicate if this future contract is tradable
+
+N/A
+
+N/A
+
+Loaded from IPF File from Database
+
+31
+
+Future Multiplier
+
+double
+
+Point value
+
+N/A
+
+N/A
+
+Loaded from IPF File from Database
+
+32
+
+Future Is Active
+
+boolean
+
+Indicates if this contract is active
+
+Yes
+
+Yes
+
+From Database and realtime QDS admin message
+
+33
+
+Future Settlement Price
+
+double
+
+Closing price
+
+Yes
+
+Yes
+
+From FH
+
+34
+
+Future Active Symbol
+
+String
+
+Symbol of the active contract
+
+N/A
+
+N/A
+
+Loaded from IPF File from Database
+
+35
+
+Future Expiration Date
+
+long
+
+Expiration date of this contract
+
+N/A
+
+N/A
+
+Milliseconds since epoch
+
+ 
+
+Sample request
+
+{
+    "requests": [
+        {
+            "service": "LEVELONE_FUTURES",
+            "requestid": "2",
+            "command": "SUBS",
+            "account": "your_account",
+            "source": "your_source_id",
+            "parameters": {
+                "keys": "/ES",
+                "fields": "0,1,2,3,4"
+            }
+        }
+    ]
+}
+ 
+
+10.2.2Response
+ 
+
+Sample response
+
+{
+    "data": [
+        {
+            "service": "LEVELONE_FUTURES",
+            "timestamp": 1402414927425,
+            "command": "SUBS",
+            "content": [
+                {
+                    "1": 1947.5,
+                    "2": 1947.75,
+                    "3": 1947.75,
+                    "4": 823,
+                    "key": "/ES",
+                    "delayed": false
+                }
+            ]
+        }
+    ]
+}
+ 
+
+10.3 LEVELONE_FOREX
+ 
+
+10.3.1 Request
+ 
+
+Request
+
+Value
+
+Description
+
+service
+
+LEVELONE_FOREX
+
+Name of service
+
+command
+
+SUBS
+
+Subscribe to data
+
+parameter
+
+keys
+
+FOREX symbol(s)
+
+fields
+
+Please see the LEVELONE_FOREX Field Defintiion table below
+
+ 
+
+LEVELONE_FOREX Field Definition
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+Symbol
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Bid Price
+
+double
+
+Current Best Bid Price
+
+Yes
+
+Yes
+
+From FH
+
+2
+
+Ask Price
+
+double
+
+Current Best Ask Price
+
+Yes
+
+Yes
+
+From FH
+
+3
+
+Last Price
+
+double
+
+Price at which the last trade was matched
+
+Yes
+
+Yes
+
+From FH
+
+4
+
+Bid Size
+
+long
+
+Number of shares for bid
+
+Yes
+
+Yes
+
+From FH
+
+5
+
+Ask Size
+
+long
+
+Number of shares for ask
+
+Yes
+
+Yes
+
+From FH
+
+6
+
+Total Volume
+
+double
+
+Aggregated shares traded throughout the day, including pre/post market hours.
+
+Yes
+
+Yes
+
+From FH
+
+7
+
+Last Size
+
+long
+
+Number of shares traded with last trade
+
+Yes
+
+Yes
+
+From FH
+
+8
+
+Quote Time
+
+long
+
+Trade time of the last quote in milliseconds since epoch
+
+Yes
+
+Yes
+
+From FH
+
+9
+
+Trade Time
+
+long
+
+Trade time of the last trade in milliseconds since epoch
+
+Yes
+
+Yes
+
+From FH
+
+10
+
+High Price
+
+double
+
+Day’s high trade price
+
+Yes
+
+Yes
+
+From FH
+
+11
+
+Low Price
+
+double
+
+Day’s low trade price
+
+Yes
+
+Yes
+
+From FH
+
+12
+
+Close Price
+
+double
+
+Previous day’s closing price
+
+N/A
+
+N/A
+
+From FH
+
+13
+
+Exchange ID
+
+char
+
+Primary "listing" Exchange
+
+N/A
+
+N/A
+
+ 
+14
+
+Description
+
+String
+
+Description of the product
+
+N/A
+
+N/A
+
+Database and IPF file
+
+15
+
+Open Price
+
+double
+
+Day's Open Price
+
+Yes
+
+Yes
+
+From FH
+
+16
+
+Net Change
+
+double
+
+Current Last-Prev Close
+
+Yes
+
+Yes
+
+If(close>0)
+
+change = last – close
+
+else change=0
+
+17
+
+Percent Change
+
+double
+
+Current percent change
+
+Yes
+
+Yes
+
+ If(close>0)
+
+ pctChange = (last – close)/close
+
+else pctChange=0
+
+18
+
+Exchange Name
+
+String
+
+Name of exchange
+
+N/A
+
+N/A
+
+ 
+
+19
+
+Digits
+
+Int
+
+Valid decimal points
+
+N/A
+
+N/A
+
+ 
+
+20
+
+Security Status
+
+String
+
+Trading status of the symbol
+
+Yes
+
+Yes
+
+Indicates a symbols current trading status, Normal, Halted, Closed
+
+21
+
+Tick
+
+double
+
+Minimum price movement
+
+N/A
+
+N/A
+
+ From Database (priceIncrement)
+
+22
+
+Tick Amount
+
+double
+
+Minimum amount that the price of the market can change
+
+N/A
+
+N/A
+
+Tick * multiplier field from database
+
+23
+
+Product
+
+String
+
+Product name
+
+N/A
+
+N/A
+
+ 
+
+23
+
+Trading Hours
+
+String
+
+Trading hours
+
+N/A
+
+N/A
+
+Loaded from IPF File from Database
+
+24
+
+Is Tradable
+
+boolean
+
+Flag to indicate if this forex is tradable
+
+N/A
+
+N/A
+
+Loaded from IPF File from Database
+
+25
+
+Market Maker
+
+String
+
+ 
+
+ 
+
+ 
+
+ 
+
+26
+
+52 Week High
+
+double
+
+Higest price traded in the past 12 months, or 52 weeks
+
+Yes
+
+Yes
+
+ 
+
+27
+
+52 Week Low
+
+double
+
+Lowest price traded in the past 12 months, or 52 weeks
+
+Yes
+
+Yes
+
+ 
+
+28
+
+Mark
+
+double
+
+Mark-to-Market value is calculated daily using current prices to determine profit/loss
+
+Yes
+
+Yes
+
+ 
+
+ 
+
+Sample request:
+
+{
+    "requests": [
+        {
+            "service": "LEVELONE_FOREX",
+            "requestid": "2",
+            "command": "SUBS",
+            "account": "your_account",
+            "source": "your_source_id",
+            "parameters": {
+                "keys": "EUR/USD",
+                "fields": "0,1,2,3,4,5,6,7,8,9,10,11,12,13"
+            }
+        }
+    ]
+}
+ 
+
+10.3.2 Response
+ 
+
+Sample response:
+
+{
+    "data": [
+        {
+            "service": "LEVELONE_FOREX",
+            "timestamp": 1402421842272,
+            "command": "SUBS",
+            "content": [
+                {
+                    "1": 1.35404,
+                    "2": 1.35421,
+                    "4": 1000000,
+                    "5": 1000000,
+                    "8": 1402421836687,
+                    "13": "T",
+                    "key": "EUR/USD",
+                    "delayed": false
+                }
+            ]
+        }
+    ]
+}
+ 
+
+10.4 LEVELONE_ FUTURES_OPTIONS
+ 
+
+10.4.1 Request
+ 
+
+Request
+
+Value
+
+Description
+
+service
+
+LEVELONE_FUTURES_OPTIONS
+
+Name of service
+
+command
+
+SUBS
+
+Subscribe to data
+
+parameter
+
+keys
+
+Futures Options symbol  (ie. ./ESZ3P990)
+
+fields
+
+Please see the LEVELONE_FUTURES_OPTIONS Field Defintiion table below
+
+ 
+
+LEVELONE_FUTURES_OPTIONS Field Definition
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+Symbol
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Bid Price
+
+double
+
+Current Best Bid Price
+
+Yes
+
+Yes
+
+From FH
+
+2
+
+Ask Price
+
+double
+
+Current Best Ask Price
+
+Yes
+
+Yes
+
+From FH
+
+3
+
+Last Price
+
+double
+
+Price at which the last trade was matched
+
+Yes
+
+Yes
+
+From FH
+
+4
+
+Bid Size
+
+long
+
+Number of shares for bid
+
+Yes
+
+Yes
+
+From FH
+
+5
+
+Ask Size
+
+long
+
+Number of shares for ask
+
+Yes
+
+Yes
+
+From FH
+
+6
+
+Ask ID
+
+char
+
+Exchange with the best ask
+
+Yes
+
+Yes
+
+From FH
+
+7
+
+Bid ID
+
+char
+
+Exchange with the best bid
+
+Yes
+
+Yes
+
+From FH
+
+8
+
+Total Volume
+
+double
+
+Aggregated shares traded throughout the day, including pre/post market hours.
+
+Yes
+
+Yes
+
+From FH
+
+9
+
+Last Size
+
+long
+
+Number of shares traded with last trade
+
+Yes
+
+Yes
+
+From FH
+
+10
+
+Quote Time
+
+long
+
+Trade time of the last quote in milliseconds since epoch
+
+Yes
+
+Yes
+
+From FH
+
+11
+
+Trade Time
+
+long
+
+Trade time of the last trade in milliseconds since epoch
+
+Yes
+
+Yes
+
+From FH
+
+12
+
+High Price
+
+double
+
+Day’s high trade price
+
+Yes
+
+Yes
+
+From FH
+
+13
+
+Low Price
+
+double
+
+Day’s low trade price
+
+Yes
+
+Yes
+
+From FH
+
+14
+
+Close Price
+
+double
+
+Previous day’s closing price
+
+N/A
+
+N/A
+
+From FH
+
+15
+
+Exchange ID
+
+char
+
+Primary "listing" Exchange
+
+N/A
+
+N/A
+
+I = ICE, E = CME, L=LIFFEUS
+
+16
+
+Description
+
+String
+
+Description of the product
+
+N/A
+
+N/A
+
+Database and IPF file
+
+17
+
+Last ID
+
+char
+
+Exchange where last trade was executed
+
+Yes
+
+Yes
+
+From FH
+
+18
+
+Open Price
+
+double
+
+Day's Open Price
+
+Yes
+
+Yes
+
+From FH
+
+19
+
+Net Change
+
+double
+
+Current Last-Prev Close
+
+Yes
+
+Yes
+
+If(close>0)
+
+change = last – close
+
+else change=0
+
+20
+
+Future Percent Change
+
+double
+
+Current percent change
+
+Yes
+
+Yes
+
+ If(close>0)
+
+ pctChange = (last – close)/close
+
+else pctChange=0
+
+21
+
+Exhange Name
+
+String
+
+Name of exchange
+
+ 
+
+ 
+
+ 
+
+22
+
+Security Status
+
+String
+
+Trading status of the symbol
+
+Yes
+
+Yes
+
+Indicates a symbols current trading status, Normal, Halted, Closed
+
+23
+
+Open Interest
+
+int
+
+The total number of futures ontracts that are not closed or delivered on a particular day
+
+Yes
+
+Yes
+
+From FH
+
+24
+
+Mark
+
+double
+
+Mark-to-Market value is calculated daily using current prices to determine profit/loss
+
+Yes
+
+Yes
+
+If lastprice is within spread,   
+
+  value = lastprice
+
+else
+
+  value=(bid+ask)/2
+
+25
+
+Tick
+
+double
+
+Minimum price movement
+
+N/A
+
+N/A
+
+ From Database (priceIncrement)
+
+26
+
+Tick Amount
+
+double
+
+Minimum amount that the price of the market can change
+
+N/A
+
+N/A
+
+Tick * multiplier field from database
+
+27
+
+Product
+
+String
+
+Futures product
+
+N/A
+
+N/A
+
+From Database
+
+28
+
+Future Price Format
+
+String
+
+Display in fraction or decimal format.
+
+N/A
+
+N/A
+
+Config
+
+29
+
+Future Trading Hours
+
+String
+
+Trading hours
+
+N/A
+
+N/A
+
+Loaded from IPF File from Database
+
+30
+
+Future Is Tradable
+
+boolean
+
+Flag to indicate if this future contract is tradable
+
+N/A
+
+N/A
+
+Loaded from IPF File from Database
+
+31
+
+Future Multiplier
+
+double
+
+Point value
+
+N/A
+
+N/A
+
+Loaded from IPF File from Database
+
+32
+
+Future Is Active
+
+boolean
+
+Indicates if this contract is active
+
+Yes
+
+Yes
+
+From Database and realtime QDS admin message
+
+33
+
+Future Settlement Price
+
+double
+
+Closing price
+
+Yes
+
+Yes
+
+From FH
+
+34
+
+Future Active Symbol
+
+String
+
+Symbol of the active contract
+
+N/A
+
+N/A
+
+Loaded from IPF File from Database
+
+35
+
+Future Expiration Date
+
+long
+
+Expiration date of this contract
+
+N/A
+
+N/A
+
+Milliseconds since epoch
+
+ 
+
+Sample request
+
+{
+    "requests": [
+        {
+            "service": "LEVELONE_FUTURES",
+            "requestid": "2",
+            "command": "SUBS",
+            "account": "your_account",
+            "source": "your_source_id",
+            "parameters": {
+                "keys": "/ES",
+                "fields": "0,1,2,3,4"
+            }
+        }
+    ]
+}
+ 
+
+10.4.2 Response
+ 
+
+Sample response
+
+{
+    "data": [
+        {
+            "service": "LEVELONE_FUTURES",
+            "timestamp": 1402414927425,
+            "command": "SUBS",
+            "content": [
+                {
+                    "1": 1947.5,
+                    "2": 1947.75,
+                    "3": 1947.75,
+                    "4": 823,
+                    "key": "/ES",
+                    "delayed": false
+                }
+            ]
+        }
+    ]
+}
+ 
+
+ 
+
+11.0 BOOK
+ 
+
+11.1 FUTURES_BOOK
+ 
+
+11.2 FOREX_BOOK
+ 
+
+11.3 FUTURES_OPTIONS_BOOK
+ 
+
+11.4 LISTED_BOOK
+ 
+
+11.5 NASDAQ_BOOK
+ 
+
+11.6 OPTIONS_BOOK
+ 
+
+ 
+
+12.0 NEWS
+ 
+
+12.1 NEWS_HEADLINE
+ 
+
+12.1.1 Request
+ 
+
+Request
+
+Value
+
+Description
+
+service
+
+NEWS_HEADLINE
+
+Name of service
+
+command
+
+SUBS
+
+Subscribe to data
+
+parameter
+
+keys
+
+Ticker symbol(s)
+
+fields
+
+Please see the NEWS_HEADLINE  Field Defintiion table below
+
+ 
+
+NEWS_HEADLINE Field Definition
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+Symbol
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Error Code
+
+double
+
+Specifies if there is any error.
+
+Yes
+
+Yes
+
+ 
+2
+
+Story Datetime
+
+long
+
+Headline’s datetime in milliseconds since epoch
+
+Yes
+
+Yes
+
+From FH
+
+3
+
+Headline ID
+
+String
+
+Unique ID for the headline
+
+Yes
+
+Yes
+
+From FH
+
+4
+
+Status
+
+char
+
+ 
+
+Yes
+
+Yes
+
+From FH
+
+5
+
+Headline
+
+String
+
+News headline
+
+Yes
+
+Yes
+
+From FH
+
+6
+
+Story ID
+
+String
+
+ 
+
+Yes
+
+Yes
+
+From FH
+
+7
+
+Count for Keyword
+
+integer
+
+ 
+
+Yes
+
+Yes
+
+From FH
+
+8
+
+Keyword Array
+
+String
+
+ 
+
+ 
+
+ 
+
+ 
+
+9
+
+Is Hot
+
+boolean
+
+ 
+
+ 
+
+ 
+
+ 
+
+10
+
+Story Source
+
+char
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Sample request
+
+{
+    "requests": [
+        {
+            "service": "NEWS_HEADLINE",
+            "requestid": "2",
+            "command": "SUBS",
+            "account": "testing0",
+            "source": "tag",
+            "parameters": {
+                "keys": "GOOG",
+                "fields": "0,1,2,3,4"
+            }
+        }
+    ]
+}
+ 
+
+12.1.2 Response
+ 
+
+Sample response
+
+ 
+
+{
+    "data": [
+        {
+            "service": "NEWS_HEADLINE",
+            "timestamp": 1403806763061,
+            "command": "SUBS",
+            "content": [
+                {
+                    "1": 0,
+                    "2": 1403778623000,
+                    "3": "SN20140626004698",
+                    "4": "D",
+                    "5": "MW UPDATE: Time will tell if Google's smartwatch ticks",
+                    "6": "SN20140626004698",
+                    "7": 21,
+                    "8": "I/XSLI,I/XFFX,M/NND,M/TEC,I/ISV,P/MWNR,R/CA,I/XNQ1,GOOG,I/XRUS,I/XSTX,I/CPR,I/XDJLC,P/MCOL,*ALL*,R/NME,M/FCL,M/TPX,GOOGL,P/SGN,AAPL,P/MWWS,P/ABO,R/USW,I/SCR,R/PRM,P/AEQI,I/XISL,I/XGDW,I/XGTI,R/US,P/EWR,P/MWMW,P/BFX,P/OAC,I/XDJGI,P/MWTP,I/XSP1,P/GMA,I/XSP5",
+                    "9": false,
+                    "10": "DJCNEWS",
+                    "seq": 153,
+                    "key": "GOOG"
+                }
+            ]
+        }
+    ]
+}
+ 
+
+12.2 NEWS_HEADLINELIST
+ 
+
+12.3 NEWS_STORY
+ 
+
+ 
+
+13.0 STREAMER_SERVER
+ 
+
+14.0 TIMESALE
+ 
+
+14.1 Request
+ 
+
+ 
+
+Request
+
+Value
+
+Description
+
+service
+
+TIMESALE_EQUITY
+
+TIMESALE_FOREX
+
+TIMESALE_FUTURES
+
+TIMESALE_OPTIONS
+
+Name of service.
+
+TIMESALE_FOREX will be available in Fall 2014.
+
+command
+
+SUBS
+
+Subscribe to data
+
+parameter
+
+keys
+
+Ticker symbol(s)
+
+fields
+
+Please see the TIMESALE  Field Defintiion table below
+
+ 
+
+TIMESALE Field Definition
+
+Fields
+
+Field Name
+
+Type
+
+Field Description
+
+Update
+
+Regular
+
+Hours
+
+Update AM/PM
+
+Hours
+
+Notes, Examples
+
+Source
+
+0
+
+Symbol
+
+String
+
+Ticker symbol in upper case. 
+
+N/A
+
+N/A
+
+See Symbology Table
+
+1
+
+Trade Time
+
+long
+
+Trade time of the last trade in milliseconds since epoch
+
+Yes
+
+Yes
+
+From FH
+
+2
+
+Last Price
+
+double
+
+Price at which the last trade was matched
+
+Yes
+
+Yes
+
+From FH
+
+3
+
+Last Size
+
+double
+
+Number of shares traded with last trade
+
+Yes
+
+Yes
+
+From FH
+
+4
+
+Last Sequence
+
+long
+
+Number of shares for bid
+
+Yes
+
+Yes
+
+From SP
+
+ 
+
+Sample request
+
+{
+    "requests": [
+        {
+            "service": "TIMESALE_FUTURES",
+            "requestid": "3",
+            "command": "SUBS",
+            "account": "your_account0",
+            "source": "your_source_id",
+            "parameters": {
+                "keys": "/ES",
+                "fields": "0,1,2,3,4"
+            }
+        },
+        {
+            "service": "TIMESALE_EQUITY",
+            "requestid": "2",
+            "command": "SUBS",
+            "account": "your_account0",
+            "source": "your_source_id",
+            "parameters": {
+                "keys": "AAPL",
+                "fields": "0,1,2,3,4"
+            }
+        }
+    ]
+}
+ 
+
+14.2 Response
+ 
+
+There is an additional field that is returned with Time and Sale data, called “seq”.  This field identifies the message number.  If client reconnects and receives the same seq number again, it can choose to ignore the duplicate.
+
+ 
+
+Sample response
+
+{
+    "data": [
+        {
+            "service": "TIMESALE_FUTURES",
+            "timestamp": 1403804712166,
+            "command": "SUBS",
+            "content": [
+                {
+                    "1": 1403804709796,
+                    "2": 1948.25,
+                    "3": 1,
+                    "4": 6375940,
+                    "seq": 1,
+                    "key": "/ES"
+                }
+            ]
+        },
+        {
+            "service": "TIMESALE_EQUITY",
+            "timestamp": 1403804712166,
+            "command": "SUBS",
+            "content": [
+                {
+                    "1": 1403804709455,
+                    "2": 90.2976,
+                    "3": 1500,
+                    "4": 91864,
+                    "seq": 4,
+                    "key": "AAPL"
+                }
+            ]
+        }
+    ]
+}

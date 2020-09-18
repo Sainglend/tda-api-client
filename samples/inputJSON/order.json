@@ -1,0 +1,16 @@
+{
+    "orderType": "MARKET",
+    "session": "NORMAL",
+    "duration": "DAY",
+    "orderStrategyType": "SINGLE",
+    "orderLegCollection": [
+      {
+        "instruction": "Buy",
+        "quantity": 10,
+        "instrument": {
+          "symbol": "F",
+          "assetType": "EQUITY"
+        }
+      }
+    ]
+}

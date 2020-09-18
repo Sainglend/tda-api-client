@@ -1,0 +1,244 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/option-chains/apis/get/marketdata/chains
+
+RESOURCE URL: https://api.tdameritrade.com/v1/marketdata/chains
+
+QUERY PARAMETERS
+
+apikey
+Pass your OAuth User ID to make an unauthenticated request for delayed data.
+
+symbol
+Enter one symbol
+
+contractType
+Type of contracts to return in the chain. Can be CALL, PUT, or ALL. Default is ALL.
+
+strikeCount
+The number of strikes to return above and below the at-the-money price.
+
+includeQuotes
+Include quotes for options in the option chain. Can be TRUE or FALSE. Default is FALSE.
+
+strategy
+Passing a value returns a Strategy Chain. Possible values are SINGLE, ANALYTICAL (allows use of the volatility, underlyingPrice, interestRate, and daysToExpiration params to calculate theoretical values), COVERED, VERTICAL, CALENDAR, STRANGLE, STRADDLE, BUTTERFLY, CONDOR, DIAGONAL, COLLAR, or ROLL. Default is SINGLE.
+
+interval
+Strike interval for spread strategy chains (see strategy param).
+
+strike
+Provide a strike price to return options only at that strike price.
+
+range
+Returns options for the given range. Possible values are:
+
+ITM: In-the-money
+NTM: Near-the-money
+OTM: Out-of-the-money
+SAK: Strikes Above Market
+SBK: Strikes Below Market
+SNK: Strikes Near Market
+ALL: All Strikes
+
+Default is ALL.
+
+fromDate
+'Only return expirations after this date. For strategies, expiration refers to the nearest term expiration in the strategy. Valid ISO-8601 formats are: yyyy-MM-dd and yyyy-MM-dd'T'HH:mm:ssz.'
+
+toDate
+'Only return expirations before this date. For strategies, expiration refers to the nearest term expiration in the strategy. Valid ISO-8601 formats are: yyyy-MM-dd and yyyy-MM-dd'T'HH:mm:ssz.'
+
+volatility
+Volatility to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param).
+
+underlyingPrice
+Underlying price to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param).
+
+interestRate
+Interest rate to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param).
+
+daysToExpiration
+Days to expiration to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param).
+
+expMonth
+'Return only options expiring in the specified month. Month is given in the three character format.
+Example: JAN
+Default is ALL.''
+
+optionType
+'Type of contracts to return. Possible values are:
+
+S: Standard contracts
+NS: Non-standard contracts
+ALL: All contracts
+
+Default is ALL.''
+
+HEADER PARAMETERS
+Authorization
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+ */
+
+/* RESPONSE
+//OptionChain:
+{
+  "symbol": "string",
+  "status": "string",
+  "underlying": {
+    "ask": 0,
+    "askSize": 0,
+    "bid": 0,
+    "bidSize": 0,
+    "change": 0,
+    "close": 0,
+    "delayed": false,
+    "description": "string",
+    "exchangeName": "string",
+    "fiftyTwoWeekHigh": 0,
+    "fiftyTwoWeekLow": 0,
+    "highPrice": 0,
+    "last": 0,
+    "lowPrice": 0,
+    "mark": 0,
+    "markChange": 0,
+    "markPercentChange": 0,
+    "openPrice": 0,
+    "percentChange": 0,
+    "quoteTime": 0,
+    "symbol": "string",
+    "totalVolume": 0,
+    "tradeTime": 0
+  },
+  "strategy": "'SINGLE' or 'ANALYTICAL' or 'COVERED' or 'VERTICAL' or 'CALENDAR' or 'STRANGLE' or 'STRADDLE' or 'BUTTERFLY' or 'CONDOR' or 'DIAGONAL' or 'COLLAR' or 'ROLL'",
+  "interval": 0,
+  "isDelayed": false,
+  "isIndex": false,
+  "daysToExpiration": 0,
+  "interestRate": 0,
+  "underlyingPrice": 0,
+  "volatility": 0,
+  "callExpDateMap": "object",
+  "putExpDateMap": "object"
+}
+ //StrikePriceMap:
+{}
+ //Option:
+{
+  "putCall": "'PUT' or 'CALL'",
+  "symbol": "string",
+  "description": "string",
+  "exchangeName": "string",
+  "bidPrice": 0,
+  "askPrice": 0,
+  "lastPrice": 0,
+  "markPrice": 0,
+  "bidSize": 0,
+  "askSize": 0,
+  "lastSize": 0,
+  "highPrice": 0,
+  "lowPrice": 0,
+  "openPrice": 0,
+  "closePrice": 0,
+  "totalVolume": 0,
+  "quoteTimeInLong": 0,
+  "tradeTimeInLong": 0,
+  "netChange": 0,
+  "volatility": 0,
+  "delta": 0,
+  "gamma": 0,
+  "theta": 0,
+  "vega": 0,
+  "rho": 0,
+  "timeValue": 0,
+  "openInterest": 0,
+  "isInTheMoney": false,
+  "theoreticalOptionValue": 0,
+  "theoreticalVolatility": 0,
+  "isMini": false,
+  "isNonStandard": false,
+  "optionDeliverablesList": [
+    {
+      "symbol": "string",
+      "assetType": "string",
+      "deliverableUnits": "string",
+      "currencyType": "string"
+    }
+  ],
+  "strikePrice": 0,
+  "expirationDate": "string",
+  "expirationType": "string",
+  "multiplier": 0,
+  "settlementType": "string",
+  "deliverableNote": "string",
+  "isIndexOption": false,
+  "percentChange": 0,
+  "markChange": 0,
+  "markPercentChange": 0
+}
+ //Underlying:
+{
+  "ask": 0,
+  "askSize": 0,
+  "bid": 0,
+  "bidSize": 0,
+  "change": 0,
+  "close": 0,
+  "delayed": false,
+  "description": "string",
+  "exchangeName": "'IND' or 'ASE' or 'NYS' or 'NAS' or 'NAP' or 'PAC' or 'OPR' or 'BATS'",
+  "fiftyTwoWeekHigh": 0,
+  "fiftyTwoWeekLow": 0,
+  "highPrice": 0,
+  "last": 0,
+  "lowPrice": 0,
+  "mark": 0,
+  "markChange": 0,
+  "markPercentChange": 0,
+  "openPrice": 0,
+  "percentChange": 0,
+  "quoteTime": 0,
+  "symbol": "string",
+  "totalVolume": 0,
+  "tradeTime": 0
+}
+ //ExpirationDate:
+{
+  "date": "string"
+}
+ //OptionDeliverables:
+{
+  "symbol": "string",
+  "assetType": "string",
+  "deliverableUnits": "string",
+  "currencyType": "string"
+}
+
+ */
+
+/*
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating the caller must pass a non null value in the parameter.
+
+401
+
+Unauthorized
+
+403
+
+Forbidden
+
+404
+
+An error message indicating optionchain for the symbol was not found.
+
+500
+
+An error message indicating internal error in the service.

@@ -1,0 +1,14 @@
+{
+    "expressTrading":false,
+    "defaultEquityOrderLegInstruction":"NONE",
+    "defaultEquityOrderType":"LIMIT",
+    "defaultEquityOrderPriceLinkType":"NONE",
+    "defaultEquityOrderDuration":"DAY",
+    "defaultEquityOrderMarketSession":"NORMAL",
+    "defaultEquityQuantity":0,
+    "mutualFundTaxLotMethod":"FIFO",
+    "optionTaxLotMethod":"FIFO",
+    "equityTaxLotMethod":"FIFO",
+    "defaultAdvancedToolLaunch":"NONE",
+    "authTokenTimeout":"FIFTY_FIVE_MINUTES"
+}

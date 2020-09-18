@@ -1,0 +1,48 @@
+Last checked Sept 10 2020
+
+Post Access Token
+https://api.tdameritrade.com/v1/oauth2/token
+
+Body Parameters
+Name	Values	Description
+grant_type (required)
+The grant type of the oAuth scheme. Possible values are authorization_code, refresh_token
+
+refresh_token
+Required if using refresh token grant
+
+access_type
+Set to offline to receive a refresh token
+
+code
+Required if trying to use authorization code grant
+
+client_id
+(required)
+OAuth User ID of your application
+
+redirect_uri
+Required if trying to use authorization code grant
+
+RESPONSE OBJECT
+//EASObject:
+{
+    "access_token": "string",
+    "refresh_token": "string",
+    "token_type": "string",
+    "expires_in": 0,
+    "scope": "string",
+    "refresh_token_expires_in": 0
+  }
+
+Resource Error Codes
+400
+An error message indicating the validation problem with the request.
+401
+An error message indicating the caller must pass valid credentials in the request body.
+500
+An error message indicating there was an unexpected server error.
+403
+An error message indicating the caller doesn't have access to the account in the request.
+503
+An error message indicating there is a temporary problem responding.

@@ -1,0 +1,201 @@
+Last checked Sept 10 2020
+
+//https://developer.tdameritrade.com/account-access/apis/put/accounts/%7BaccountId%7D/orders/%7BorderId%7D-0
+
+User Info and Preferences Documentation Update Preferences
+PUTUpdate Preferences
+Update preferences for a specific account.
+
+Please note that the directOptionsRouting and directEquityRouting values cannot be modified via this operation.
+
+Resource URL
+https://api.tdameritrade.com/v1/accounts/{accountId}/preferences
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+Value
+{
+    "expressTrading": false,
+    "directOptionsRouting": false,
+    "directEquityRouting": false,
+    "defaultEquityOrderLegInstruction": "'BUY' or 'SELL' or 'BUY_TO_COVER' or 'SELL_SHORT' or 'NONE'",
+    "defaultEquityOrderType": "'MARKET' or 'LIMIT' or 'STOP' or 'STOP_LIMIT' or 'TRAILING_STOP' or 'MARKET_ON_CLOSE' or 'NONE'",
+    "defaultEquityOrderPriceLinkType": "'VALUE' or 'PERCENT' or 'NONE'",
+    "defaultEquityOrderDuration": "'DAY' or 'GOOD_TILL_CANCEL' or 'NONE'",
+    "defaultEquityOrderMarketSession": "'AM' or 'PM' or 'NORMAL' or 'SEAMLESS' or 'NONE'",
+    "defaultEquityQuantity": 0,
+    "mutualFundTaxLotMethod": "'FIFO' or 'LIFO' or 'HIGH_COST' or 'LOW_COST' or 'MINIMUM_TAX' or 'AVERAGE_COST' or 'NONE'",
+    "optionTaxLotMethod": "'FIFO' or 'LIFO' or 'HIGH_COST' or 'LOW_COST' or 'MINIMUM_TAX' or 'AVERAGE_COST' or 'NONE'",
+    "equityTaxLotMethod": "'FIFO' or 'LIFO' or 'HIGH_COST' or 'LOW_COST' or 'MINIMUM_TAX' or 'AVERAGE_COST' or 'NONE'",
+    "defaultAdvancedToolLaunch": "'TA' or 'N' or 'Y' or 'TOS' or 'NONE' or 'CC2'",
+    "authTokenTimeout": "'FIFTY_FIVE_MINUTES' or 'TWO_HOURS' or 'FOUR_HOURS' or 'EIGHT_HOURS'"
+}
+
+Schema
+{
+  "expressTrading": {
+    "type": "boolean",
+    "default": false
+  },
+  "directOptionsRouting": {
+    "type": "boolean",
+    "default": false
+  },
+  "directEquityRouting": {
+    "type": "boolean",
+    "default": false
+  },
+  "defaultEquityOrderLegInstruction": {
+    "type": "string",
+    "enum": [
+      "BUY",
+      "SELL",
+      "BUY_TO_COVER",
+      "SELL_SHORT",
+      "NONE"
+    ]
+  },
+  "defaultEquityOrderType": {
+    "type": "string",
+    "enum": [
+      "MARKET",
+      "LIMIT",
+      "STOP",
+      "STOP_LIMIT",
+      "TRAILING_STOP",
+      "MARKET_ON_CLOSE",
+      "NONE"
+    ]
+  },
+  "defaultEquityOrderPriceLinkType": {
+    "type": "string",
+    "enum": [
+      "VALUE",
+      "PERCENT",
+      "NONE"
+    ]
+  },
+  "defaultEquityOrderDuration": {
+    "type": "string",
+    "enum": [
+      "DAY",
+      "GOOD_TILL_CANCEL",
+      "NONE"
+    ]
+  },
+  "defaultEquityOrderMarketSession": {
+    "type": "string",
+    "enum": [
+      "AM",
+      "PM",
+      "NORMAL",
+      "SEAMLESS",
+      "NONE"
+    ]
+  },
+  "defaultEquityQuantity": {
+    "type": "integer",
+    "format": "int32",
+    "minimum": 0
+  },
+  "mutualFundTaxLotMethod": {
+    "type": "string",
+    "enum": [
+      "FIFO",
+      "LIFO",
+      "HIGH_COST",
+      "LOW_COST",
+      "MINIMUM_TAX",
+      "AVERAGE_COST",
+      "NONE"
+    ]
+  },
+  "optionTaxLotMethod": {
+    "type": "string",
+    "enum": [
+      "FIFO",
+      "LIFO",
+      "HIGH_COST",
+      "LOW_COST",
+      "MINIMUM_TAX",
+      "AVERAGE_COST",
+      "NONE"
+    ]
+  },
+  "equityTaxLotMethod": {
+    "type": "string",
+    "enum": [
+      "FIFO",
+      "LIFO",
+      "HIGH_COST",
+      "LOW_COST",
+      "MINIMUM_TAX",
+      "AVERAGE_COST",
+      "NONE"
+    ]
+  },
+  "defaultAdvancedToolLaunch": {
+    "type": "string",
+    "enum": [
+      "TA",
+      "N",
+      "Y",
+      "TOS",
+      "NONE",
+      "CC2"
+    ]
+  },
+  "authTokenTimeout": {
+    "type": "string",
+    "enum": [
+      "FIFTY_FIVE_MINUTES",
+      "TWO_HOURS",
+      "FOUR_HOURS",
+      "EIGHT_HOURS"
+    ]
+  }
+}
+
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Content Type
+
+application/json
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating the validation problem with the request.
+
+401
+
+An error message indicating the caller must pass a valid AuthToken in the HTTP authorization request header.
+
+500
+
+An error message indicating there was an unexpected server error.
+
+403
+
+An error message indicating the caller is forbidden from accessing this resource.
+
+503
+
+An error message indicating there is a temporary problem responding.

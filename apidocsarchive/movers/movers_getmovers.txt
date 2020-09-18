@@ -1,0 +1,107 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/movers/apis/get/marketdata/%7Bindex%7D/movers
+
+Movers Documentation Get Movers
+GETGet Movers
+Top 10 (up or down) movers by value or percent for a particular market
+
+Resource URL
+https://api.tdameritrade.com/v1/marketdata/{index}/movers
+
+Query Parameters
+Name	Values	Description
+apikey	
+Pass your OAuth User ID to make an unauthenticated request for delayed data.
+
+direction	
+(no value)
+To return movers with the specified directions of up or down
+
+change	
+percent
+To return movers with the specified change types of percent or value
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Content Type
+
+application/json
+
+Response Summary
+JSON
+//Mover:
+{
+  "change": 0,
+  "description": "string",
+  "direction": "'up' or 'down'",
+  "last": 0,
+  "symbol": "string",
+  "totalVolume": 0
+}
+
+Schema
+//Mover:
+{
+  "change": {
+    "type": "number",
+    "format": "double"
+  },
+  "description": {
+    "type": "string"
+  },
+  "direction": {
+    "type": "string",
+    "enum": [
+      "up",
+      "down"
+    ]
+  },
+  "last": {
+    "type": "number",
+    "format": "double"
+  },
+  "symbol": {
+    "type": "string"
+  },
+  "totalVolume": {
+    "type": "integer",
+    "format": "int64"
+  }
+}
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating the caller must pass a correct value in the parameter.
+
+401
+
+Unauthorized
+
+403
+
+Forbidden
+
+404
+
+An error message indicating movers for the instrument was not found.

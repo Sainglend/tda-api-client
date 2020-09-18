@@ -1,0 +1,130 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/watchlist/apis/put/accounts/%7BaccountId%7D/watchlists/%7BwatchlistId%7D-0
+
+Watchlist Documentation Replace Watchlist
+PUTReplace Watchlist
+Replace watchlist for a specific account.
+
+This method does not verify that the symbol or asset type are valid.
+
+Resource URL
+https://api.tdameritrade.com/v1/accounts/{accountId}/watchlists/{watchlistId}
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+Value
+{
+    "name": "string",
+    "watchlistId": "string",
+    "watchlistItems": [
+        {
+            "quantity": 0,
+            "averagePrice": 0,
+            "commission": 0,
+            "purchasedDate": "DateParam\"",
+            "instrument": {
+                "symbol": "string",
+                "assetType": "'EQUITY' or 'OPTION' or 'MUTUAL_FUND' or 'FIXED_INCOME' or 'INDEX'"
+            },
+            "sequenceId": 0
+        }
+    ]
+}
+
+Description
+The new watchlist object to be created.
+
+Schema
+{
+  "name": {
+    "type": "string"
+  },
+  "watchlistItems": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "quantity": {
+          "type": "number",
+          "format": "double"
+        },
+        "averagePrice": {
+          "type": "number",
+          "format": "double",
+          "minimum": 0
+        },
+        "commission": {
+          "type": "number",
+          "format": "double",
+          "minimum": 0
+        },
+        "purchasedDate": {
+          "type": "object"
+        },
+        "instrument": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string"
+            },
+            "assetType": {
+              "type": "string",
+              "enum": [
+                "EQUITY",
+                "OPTION",
+                "MUTUAL_FUND",
+                "FIXED_INCOME",
+                "INDEX"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Content Type
+
+application/json
+
+Category
+
+Watchlist
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating the validation problem with the request.
+
+401
+
+An error message indicating the caller must pass a valid Authorization in the HTTP authorization request header.
+
+500
+
+An error message indicating there was an unexpected server error.
+
+204
+
+Watchlist updated.

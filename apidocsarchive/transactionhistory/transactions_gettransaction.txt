@@ -1,0 +1,295 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/transaction-history/apis/get/accounts/%7BaccountId%7D/transactions/%7BtransactionId%7D-0
+
+Transaction History Documentation Get Transaction
+GETGet Transaction
+Transaction for a specific account.
+
+Resource URL
+https://api.tdameritrade.com/v1/accounts/{accountId}/transactions/{transactionId}
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Category
+
+Transactions
+
+Response Summary
+JSON
+//Transaction:
+{
+  "type": "'TRADE' or 'RECEIVE_AND_DELIVER' or 'DIVIDEND_OR_INTEREST' or 'ACH_RECEIPT' or 'ACH_DISBURSEMENT' or 'CASH_RECEIPT' or 'CASH_DISBURSEMENT' or 'ELECTRONIC_FUND' or 'WIRE_OUT' or 'WIRE_IN' or 'JOURNAL' or 'MEMORANDUM' or 'MARGIN_CALL' or 'MONEY_MARKET' or 'SMA_ADJUSTMENT'",
+  "clearingReferenceNumber": "string",
+  "subAccount": "string",
+  "settlementDate": "string",
+  "orderId": "string",
+  "sma": 0,
+  "requirementReallocationAmount": 0,
+  "dayTradeBuyingPowerEffect": 0,
+  "netAmount": 0,
+  "transactionDate": "string",
+  "orderDate": "string",
+  "transactionSubType": "string",
+  "transactionId": 0,
+  "cashBalanceEffectFlag": false,
+  "description": "string",
+  "achStatus": "'Approved' or 'Rejected' or 'Cancel' or 'Error'",
+  "accruedInterest": 0,
+  "fees": "object",
+  "transactionItem": {
+    "accountId": 0,
+    "amount": 0,
+    "price": 0,
+    "cost": 0,
+    "parentOrderKey": 0,
+    "parentChildIndicator": "string",
+    "instruction": "string",
+    "positionEffect": "string",
+    "instrument": {
+      "symbol": "string",
+      "underlyingSymbol": "string",
+      "optionExpirationDate": "string",
+      "optionStrikePrice": 0,
+      "putCall": "string",
+      "cusip": "string",
+      "description": "string",
+      "assetType": "string",
+      "bondMaturityDate": "string",
+      "bondInterestRate": 0
+    }
+  }
+}
+
+Schema
+//Transaction:
+{
+  "type": {
+    "type": "string",
+    "enum": [
+      "TRADE",
+      "RECEIVE_AND_DELIVER",
+      "DIVIDEND_OR_INTEREST",
+      "ACH_RECEIPT",
+      "ACH_DISBURSEMENT",
+      "CASH_RECEIPT",
+      "CASH_DISBURSEMENT",
+      "ELECTRONIC_FUND",
+      "WIRE_OUT",
+      "WIRE_IN",
+      "JOURNAL",
+      "MEMORANDUM",
+      "MARGIN_CALL",
+      "MONEY_MARKET",
+      "SMA_ADJUSTMENT"
+    ]
+  },
+  "clearingReferenceNumber": {
+    "type": "string"
+  },
+  "subAccount": {
+    "type": "string"
+  },
+  "settlementDate": {
+    "type": "string",
+    "format": "date-time"
+  },
+  "orderId": {
+    "type": "string"
+  },
+  "sma": {
+    "type": "number",
+    "format": "double"
+  },
+  "requirementReallocationAmount": {
+    "type": "number",
+    "format": "double"
+  },
+  "dayTradeBuyingPowerEffect": {
+    "type": "number",
+    "format": "double"
+  },
+  "netAmount": {
+    "type": "number",
+    "format": "double"
+  },
+  "transactionDate": {
+    "type": "string",
+    "format": "date-time"
+  },
+  "orderDate": {
+    "type": "string",
+    "format": "date-time"
+  },
+  "transactionSubType": {
+    "type": "string"
+  },
+  "transactionId": {
+    "type": "integer",
+    "format": "int64"
+  },
+  "cashBalanceEffectFlag": {
+    "type": "boolean",
+    "default": false
+  },
+  "description": {
+    "type": "string"
+  },
+  "achStatus": {
+    "type": "string",
+    "enum": [
+      "Approved",
+      "Rejected",
+      "Cancel",
+      "Error"
+    ]
+  },
+  "accruedInterest": {
+    "type": "number",
+    "format": "double"
+  },
+  "fees": {
+    "type": "object",
+    "additionalProperties": {
+      "type": "number",
+      "format": "double"
+    }
+  },
+  "transactionItem": {
+    "type": "object",
+    "properties": {
+      "accountId": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "amount": {
+        "type": "number",
+        "format": "double"
+      },
+      "price": {
+        "type": "number",
+        "format": "double"
+      },
+      "cost": {
+        "type": "number",
+        "format": "double"
+      },
+      "parentOrderKey": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "parentChildIndicator": {
+        "type": "string"
+      },
+      "instruction": {
+        "type": "string",
+        "enum": [
+          "BUY",
+          "SELL"
+        ]
+      },
+      "positionEffect": {
+        "type": "string",
+        "enum": [
+          "OPENING",
+          "CLOSING",
+          "AUTOMATIC"
+        ]
+      },
+      "instrument": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string"
+          },
+          "underlyingSymbol": {
+            "type": "string"
+          },
+          "optionExpirationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "optionStrikePrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "putCall": {
+            "type": "string",
+            "enum": [
+              "PUT",
+              "CALL"
+            ]
+          },
+          "cusip": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "assetType": {
+            "type": "string",
+            "enum": [
+              "EQUITY",
+              "MUTUAL_FUND",
+              "OPTION",
+              "FIXED_INCOME",
+              "CASH_EQUIVALENT"
+            ]
+          },
+          "bondMaturityDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bondInterestRate": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      }
+    }
+  }
+}
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating the validation problem with the request.
+
+401
+
+An error message indicating the caller must pass a valid Authorization in the HTTP authorization request header.
+
+403
+
+An error message indicating the caller doesn't have access to the account in the request.
+
+404
+
+An error message indicating the specified transaction could not be found.
+
+500
+
+An error message indicating there was an unexpected server error.
+
+503
+
+An error message indicating there is a temporary problem responding

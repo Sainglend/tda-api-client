@@ -1,0 +1,52 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/watchlist/apis/delete/accounts/%7BaccountId%7D/watchlists/%7BwatchlistId%7D-0
+
+Watchlist Documentation Delete Watchlist
+DELETEDelete Watchlist
+Delete watchlist for a specific account.
+
+Resource URL
+https://api.tdameritrade.com/v1/accounts/{accountId}/watchlists/{watchlistId}
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Category
+
+Watchlist
+
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating the validation problem with the request.
+
+401
+
+An error message indicating the caller must pass a valid Authorization in the HTTP authorization request header.
+
+500
+
+An error message indicating there was an unexpected server error.
+
+204
+
+Watchlist deleted.

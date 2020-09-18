@@ -1,0 +1,119 @@
+Last checked Sept 10 2020
+
+https://developer.tdameritrade.com/user-principal/apis/get/userprincipals-0
+
+User Info and Preferences Documentation Get User Principals
+GET Get User Principals
+User Principal details.
+
+Resource URL
+https://api.tdameritrade.com/v1/userprincipals
+
+Query Parameters
+Name	Values	Description
+fields	
+A comma separated String which allows one to specify additional fields to return. None of these fields are returned by default. Possible values in this String can be:
+
+streamerSubscriptionKeys
+streamerConnectionInfo
+preferences
+surrogateIds
+
+Example:
+fields=streamerSubscriptionKeys,streamerConnectionInfo
+
+Header Parameters
+Name	Values	Description
+Authorization	
+Supply an access token to make an authenticated request. The format is Bearer <access token>.
+
+Try it out !!
+OAuth 2.0
+
+Set...SENDRESET
+RequestResponsecURL
+Make a request and see the response.
+
+Resource Summary
+Security
+
+OAuth 2.0
+
+Response Summary
+JSON
+Schema
+//UserPrincipal:
+{
+  "authToken": "string",
+  "userId": "string",
+  "userCdDomainId": "string",
+  "primaryAccountId": "string",
+  "lastLoginTime": "string",
+  "tokenExpirationTime": "string",
+  "loginTime": "string",
+  "accessLevel": "string",
+  "stalePassword": false,
+  "streamerInfo": {
+    "streamerBinaryUrl": "string",
+    "streamerSocketUrl": "string",
+    "token": "string",
+    "tokenTimestamp": "string",
+    "userGroup": "string",
+    "accessLevel": "string",
+    "acl": "string",
+    "appId": "string"
+  },
+  "professionalStatus": "'PROFESSIONAL' or 'NON_PROFESSIONAL' or 'UNKNOWN_STATUS'",
+  "quotes": {
+    "isNyseDelayed": false,
+    "isNasdaqDelayed": false,
+    "isOpraDelayed": false,
+    "isAmexDelayed": false,
+    "isCmeDelayed": false,
+    "isIceDelayed": false,
+    "isForexDelayed": false
+  },
+  "streamerSubscriptionKeys": {
+    "keys": [
+      {
+        "key": "string"
+      }
+    ]
+  },
+  "accounts": [
+    {
+      "accountId": "string",
+      "description": "string",
+      "displayName": "string",
+      "accountCdDomainId": "string",
+      "company": "string",
+      "segment": "string",
+      "surrogateIds": "object",
+      "preferences": {
+        "expressTrading": false,
+        "directOptionsRouting": false,
+        "directEquityRouting": false,
+        "defaultEquityOrderLegInstruction": "'BUY' or 'SELL' or 'BUY_TO_COVER' or 'SELL_SHORT' or 'NONE'",
+        "defaultEquityOrderType": "'MARKET' or 'LIMIT' or 'STOP' or 'STOP_LIMIT' or 'TRAILING_STOP' or 'MARKET_ON_CLOSE' or 'NONE'",
+        "defaultEquityOrderPriceLinkType": "'VALUE' or 'PERCENT' or 'NONE'",
+        "defaultEquityOrderDuration": "'DAY' or 'GOOD_TILL_CANCEL' or 'NONE'",
+Resource Error Codes
+HTTP Code
+
+Description
+
+400
+
+An error message indicating invalid userId , password or source provided with the request.
+
+401
+
+An error message indicating the caller must pass a valid AuthToken in the HTTP authorization request header.
+
+500
+
+An error message indicating there was an unexpected server error.
+
+503
+
+An error message indicating there is a temporary problem responding.
