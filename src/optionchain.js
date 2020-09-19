@@ -94,7 +94,7 @@ const OPTION_TYPE = {
  * Get an options chain for a given symbol. Carefully use config options.
  * Can optionally use apikey for delayed data with an unauthenticated request.
  * @param {Object} config - takes symbol, contractType (ENUM is CONTRACT_TYPE), expMonth (ENUM is EXPIRATION_MONTH), optionType (ENUM is OPTION_TYPE), strategy (ENUM is STRATEGY), range (ENUM is RANGE), includeQuotes, and optionals are:
- * fromDate, toDate, strikeCount, interval, volatility, underlyingPrice, interestRate, daysToExpiration, apikey
+ * fromDate (yyyy-MM-dd), toDate (yyyy-MM-dd), strikeCount, interval, volatility, underlyingPrice, interestRate, daysToExpiration, apikey
  * @returns {Promise<Object>} api GET result
  * @async
  */

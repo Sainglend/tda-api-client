@@ -104,6 +104,7 @@ redirect_uri: (leave blank)
 (4) Copy the access_token from the response.
 
 ## The Callback URL
-What is this thing for? It has to be specified with I Add a New App on https://developer.tdameritrade.com, but why? 
+What is this thing for? It has to be specified with Add a New App on https://developer.tdameritrade.com, but why? 
 
-When you are trying to get a new refresh_token, you have to log in to your trading account, and then you get the "code" from the URL on the next blank page. Another way this could work is if you were running a daemon app that can receive traffic. If you know the ip address of your app and you have configured an endpoint on your app, then you could use that as your redirect url. Example: If my app is running at www.myawesomeapp.zzz, then I could set the redirect url to be www.myaweseomapp.zzz/newauth and I couldconfigure that to accept a param named "code" and I'm in business! Then, step 6 above would try to call www.myawesomeapp.zzz/newauth?code=abc123abc123
+When you are trying to get a new refresh_token, you have to log in to your trading account, and then you get the "code" from the URL on the next blank page. Another way this could work is if you were running a daemon app that can receive traffic. If you know the ip address of your app and you have configured an endpoint on your app, then you could use that as your redirect url.
+Example: If an app is running at www.myawesomeapp.zzz, then the redirect url could be set to www.myaweseomapp.zzz/newauth and that endpoint could be configured to accept a param named "code" and boom, in business! Then, step 6 above would try to call www.myawesomeapp.zzz/newauth?code=abc123abc123

@@ -9,10 +9,9 @@ Other README files (also referenced in relevant sections below):
 - [Code Samples](samples/codesamples.md)
 
 ## Known Issues
-When I try to use the Saved Orders API, I get a 400 response code and a message that says "Saved Orders are not supported for this account."
-Not sure what to make of that.
+When testing the Saved Orders API, a 400 response code was received as well as a message that said: "Saved Orders are not supported for this account." Using the feature Ask Ted on the main website, Ted said: "If you have upgraded trading features, you're unable to save orders on the website. However, there are equivalent tools on thinkorswim Desktop, thinkorswim Web, and thinkorswim Mobile." It isn't clear if this is related to the Saved Orders API. Saved orders worked fine when tested on the other platforms.
 
-Watchlists are a little wonky. When I create a watchlist, I can retrieve it with the API, but I don't notice it showing up in Thinkorswim unless I restart it.
+Watchlists are a little wonky. When creating a watchlist, it can be retrieved with the API, but it doesn't appear in Thinkorswim unless it is restarted.
 
 ## Installation
 
@@ -161,14 +160,14 @@ Here is an example:
 node ./cli_index.js hours get 2020-12-02 FUTURES > hours.json
 ```
 ## Roadmap (no particular order)
-I originally built this for my own use, and my use cases will be the driver for what direction I'll take this.
+This was originally built for a particular set of use cases, and those will continue to be the driver for future project direction.
 In no particular order:
 - Type support for Typescript
 - Data structures for the input and output types, like Order, for easy parsing
 - Helper methods for creating a properly formatted JSON input object (order, watchlist, etc.) given input params.
 - Streaming data support for daemon apps.
 
-I'm also planning another project which will leverage this library in order to make a command line app, a shell, for trading. I want to be able to type "buy 10 F" instead of clicking a bunch of things in Thinkorswim or having to write a clunky Order JSON object.
+Another project is planned which will leverage this library in order to make a command line app, a shell, for trading. The goal is to be able to type "buy 10 F" instead of clicking a bunch of things in Thinkorswim or having to write a clunky Order JSON object.
 
 ## Support
 

@@ -20,8 +20,8 @@ const TRANSACTION_TYPE = {
 };
 
 /**
- * Gets all transactions for a specific account with the set options, such as symbol, type, startDate, endDate (maximum time span is 1 year)
- * @param {Object} config - takes accountId, and optionally: type (ENUM is TRANSACTION_TYPE), startDate, endDate (yyyy-MM-dd)
+ * Gets all transactions for a specific account with the set options, such as symbol, type, startDate (yyyy-MM-dd), endDate (yyyy-MM-dd) (maximum time span is 1 year)
+ * @param {Object} config - takes accountId, and optionally: type (ENUM is TRANSACTION_TYPE), startDate (yyyy-MM-dd), endDate (yyyy-MM-dd)
  * @returns {Promise<Object>} api GET result
  * @async
  */

@@ -122,7 +122,7 @@ const FREQUENCY = {
  * Get price history info in the form of candles data for a particular symbol. Provide either start and end dates OR period
  * Can optionally use apikey for delayed data with an unauthenticated request.
  * @param {Object} config - takes symbol, PERIOD_TYPE (ENUM is PERIOD_TYPE), period (ENUM is PERIOD), FREQUENCY_TYPE (ENUM is FREQUENCY_TYPE), frequency (ENUM is FREQUENCY),
- * and optionals are: needExtendedHoursData (true [default] or false), startDate, endDate, apikey
+ * and optionals are: needExtendedHoursData (true [default] or false), startDate (ms since epoch), endDate (ms since epoch), apikey
  * @returns {Promise<Object>} api GET result
  * @async
  */
