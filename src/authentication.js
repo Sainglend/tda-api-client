@@ -1,98 +1,7 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const https = require('https');
-const fs = require('fs');
-const querystring = require('querystring');
-const path = require('path');
+const tdApiInterface = require('./tdapiinterface');
 
-const writeOutAuthResultToFile = async (authConfig, config) => {
-    authConfig.expires_on = Date.now() + (authConfig.expires_in * 1000);
-    return new Promise((resolve, reject) => {
-        const filePath = path.join(process.cwd(), `/config/tdaclientauth.json`);
-        if (config.verbose) {
-            console.log(`writing new auth data to ${filePath}`);
-        }
-        fs.writeFile(filePath, JSON.stringify(authConfig, null, 2), (err) => {
-            if (err) reject(err);
-            resolve(authConfig);
-        });
-    });
-};
-
-const getNewAccessTokenPostData = (authConfig) => {
-    return querystring.encode({
-        "grant_type": "refresh_token",
-        "refresh_token": authConfig.refresh_token,
-        "access_type": "",
-        "code": "",
-        "client_id": authConfig.client_id,
-        "redirect_uri": ""
-    });
-};
-
-const doAuthenticationHandshake = async (auth_config, config) => {
-    return new Promise((resolve, reject) => {
-        const apiOptions = {
-            hostname: 'api.tdameritrade.com',
-            path: '/v1/oauth2/token',
-            port: 443,
-            method: 'POST',
-            headers: {
-                'Accept': '*/*',
-                'Accept-Encoding': 'gzip',
-                'Accept-Language': 'en-US',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'DNT': 1,
-                'Host': 'api.tdameritrade.com',
-                'Sec-Fetch-Dest': 'empty',
-                'Sec-Fetch-Mode': 'cors',
-                'Sec-Fetch-Site': 'same-site'
-            }
-        };
-
-        const authConfig = auth_config || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
-        const postData = getNewAccessTokenPostData(authConfig);
-        apiOptions.headers['Content-Length'] = postData.length;
-
-        const req = https.request(apiOptions, res => {
-            switch (res.statusCode) {
-                case 200:
-                    break;
-                case 400:
-                    throw new Error('authentication 400: The caller must pass a non null value in the parameter');
-                case 401:
-                    throw new Error('authentication 401: Unauthorized');
-                case 403:
-                    throw new Error('authentication 403: Forbidden');
-                case 500:
-                    throw new Error('authentication 500: Internal server error');
-                case 503:
-                    throw new Error('authentication 503: temporary problem');
-                default:
-                    throw new Error('authentication Unknown error');
-            }
-            const data = [];
-
-            res.on('data', function (chunk) {
-                data.push(chunk);
-            }).on('end', () => {
-                const buffer = Buffer.concat(data);
-                const respStr = buffer.toString('utf8');
-                const myResponse = JSON.parse(respStr);
-                Object.assign(authConfig, myResponse);
-                writeOutAuthResultToFile(authConfig, config);
-                resolve(authConfig);
-            });
-        });
-
-        req.on('error', error => {
-            reject(error);
-        });
-
-        req.write(postData);
-        req.end();
-    });
-};
 
 /**
  * Use this to force the refresh of the access_token, regardless if it is expired or not
@@ -102,12 +11,7 @@ const doAuthenticationHandshake = async (auth_config, config) => {
  * @async
  */
 const refreshAuthentication = async (auth_config, config) => {
-    auth_config = auth_config || {};
-    config = config || {};
-    if (config.verbose) {
-        console.log('refreshing authentication');
-    }
-    return doAuthenticationHandshake(auth_config, config);
+    return tdApiInterface.refreshAuthentication(auth_config, config);
 };
 
 /**
@@ -117,18 +21,9 @@ const refreshAuthentication = async (auth_config, config) => {
  * @async
  */
 const getAuthentication = async (config) => {
-    const authConfig = require(path.join(process.cwd(), `/config/tdaclientauth.json`));
-    config = config || {};
-    if (!authConfig.expires_on || authConfig.expires_on < Date.now() + (10*60*1000)) {
-        return refreshAuthentication(authConfig, config);
-    } else {
-        if (config.verbose) {
-            console.log('not refreshing authentication as it has not expired');
-        }
-        return authConfig;
-    }
+    return tdApiInterface.getAuthentication(config);
 };
-process.cwd()
+
 exports.api = {
     getAuthentication,
     refreshAuthentication

@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/Sainglend/tda-api-client#readme",
   "dependencies": {
+    "axios": "^0.21.1",
     "querystring": "^0.2.0",
     "yargs": "^16.0.3"
   }
