@@ -1,10 +1,12 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const https = require('https');
-const auth = require('./authentication');
+const axios = require('axios').default;
+const fs = require('fs');
+const querystring = require('querystring');
+const path = require('path');
 
-const apiOptions = {
-    hostname: 'api.tdameritrade.com',
+const instance = axios.create({
+    baseURL: 'https://api.tdameritrade.com',
     port: 443,
     headers: {
         'Accept': '*/*',
@@ -15,7 +17,7 @@ const apiOptions = {
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-site'
     }
-};
+});
 
 /**
  * Use this for sending an HTTP GET request to api.tdameritrade.com
@@ -24,47 +26,7 @@ const apiOptions = {
  * @async
  */
 const apiGet = async (config) => {
-    const authResponse = await auth.api.getAuthentication(config);
-    const token = authResponse.access_token;
-
-    const requestOptions = {
-        method: 'GET',
-        path: config.path,
-        ...apiOptions
-    };
-
-    if (!config.apikey) {
-        requestOptions.headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    return new Promise((resolve, reject) => {
-        if (config.verbose) {
-            console.log(`GET ${requestOptions.path}`);
-        }
-        const req = https.request(requestOptions, res => {
-            const bodyIsErrorMsg = res.statusCode < 200 || res.statusCode >= 300;
-            const data = [];
-
-            res.on('data', function (chunk) {
-                data.push(chunk);
-            }).on('end', function () {
-                const buffer = Buffer.concat(data);
-                const respStr = buffer.toString('utf8');
-                const myResponse = JSON.parse(respStr);
-                if (bodyIsErrorMsg) {
-                    reject(`${res.statusCode}: ${JSON.stringify(myResponse, null, 2)}`);
-                } else {
-                    resolve(myResponse);
-                }
-            });
-        });
-
-        req.on('error', error => {
-            reject(error);
-        });
-
-        req.end();
-    });
+    return apiNoWriteResource(config, 'get');
 };
 
 /**
@@ -74,50 +36,7 @@ const apiGet = async (config) => {
  * @async
  */
 const apiDelete = async (config) => {
-    const authResponse = await auth.api.getAuthentication(config);
-    const token = authResponse.access_token;
-
-    const requestOptions = {
-        method: 'DELETE',
-        path: config.path,
-        ...apiOptions
-    };
-
-    if (!config.apikey) {
-        requestOptions.headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    return new Promise((resolve, reject) => {
-        if (config.verbose) {
-            console.log(`DELETE ${requestOptions.path}`);
-        }
-        const req = https.request(requestOptions, res => {
-            const bodyIsErrorMsg = res.statusCode < 200 || res.statusCode >= 300;
-
-            if (bodyIsErrorMsg) {
-                const data = [];
-
-                res.on('data', function (chunk) {
-                    data.push(chunk);
-                }).on('end', function () {
-                    try{
-                        const buffer = Buffer.concat(data);
-                        const respStr = buffer.toString('utf8');
-                        const myResponse = JSON.parse(respStr);
-                        reject(`${res.statusCode}: ${JSON.stringify(myResponse, null, 2)}`);
-                    } catch (err) {
-                        reject(res.statusCode);
-                    }
-                });
-            }
-        });
-
-        req.on('error', error => {
-            reject(error);
-        });
-
-        req.end();
-    });
+    return apiNoWriteResource(config, 'delete');
 };
 
 /**
@@ -127,7 +46,7 @@ const apiDelete = async (config) => {
  * @async
  */
 const apiPatch = async (config) => {
-    return apiWriteResource(config, 'PATCH');
+    return apiWriteResource(config, 'patch');
 };
 
 /**
@@ -137,7 +56,7 @@ const apiPatch = async (config) => {
  * @async
  */
 const apiPut = async (config) => {
-    return apiWriteResource(config, 'PUT');
+    return apiWriteResource(config, 'put');
 };
 
 /**
@@ -147,62 +66,167 @@ const apiPut = async (config) => {
  * @async
  */
 const apiPost = async (config) => {
-    return apiWriteResource(config, 'POST');
+    return apiWriteResource(config, 'post');
 };
 
-const apiWriteResource = async (config, method) => {
-    const authResponse = await auth.api.getAuthentication(config);
-    const token = authResponse.access_token;
-
-    const requestOptions = {
+const apiNoWriteResource = async (config, method, skipAuth) => {
+    const requestConfig = {
         method: method,
-        path: config.path,
-        ...apiOptions
-    };
-
-    const postData = JSON.stringify(config.bodyJSON);
-    requestOptions.headers['Content-Length'] = postData.length;
-    requestOptions.headers['Content-Type'] = 'application/json';
-
-    if (!config.apikey) {
-        requestOptions.headers['Authorization'] = `Bearer ${token}`;
+        url: config.path,
+        headers: {}
     }
 
-    return new Promise((resolve, reject) => {
-        if (config.verbose) {
-            console.log(`${method} ${requestOptions.path}`);
+    if (!skipAuth) {
+        const authResponse = await getAuthentication(config);
+        const token = authResponse.access_token;
+
+        if (!config.apikey) {
+            requestConfig.headers['Authorization'] = `Bearer ${token}`;
         }
-        const req = https.request(requestOptions, res => {
-            const bodyIsErrorMsg = res.statusCode < 200 || res.statusCode >= 300;
+    }
 
-            if (bodyIsErrorMsg) {
-                const data = [];
+    return performAxiosRequest(requestConfig);
+};
 
-                res.on('data', function (chunk) {
-                    data.push(chunk);
-                }).on('end', function () {
-                    const buffer = Buffer.concat(data);
-                    const respStr = buffer.toString('utf8');
-                    const myResponse = JSON.parse(respStr);
-                    reject(`${res.statusCode}: ${JSON.stringify(myResponse, null, 2)}`);
-                });
-            } else {
-                const response = {
-                    statusCode: res.statusCode,
-                    location: res.headers.location
-                };
+const apiWriteResource = async (config, method, skipAuth) => {
+    const requestConfig = {
+        method: method,
+        url: config.path,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: config.bodyJSON
+    };
 
-                resolve(response);
-            }
-        });
+    if (!skipAuth) {
+        const authResponse = await getAuthentication(config);
+        const token = authResponse.access_token;
 
-        req.on('error', error => {
-            reject(error);
-        });
+        if (!config.apikey) {
+            requestConfig.headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
 
-        req.write(postData);
-        req.end();
+    return performAxiosRequest(requestConfig);
+};
+
+const performAxiosRequest = async (requestConfig) => {
+    return new Promise((res, rej) => {
+        instance.request(requestConfig)
+            .then(function (response) {
+                console.log(response.headers);
+                res(response.data);
+            })
+            .catch(function (error) {
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    console.log(error.response.data);
+                    console.log(error.response.status);
+                    console.log(error.response.headers);
+                    rej(`ERROR [${error.response.status}]: ${error.response.data}`);
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+                    // http.ClientRequest in node.js
+                    console.log(error.request);
+                    rej(`The request was made but no response was received: ${error.request}`);
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    console.log('Error', error.message);
+                    rej(`An error occurred while setting up the request: ${error.message}`);
+                }
+                console.log(error.config);
+                rej(error.config);
+            });
     });
 };
 
-module.exports = { apiGet, apiPut, apiDelete, apiPost, apiPatch };
+const writeOutAuthResultToFile = async (authConfig, config) => {
+    authConfig.expires_on = Date.now() + (authConfig.expires_in * 1000);
+    return new Promise((resolve, reject) => {
+        const filePath = path.join(process.cwd(), `/config/tdaclientauth.json`);
+        if (config.verbose) {
+            console.log(`writing new auth data to ${filePath}`);
+        }
+        fs.writeFile(filePath, JSON.stringify(authConfig, null, 2), (err) => {
+            if (err) reject(err);
+            resolve(authConfig);
+        });
+    });
+};
+
+const getNewAccessTokenPostData = (authConfig) => {
+    return querystring.encode({
+        "grant_type": "refresh_token",
+        "refresh_token": authConfig.refresh_token,
+        "access_type": "",
+        "code": "",
+        "client_id": authConfig.client_id,
+        "redirect_uri": ""
+    });
+};
+
+const doAuthenticationHandshake = async (auth_config, config) => {
+
+    const authConfig = auth_config || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
+    const requestConfig = {
+        method: 'post',
+        url: '/v1/oauth2/token',
+        data: getNewAccessTokenPostData(authConfig),
+        headers: {
+            'Accept': '*/*',
+            'Accept-Encoding': 'gzip',
+            'Accept-Language': 'en-US',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'DNT': 1,
+            'Host': 'api.tdameritrade.com',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-site'
+        }
+    }
+    const result = await performAxiosRequest(requestConfig);
+
+    Object.assign(authConfig, result);
+    await writeOutAuthResultToFile(authConfig, config);
+    return authConfig;
+};
+
+/**
+ * Use this to force the refresh of the access_token, regardless if it is expired or not
+ * @param {Object} auth_config - optional, meant to be existing local auth data
+ * @param {Object} config - optional: verbose
+ * @returns {Object} auth info object with some calculated fields, including the all-important access_token; this is written to the auth json file in project's config/
+ * @async
+ */
+const refreshAuthentication = async (auth_config, config) => {
+    auth_config = auth_config || {};
+    config = config || {};
+    if (config.verbose) {
+        console.log('refreshing authentication');
+    }
+    return doAuthenticationHandshake(auth_config, config);
+};
+
+/**
+ * Use this to get authentication info. Will serve up local copy if not yet expired.
+ * @param {Object} config - optional: verbose
+ * @returns {Object} auth info object, including the all-important access_token
+ * @async
+ */
+const getAuthentication = async (config) => {
+    const authConfig = require(path.join(process.cwd(), `/config/tdaclientauth.json`));
+    config = config || {};
+    if (!authConfig.expires_on || authConfig.expires_on < Date.now() + (10*60*1000)) {
+        return refreshAuthentication(authConfig, config);
+    } else {
+        if (config.verbose) {
+            console.log('not refreshing authentication as it has not expired');
+        }
+        return authConfig;
+    }
+};
+
+module.exports = { apiGet, apiPut, apiDelete, apiPost, apiPatch,
+    doAuthenticationHandshake, refreshAuthentication, getAuthentication };
