@@ -108,7 +108,6 @@ const performAxiosRequest = async (requestConfig, expectData) => {
     return new Promise((res, rej) => {
         instance.request(requestConfig)
             .then(function (response) {
-                console.log(response.headers);
                 if (expectData) {
                     res(response.data);
                 } else {
@@ -123,22 +122,16 @@ const performAxiosRequest = async (requestConfig, expectData) => {
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    console.log(error.response.data);
-                    console.log(error.response.status);
-                    console.log(error.response.headers);
                     rej(`ERROR [${error.response.status}]: ${error.response.data}`);
                 } else if (error.request) {
                     // The request was made but no response was received
                     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
                     // http.ClientRequest in node.js
-                    console.log(error.request);
                     rej(`The request was made but no response was received: ${error.request}`);
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    console.log('Error', error.message);
                     rej(`An error occurred while setting up the request: ${error.message}`);
                 }
-                console.log(error.config);
                 rej(error.config);
             });
     });
@@ -190,7 +183,7 @@ const doAuthenticationHandshake = async (auth_config, config) => {
     }
     const result = await performAxiosRequest(requestConfig);
 
-    Object.assign(authConfig, result);
+    Object.assign(authConfig, result.data);
     await writeOutAuthResultToFile(authConfig, config);
     return authConfig;
 };
