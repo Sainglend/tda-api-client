@@ -1,5 +1,5 @@
 
-# TD API CLIENT
+# TDA API CLIENT
 ## Summary
 This library is a client to use the API exposed by TD Ameritrade at https://developer.tdameritrade.com
 This project can also be cloned from github to use as a command line utility.
@@ -10,6 +10,8 @@ Other README files (also referenced in relevant sections below):
 
 ## Known Issues
 When testing the Saved Orders API, a 400 response code was received as well as a message that said: "Saved Orders are not supported for this account." Using the feature Ask Ted on the main website, Ted said: "If you have upgraded trading features, you're unable to save orders on the website. However, there are equivalent tools on thinkorswim Desktop, thinkorswim Web, and thinkorswim Mobile." It isn't clear if this is related to the Saved Orders API. Saved orders worked fine when tested on the other platforms.
+
+UPDATE in v1.0.2: I now understand the above to be because I have Advanced Features turned on in my account. This will also preclude you from placing complex orders, like 1 TRG OCO. This boggles my mind. So again, you have to turn OFF Advanced Features in your account in order to unlock some API capabilities. I haven't yet completely mapped that.
 
 Watchlists are a little wonky. When creating a watchlist, it can be retrieved with the API, but it doesn't appear in Thinkorswim unless it is restarted.
 
@@ -46,12 +48,12 @@ Here's a little sample code for a taste of how to use this thing.
 ```javascript
 const tdaclient = require('tda-api-client');
 
-tdaclient.orders.cancelOrder({orderId: 123, accountId: 456});
-tdaclient.watchlists.deleteWatchlist({watchlistId: 4242, accountId: 456});
-tdaclient.markethours.getSingleMarketHours({index: tdaclient.markethours.MARKETS.EQUITY, date: '2020-09-20'});
+await tdaclient.orders.cancelOrder({orderId: 123, accountId: 456});
+await tdaclient.watchlists.deleteWatchlist({watchlistId: 4242, accountId: 456});
+const hours = await tdaclient.markethours.getSingleMarketHours({index: tdaclient.markethours.MARKETS.EQUITY, date: '2020-09-20'});
 ```
 
-The hierarchy is pretty flat. Under the root object, there are:
+The hierarchy is pretty flat. Under the root object, named "tdaclient" in the above example, there are:
 - accounts
 - authentication
 - instruments
@@ -80,11 +82,14 @@ You can look in the [samples/](samples/) folder to see [code samples](samples/co
 ### Theirs
 You can find the documentation for how the API endpoints work at https://developer.tdameritrade.com
 
-A copy of those pages has also been made locally in [apidocsarchive/](apidocsarchive/)
+Copies of those pages are also available locally in [apidocsarchive/](apidocsarchive/)
 
 ## Command Line Tool
 
-You can run this as a standalone command line tool by cloning the project and running ***node ./cli_index.js***:
+You can run this as a standalone command line tool by cloning the project and running 
+```
+node ./cli_index.js
+```
 
 < > indicates a required positional argument
 

@@ -20,7 +20,7 @@ const PROJECTION_TYPE = {
  */
 const searchInstruments = async (config) => {
     config.path = `/v1/instruments?symbol=${config.symbol}&projection=${config.projection}` +
-        (config.apikey ? `?apikey=${config.apikey}` : '');
+        (config.apikey ? `&apikey=${config.apikey}` : '');
 
     return tdApiInterface.apiGet(config);
 };
@@ -49,8 +49,8 @@ exports.command = 'instruments <command>';
 exports.desc = 'Search for an instrument with a text string, or get an instrument by CUSIP';
 exports.builder = (yargs) => {
   return yargs
-    .command('search <symbol> <projection>',
-        'Search for an instrument using search string <symbol> and search type indicated by <projection> (one of symbol-search, symbol-regex, desc-search, desc-regex, fundamental)',
+    .command('search <symbol> <projection> [apikey]',
+        'Search for an instrument using search string <symbol> and search type indicated by <projection> (one of symbol-search, symbol-regex, desc-search, desc-regex, fundamental), can optionally use apikey for unauthenticated request',
         {},
         async (argv) => {
             if (argv.verbose) {
@@ -59,7 +59,8 @@ exports.builder = (yargs) => {
             return searchInstruments({
                 symbol: argv.symbol,
                 projection: argv.projection,
-                verbose: argv.verbose || false
+                verbose: argv.verbose || false,
+                apikey: argv.apikey
             }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
         })
     .command('get <cusip> [apikey]',

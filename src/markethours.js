@@ -19,7 +19,7 @@ const MARKETS = {
  */
 const getSingleMarketHours = async (config) => {
     config.path = `/v1/marketdata/${config.market}/hours?date=${config.date}` +
-        (config.apikey ? `?apikey=${config.apikey}` : '');
+        (config.apikey ? `&apikey=${config.apikey}` : '');
 
     return tdApiInterface.apiGet(config);
 };
@@ -33,7 +33,7 @@ const getSingleMarketHours = async (config) => {
  */
 const getMultipleMarketHours = async (config) => {
     config.path = `/v1/marketdata/hours?markets=${config.markets}&date=${config.date}` +
-        (config.apikey ? `?apikey=${config.apikey}` : '');
+        (config.apikey ? `&apikey=${config.apikey}` : '');
 
     return tdApiInterface.apiGet(config);
 };

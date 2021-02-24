@@ -76,16 +76,13 @@ const apiNoWriteResource = async (config, method, skipAuth) => {
         headers: {}
     }
 
-    if (!skipAuth) {
+    if (!config.apikey && !skipAuth) {
         const authResponse = await getAuthentication(config);
         const token = authResponse.access_token;
-
-        if (!config.apikey) {
-            requestConfig.headers['Authorization'] = `Bearer ${token}`;
-        }
+        requestConfig.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return performAxiosRequest(requestConfig);
+    return performAxiosRequest(requestConfig, true);
 };
 
 const apiWriteResource = async (config, method, skipAuth) => {
@@ -98,24 +95,29 @@ const apiWriteResource = async (config, method, skipAuth) => {
         data: config.bodyJSON
     };
 
-    if (!skipAuth) {
+    if (!config.apikey && !skipAuth) {
         const authResponse = await getAuthentication(config);
         const token = authResponse.access_token;
-
-        if (!config.apikey) {
-            requestConfig.headers['Authorization'] = `Bearer ${token}`;
-        }
+        requestConfig.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return performAxiosRequest(requestConfig);
+    return performAxiosRequest(requestConfig, false);
 };
 
-const performAxiosRequest = async (requestConfig) => {
+const performAxiosRequest = async (requestConfig, expectData) => {
     return new Promise((res, rej) => {
         instance.request(requestConfig)
             .then(function (response) {
                 console.log(response.headers);
-                res(response.data);
+                if (expectData) {
+                    res(response.data);
+                } else {
+                    res({
+                        data: response.data,
+                        statusCode: response.status,
+                        location: response.headers.location
+                    });
+                }
             })
             .catch(function (error) {
                 if (error.response) {

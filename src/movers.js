@@ -45,8 +45,8 @@ exports.command = 'movers <command>'
 exports.desc = 'Get market movers'
 exports.builder = (yargs) => {
   return yargs
-  .command('get <majorIndex> <direction> <change>',
-    `Get market movers for a specified <majorIndex> ('$COMPX', '$DJI', '$SPX.X'), a given <direction> ('up', 'down'), and the type of <change> ('value', 'percent'), e.g. "get \\$DJI up percent" (notice the escape character)`,
+  .command('get <majorIndex> <direction> <change> [apikey]',
+    `Get market movers for a specified <majorIndex> ('$COMPX', '$DJI', '$SPX.X'), a given <direction> ('up', 'down'), and the type of <change> ('value', 'percent'), e.g. "get \\$DJI up percent" (notice the escape character). Optionally takes an apikey for an unathenticated request.`,
     {},
     async (argv) => {
         if (argv.verbose) {
@@ -56,7 +56,8 @@ exports.builder = (yargs) => {
             index: argv.majorIndex,
             direction: argv.direction,
             change: argv.change,
-            verbose: argv.verbose || false
+            verbose: argv.verbose || false,
+            apikey: argv.apikey
         }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
     });
 }

@@ -11,7 +11,7 @@ const tdApiInterface = require('./tdapiinterface');
  */
 const getQuote = async (config) => {
     config.path = `/v1/marketdata/${config.symbol}/quotes` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+        (config.apikey ? `?apikey=${config.apikey}` : '');
 
     return tdApiInterface.apiGet(config);
 };

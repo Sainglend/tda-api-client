@@ -10,7 +10,7 @@ To use this library, you have to have a file in your project's config folder nam
 }
 ```
 
-If you don't know what those are, then follow the guide below through step 10. After that you won't have to think about auth again until your refresh_token expires (90 days?) and you have to do steps 1 to 10 all over again.
+If you don't know what those are, then follow the guide below through step 10. After that you won't have to think about auth again until your refresh_token expires (90 days?) and you have to do steps 3 to 10 all over again.
 
 ## Let's define some terms
 **Trading username and password**
@@ -20,16 +20,16 @@ If you don't know what those are, then follow the guide below through step 10. A
 : this is what you use to log in to https://developer.tdameritrade.com.
 
 **Consumer Key / API Key / Client Id / OAuth User Id**
-: This is a permanent key that identifies your app. It is a long character string (30ish?), but it commonly used in the format KEY@AMER.OAUTHAP (and is called "Client Id" in this format), so like ABC123ABC123@AMER.OAUTHAP. Some API endpoints say that you can make an unauthenticated request. In this case, you'd provide your KEY@AMER.OAUTHAP for the client_id. In this library, the input is referred to as apikey, since that is how the TDA API documentation mostly refers to it, so you'd pass it in to a method as part of the config object as config.apikey
+: This is a permanent key that identifies your app. THIS IS THE FIRST REQUIRED INPUT FOR THE JSON FILE. It is a long character string (30ish?), but it is commonly used in the format KEY@AMER.OAUTHAP (and is called "Client Id" in this format), so like ABC123ABC123@AMER.OAUTHAP. Some API endpoints say that you can make an unauthenticated request. In this case, you'd provide your KEY@AMER.OAUTHAP for the client_id. In this library, the input is referred to as apikey, since that is how the TDA API documentation mostly refers to it, so you'd pass it in to a method as part of the config object as config.apikey
 
 **code**
 : A long string of characters that you'll receive in the callback url from the initial auth step (step 6 below)
 
 **refresh_token**
-: You will get this during the first set of auth steps, specifically step 9 below. This is valid for 90 days. You need to use it to keep getting new access_tokens.
+: You will get this during step 9 below. This is valid for 90 days. THIS IS THE SECOND REQUIRED INPUT FOR THE JSON FILE. It is used by the library to keep getting new access_tokens.
 
 **access_token**
-: This is what is sent with each authenticated API request. It typically expires after 30 minutes (though this is configurable). As long as you have your refresh token in the proper JSON file in the config/ folder, you'll never have to worry about it an access_token again, as this client library handles all of that for you.
+: This is what is sent with each authenticated API request. It typically expires after 30 minutes (though this is configurable). As long as you have your refresh_token in the proper JSON file in the config/ folder, you'll never have to worry about getting an access_token again, as this client library handles all of that for you.
 
 ## The official guide pages are here, which I'll call Off1 - Off3 (Off = Official).
 Off1. https://developer.tdameritrade.com/content/authentication-faq
@@ -66,9 +66,9 @@ redirect_uri: {REDIRECT URI} (e.g. https://127.0.0.1)
 ```
 (8) Click SEND on this form.
 
-(9) The response will show up at the bottom and you will need to copy and SAVE the refresh_token somewhere.
+(9) The response will show up at the bottom and you will need to copy and SAVE the refresh_token somewhere, as you need it for step 10, for the JSON file.
 
-(10) For use with this library, ou must have a file in {project root}/config/tdaclientauth.json. Please copy the example file from this library's config/ folder using the below command and fill in the appropriate values:
+(10) For use with this library, you must have a file in {project root}/config/tdaclientauth.json. Please copy the example file from this library's config/ folder using the below command and fill in the appropriate values:
 
 ```bash
 cp ./node_modules/tda-api-client/config/tdaclientauth.json ./config/tdaclientauth.json
@@ -84,7 +84,7 @@ OR copy this json and replace the values with your own:
 
 ## DONE!!!! Sort of.....
 
-From now on, you can either leverage the authentication javascript code in this library, either directly in your code, or indirectly every time you make a request, or you can revisit the page in step 7. Note: as long as you put the refresh_token in the correct place in the config/ folder, you'll never have to personally deal with an access_token. You'll just have to get your refresh_token every 90 days.
+From now on, you can either leverage the authentication javascript code in this library, either directly in your code, or indirectly every time you make a request, or you can revisit the page in step 7. Note: as long as you put the refresh_token in the correct place in the config/ folder, you'll never have to personally deal with an access_token (the one that expires every 30 minutes). You'll just have to get a new refresh_token every 90 days.
 
 However, just in case you want to give it a go manually, here is how to get an access_token, which is a required input for most API calls:
 
@@ -101,10 +101,10 @@ redirect_uri: (leave blank)
 ```
 (3) Click SEND
 
-(4) Copy the access_token from the response.
+(4) Copy the access_token from the response. Note that it is only good for 30 minutes.
 
 ## The Callback URL
-What is this thing for? It has to be specified with Add a New App on https://developer.tdameritrade.com, but why? 
+What is this thing for? It has to be specified with Add a New App on https://developer.tdameritrade.com, but why?
 
 When you are trying to get a new refresh_token, you have to log in to your trading account, and then you get the "code" from the URL on the next blank page. Another way this could work is if you were running a daemon app that can receive traffic. If you know the ip address of your app and you have configured an endpoint on your app, then you could use that as your redirect url.
 Example: If an app is running at www.myawesomeapp.zzz, then the redirect url could be set to www.myaweseomapp.zzz/newauth and that endpoint could be configured to accept a param named "code" and boom, in business! Then, step 6 above would try to call www.myawesomeapp.zzz/newauth?code=abc123abc123

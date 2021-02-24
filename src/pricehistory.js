@@ -217,7 +217,8 @@ exports.builder = (yargs) => {
                 startDate: argv.from || '',
                 endDate: argv.to || '',
                 getExtendedHours: argv.needExtendedHoursData,
-                verbose: argv.verbose || false
+                verbose: argv.verbose || false,
+                apikey: argv.apikey
             }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
         });
 };
