@@ -1,6 +1,6 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require('./tdapiinterface');
+import { Arguments } from "yargs";
 
 /**
  * Enum for the transaction types
@@ -25,7 +25,7 @@ const TRANSACTION_TYPE = {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getTransactions = async (config) => {
+const getTransactions = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/transactions?` +
         (config.type ? `type=${config.type}&` : '') +
         (config.startDate ? `startDate=${config.startDate}&` : '') +
@@ -41,7 +41,7 @@ const getTransactions = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getTransaction = async (config) => {
+const getTransaction = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/transactions/${config.transactionId}`;
 
     return tdApiInterface.apiGet(config);
@@ -54,12 +54,12 @@ exports.api = {
 };
 exports.command = 'trans <command>';
 exports.desc = 'Retrieve transaction history';
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
   return yargs
     .command('get <transactionId> <accountId>',
         'Get a specific transaction by <transactionId> for a specific <accountId>',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting transaction ${argv.transactionId} for ${argv.accountId}`);
             }
@@ -89,7 +89,7 @@ exports.builder = (yargs) => {
                 desc: 'ticker symbol, e.g. TSLA'
             }
         },
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting transactions for ${argv.accountId}`);
             }
@@ -101,4 +101,4 @@ exports.builder = (yargs) => {
         });
 
 };
-exports.handler = (argv) => {};
+exports.handler = (argv: Arguments) => {};

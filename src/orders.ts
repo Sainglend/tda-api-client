@@ -1,4 +1,6 @@
-const tdApiInterface = require('./tdapiinterface');
+// Copyright (C) 2020  Aaron Satterlee
+
+import { Arguments } from "yargs";
 
 /**
  * Enum for order statuses, to use when retrieving account orders.
@@ -28,7 +30,7 @@ const ORDER_STATUS = {
  * @returns {Promise<Object>} api PUT result
  * @async
  */
-const replaceOrder = async (config) => {
+const replaceOrder = async (config: any) => {
     config.bodyJSON = config.orderJSON;
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
 
@@ -41,7 +43,7 @@ const replaceOrder = async (config) => {
  * @returns {Promise<Object>} api POST result
  * @async
  */
-const placeOrder = async (config) => {
+const placeOrder = async (config: any) => {
     config.bodyJSON = config.orderJSON;
     config.path = `/v1/accounts/${config.accountId}/orders`;
 
@@ -55,7 +57,7 @@ const placeOrder = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getOrdersByAccount = async (config) => {
+const getOrdersByAccount = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/orders?` +
         (config.maxResults ? `maxResults=${config.maxResults}&` : '') +
         (config.fromEnteredTime ? `fromEnteredTime=${config.fromEnteredTime}&` : '') +
@@ -72,7 +74,7 @@ const getOrdersByAccount = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getOrdersByQuery = async (config) => {
+const getOrdersByQuery = async (config: any) => {
     config.path = `/v1/orders?` +
         (config.accountId ? `accountId=${config.accountId}&` : '') +
         (config.maxResults ? `maxResults=${config.maxResults}&` : '') +
@@ -89,7 +91,7 @@ const getOrdersByQuery = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getOrder = async (config) => {
+const getOrder = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
 
     return tdApiInterface.apiGet(config);
@@ -101,7 +103,7 @@ const getOrder = async (config) => {
  * @returns {Promise<Object>} api DELETE result
  * @async
  */
-const cancelOrder = async (config) => {
+const cancelOrder = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
 
     return tdApiInterface.apiDelete(config);
@@ -119,12 +121,12 @@ exports.api = {
 
 exports.command = 'orders <command>';
 exports.desc = 'Manage your orders';
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
     return yargs
         .command('place <accountId> <orderJSON>',
             'Place an order for a specified <accountId> using the properly formatted <orderJSON> (enclose in quotes, escape inner quotes, e.g. "{\\"orderType\\":\\"MARKET\\"}" )',
             {},
-            async (argv) => {
+            async (argv: Arguments) => {
                 if (argv.verbose) {
                     console.log(`placing an order for ${argv.accountId}`);
                 }
@@ -137,7 +139,7 @@ exports.builder = (yargs) => {
         .command('replace <orderId> <accountId> <orderJSON>',
             'Replace an existing order with <orderId> for a specified <accountId> using the properly formatted <orderJSON> (enclose in quotes, escape inner quotes, e.g. "{\\"orderType\\":\\"MARKET\\"}" )',
             {},
-            async (argv) => {
+            async (argv: Arguments) => {
                 if (argv.verbose) {
                     console.log(`replacing order ${argv.orderId} for ${argv.accountId}`);
                 }
@@ -151,7 +153,7 @@ exports.builder = (yargs) => {
         .command('getorder <orderId> <accountId>',
             'Get order info for a specified <orderId> for a given <accountId>',
             {},
-            async (argv) => {
+            async (argv: Arguments) => {
                 if (argv.verbose) {
                     console.log(`getting order details for order ${argv.orderId} for account ${argv.accountId}`);
                 }
@@ -164,7 +166,7 @@ exports.builder = (yargs) => {
         .command('cancel <orderId> <accountId>',
             'Cancel a specified <orderId> for a given <accountId>',
             {},
-            async (argv) => {
+            async (argv: Arguments) => {
                 if (argv.verbose) {
                     console.log(`canceling order ${argv.orderId} for account ${argv.accountId}`);
                 }
@@ -196,7 +198,7 @@ exports.builder = (yargs) => {
                     choices: Object.keys(ORDER_STATUS)
                 }
             },
-            async (argv) => {
+            async (argv: Arguments) => {
                 if (argv.verbose) {
                     console.log(`getting order details for multiple orders based on query params`);
                 }
@@ -210,4 +212,4 @@ exports.builder = (yargs) => {
                 }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
             });
 };
-exports.handler = (argv) => {};
+exports.handler = (argv: Arguments) => {};

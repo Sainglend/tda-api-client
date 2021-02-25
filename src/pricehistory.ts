@@ -1,6 +1,6 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require('./tdapiinterface');
+import { Arguments } from "yargs";
 
 /**
  * The type of period by which to group price data (which will be subdivided into candles by FREQUENCY_TYPE)
@@ -126,7 +126,7 @@ const FREQUENCY = {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getPriceHistory = async (config) => {
+const getPriceHistory = async (config: any) => {
     config.path = `/v1/marketdata/${config.symbol}/pricehistory?` +
         `PERIOD_TYPE=${config.PERIOD_TYPE}` +
         `&FREQUENCY_TYPE=${config.FREQUENCY_TYPE}` +
@@ -149,7 +149,7 @@ exports.api = {
 };
 exports.command = 'pricehistory <command>';
 exports.desc = 'Get price history info in the form of candles data';
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
   return yargs
     .command('get <symbol>',
         'Get price history info in the form of candles data for a particular <symbol>',
@@ -203,7 +203,7 @@ exports.builder = (yargs) => {
                 choices: [1, 5, 10, 15, 30]
             }
         },
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting price history for ${argv.symbol}`);
             }
@@ -222,4 +222,4 @@ exports.builder = (yargs) => {
             }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
         });
 };
-exports.handler = (argv) => {};
+exports.handler = (argv: Arguments) => {};

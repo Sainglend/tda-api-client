@@ -6,7 +6,7 @@ exports.builder = {
     warranty: {alias: 'w', desc: 'View warranty information fron GNU GPL v3.0'},
     conditions: {alias: 'c', desc: 'View conditions information fron GNU GPL v3.0'}
 };
-exports.handler = (argv) => {
+exports.handler = (argv: any) => {
     if (argv.c) {
         console.log('\nTERMS AND CONDITIONS\n' +
             '\n' +

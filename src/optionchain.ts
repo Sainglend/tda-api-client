@@ -1,6 +1,6 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require('./tdapiinterface');
+import { Arguments } from "yargs";
 
 /**
  * Defines what range of strikes to return as results
@@ -98,7 +98,7 @@ const OPTION_TYPE = {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getOptionChain = async (config) => {
+const getOptionChain = async (config: any) => {
     config.path =  `/v1/marketdata/chains?` +
         `symbol=${config.symbol}` +
         `&contractType=${config.contractType}` +
@@ -130,7 +130,7 @@ exports.api = {
 };
 exports.command = 'options <command>';
 exports.desc = 'Get option chain info';
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
   return yargs
     .command('chain <symbol>',
         `Get option chain for a given <symbol>. Use command's options liberally (see detail by issuing command "cli_options.js options chain")`,
@@ -228,7 +228,7 @@ exports.builder = (yargs) => {
                 desc: 'Days to expiration to use in calculations. Applies only to ANALYTICAL strategy chains (see strategy param).'
             }
         },
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting option chain for ${argv.symbol}`);
             }
@@ -253,4 +253,4 @@ exports.builder = (yargs) => {
             }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
         });
 };
-exports.handler = (argv) => {};
+exports.handler = (argv: Arguments) => {};

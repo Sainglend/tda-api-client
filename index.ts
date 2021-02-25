@@ -1,4 +1,5 @@
 // Copyright (C) 2020  Aaron Satterlee
+const tdApiInterface = require('tda-api-client');
 
 const accounts = require('./src/accounts');
 const authentication = require('./src/authentication');

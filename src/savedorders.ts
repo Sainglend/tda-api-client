@@ -1,6 +1,6 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require('./tdapiinterface');
+import { Arguments } from "yargs";
 
 /**
  * Create a saved order for a given account
@@ -8,7 +8,7 @@ const tdApiInterface = require('./tdapiinterface');
  * @returns {Promise<Object>} api POST result
  * @async
  */
-const createSavedOrder = async (config) => {
+const createSavedOrder = async (config: any) => {
     config.bodyJSON = config.orderJSON;
     config.path = `/v1/accounts/${config.accountId}/savedorders`;
 
@@ -21,7 +21,7 @@ const createSavedOrder = async (config) => {
  * @returns {Promise<Object>} api DELETE result
  * @async
  */
-const deleteSavedOrder = async (config) => {
+const deleteSavedOrder = async (config: any) => {
     if (!config) config = {};
     config.path = `/v1/accounts/${config.accountId}/savedorders/${config.savedOrderId}`;
 
@@ -34,7 +34,7 @@ const deleteSavedOrder = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getSavedOrderById = async (config) => {
+const getSavedOrderById = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/savedorders/${config.savedOrderId}`;
 
     return tdApiInterface.apiGet(config);
@@ -46,7 +46,7 @@ const getSavedOrderById = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getSavedOrders = async (config) => {
+const getSavedOrders = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/savedorders`;
 
     return tdApiInterface.apiGet(config);
@@ -58,7 +58,7 @@ const getSavedOrders = async (config) => {
  * @returns {Promise<Object>} api PUT result
  * @async
  */
-const replaceSavedOrder = async (config) => {
+const replaceSavedOrder = async (config: any) => {
     config.bodyJSON = config.orderJSON;
     config.path = `/v1/accounts/${config.accountId}/savedorders/${config.savedOrderId}`;
 
@@ -74,12 +74,12 @@ exports.api = {
 };
 exports.command = 'savedorders <command>';
 exports.desc = 'Manage your saved orders';
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
   return yargs
     .command('create <accountId> <orderJSON>',
         'Create a saved order for a specified <accountId> using the properly formatted <orderJSON> (enclose in quotes, escape inner quotes, e.g. "{\\"orderType\\":\\"MARKET\\"}" )',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`creating a saved order for ${argv.accountId}`);
             }
@@ -92,7 +92,7 @@ exports.builder = (yargs) => {
     .command('replace <savedOrderId> <accountId> <orderJSON>',
         'Replace an existing saved order with <savedOrderId> for a specified <accountId> using the properly formatted <orderJSON> (enclose in quotes, escape inner quotes, e.g. "{\\"orderType\\":\\"MARKET\\"}" )',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`replacing saved order ${argv.savedOrderId} for ${argv.accountId}`);
             }
@@ -106,7 +106,7 @@ exports.builder = (yargs) => {
     .command('get <savedOrderId> <accountId>',
         'Get saved order info for a specified <savedOrderId> for a given <accountId>',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting saved order details for order ${argv.savedOrderId} for account ${argv.accountId}`);
             }
@@ -119,7 +119,7 @@ exports.builder = (yargs) => {
     .command('delete <savedOrderId> <accountId>',
         'Delete a specified saved order with <savedOrderId> for a given <accountId>',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`deleting saved order ${argv.savedOrderId} for account ${argv.accountId}`);
             }
@@ -132,7 +132,7 @@ exports.builder = (yargs) => {
     .command('getall <accountId>',
         'Get all saved orders for a given <accountId>',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting all saved order details account ${argv.accountId}`);
             }
@@ -142,4 +142,4 @@ exports.builder = (yargs) => {
             }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
         });
 };
-exports.handler = (argv) => {};
+exports.handler = (argv: Arguments) => {};

@@ -1,7 +1,8 @@
+/*
 const tdaclient = require('tda-api-client');
 
 
-/* GET ACCOUNT */
+// GET ACCOUNT 
 const configGetAcct = {
     accountId: 1,
     fields: 'positions,orders'
@@ -9,22 +10,22 @@ const configGetAcct = {
 const getAcctResult = await tdaclient.accounts.getAccount(configGetAcct);
 
 
-/* GET ACCOUNTS */
+// GET ACCOUNTS 
 const configGetAccts = {
     fields: 'positions,orders'
 };
 const getAcctsResult = await tdaclient.accounts.getAccounts(configGetAccts);
 
 
-/* GET AUTHENTICATION */
+// GET AUTHENTICATION 
 const authConfig = await tdaclient.authentication.getAuthentication();
 
 
-/* REFRESH AUTHENTICATION */
+// REFRESH AUTHENTICATION 
 const authConfig2 = await tdaclient.authentication.refreshAuthentication();
 
 
-/* GET INSTRUMENT */
+// GET INSTRUMENT 
 const configGetInst = {
     cusip: 345370860,
     apikey: ''
@@ -32,7 +33,7 @@ const configGetInst = {
 const getInstrumentResult = await tdaclient.instruments.getInstrument(configGetInst);
 
 
-/* SEARCH INSTRUMENT */
+// SEARCH INSTRUMENT 
 const configSearchInst = {
     symbol: 'F',
     projection: tdaclient.instruments.PROJECTION_TYPE.SYMBOL_SEARCH,
@@ -41,7 +42,7 @@ const configSearchInst = {
 const searchInstrumentResult = await tdaclient.instruments.searchInstruments(configSearchInst);
 
 
-/* GET SINGLE MARKET HOURS */
+// GET SINGLE MARKET HOURS 
 const configGetMktHours = {
     market: tdaclient.markethours.MARKETS.OPTION,
     date: '2020-09-10',
@@ -50,7 +51,7 @@ const configGetMktHours = {
 const getSingleMarketHoursResult = await tdaclient.markethours.getSingleMarketHours(configGetMktHours);
 
 
-/* GET MULTI MARKET HOURS */
+// GET MULTI MARKET HOURS 
 const configGetMultiMktHours = {
     markets: 'EQUITY,OPTION,FUTURE,BOND,FOREX',
     date: '2020-09-10',
@@ -59,7 +60,7 @@ const configGetMultiMktHours = {
 const getMultiMarketHoursResult = await tdaclient.markethours.getMultipleMarketHours(configGetMultiMktHours);
 
 
-/* GET MARKET MOVERS */
+// GET MARKET MOVERS 
 const moversConfig = {
     index: tdaclient.movers.INDEX.SPX,
     direction: tdaclient.movers.DIRECTION.UP,
@@ -69,7 +70,7 @@ const moversConfig = {
 const getMoversResult = await tdaclient.movers.getMovers(moversConfig);
 
 
-/* GET OPTIONS CHAIN */
+// GET OPTIONS CHAIN 
 const optionsConfig = {
     symbol: 'SPY',
     contractType: tdaclient.optionchain.CONTRACT_TYPE.ALL,
@@ -85,7 +86,7 @@ const optionsConfig = {
 const getOptionChainResult = await tdaclient.optionchain.getOptionChain(optionsConfig);
 
 
-/* GET PRICE HISTORY */
+// GET PRICE HISTORY 
 const priceHistoryConfig = {
     startDate: new Date('2019-09-01 07:00:00').getTime(),
     endDate: new Date('2020-09-01 16:00:00').getTime(),
@@ -98,7 +99,7 @@ const priceHistoryConfig = {
 const getPriceHistoryResult = await tdaclient.pricehistory.getPriceHistory(priceHistoryConfig);
 
 
-/* GET QUOTE */
+// GET QUOTE 
 const getQuoteConfig = {
     symbol: 'F',
     apikey: ''
@@ -106,7 +107,7 @@ const getQuoteConfig = {
 const getQuoteResult = await tdaclient.quotes.getQuote(getQuoteConfig);
 
 
-/* GET QUOTES */
+// GET QUOTES 
 const getQuotesConfig = {
     symbol: 'F,T,O',
     apikey: ''
@@ -114,7 +115,7 @@ const getQuotesConfig = {
 const getQuotesResult = await tdaclient.quotes.getQuotes(getQuotesConfig);
 
 
-/* CREATE SAVED ORDER */
+// CREATE SAVED ORDER 
 const createSavedOrderConfig = {
     orderJSON: {
         "orderType": "MARKET",
@@ -140,7 +141,7 @@ const createSavedOrderConfig = {
 const createSavedOrderResult = await tdaclient.savedorders.createSavedOrder(createSavedOrderConfig);
 
 
-/* DELETE SAVED ORDER */
+// DELETE SAVED ORDER 
 const deleteSavedOrderConfig = {
     accountId: 1,
     savedOrderId: 123
@@ -148,7 +149,7 @@ const deleteSavedOrderConfig = {
 const deleteSavedOrderResult = await tdaclient.savedorders.deleteSavedOrder(deleteSavedOrderConfig);
 
 
-/* GET SAVED ORDER BY ID */
+// GET SAVED ORDER BY ID 
 const getSavedOrderConfig = {
     accountId: 1,
     savedOrderId: 123
@@ -156,14 +157,14 @@ const getSavedOrderConfig = {
 const getSavedOrderResult = await tdaclient.savedorders.getSavedOrderById(getSavedOrderConfig);
 
 
-/* GET SAVED ORDER BY PATH */
+// GET SAVED ORDER BY PATH 
 const getSavedOrdersConfig = {
     accountId: 1
 };
 const getSavedOrdersResult = await tdaclient.savedorders.getSavedOrders(getSavedOrdersConfig);
 
 
-/* REPLACE SAVED ORDER */
+// REPLACE SAVED ORDER 
 const replaceSavedOrderConfig = {
     orderJSON: {
         "orderType": "MARKET",
@@ -190,7 +191,7 @@ const replaceSavedOrderConfig = {
 const replaceSavedOrderResult = await tdaclient.savedorders.replaceSavedOrder(replaceSavedOrderConfig);
 
 
-/* CANCEL ORDER */
+// CANCEL ORDER 
 const cancelOrderConfig = {
     accountId: 1,
     orderId: 321
@@ -198,7 +199,7 @@ const cancelOrderConfig = {
 const cancelOrderResult = await tdaclient.orders.cancelOrder(cancelOrderConfig);
 
 
-/* GET ORDER */
+// GET ORDER 
 const getOrderConfig = {
     accountId: 1,
     orderId: 321
@@ -206,7 +207,7 @@ const getOrderConfig = {
 const getOrderResult = await tdaclient.orders.getOrder(getOrderConfig);
 
 
-/* GET ORDERS BY ACCOUNT */
+// GET ORDERS BY ACCOUNT 
 const getOrdersConfig = {
     accountId: 1,
     maxResults: 10,
@@ -217,7 +218,7 @@ const getOrdersConfig = {
 const getOrdersResult = await tdaclient.orders.getOrdersByAccount(getOrdersConfig);
 
 
-/* GET ORDERS BY QUERY */
+// GET ORDERS BY QUERY 
 const getOrdersQueryConfig = {
     accountId: '', //1, blank is fine
     maxResults: 10,
@@ -228,7 +229,7 @@ const getOrdersQueryConfig = {
 const getOrdersQueryResult = await tdaclient.orders.getOrdersByQuery(getOrdersQueryConfig);
 
 
-/* REPLACE ORDER */
+// REPLACE ORDER 
 const replaceOrderConfig = {
     orderJSON: {
         "orderType": "MARKET",
@@ -252,7 +253,7 @@ const replaceOrderConfig = {
 const replaceOrderResult = await tdaclient.orders.replaceOrder(replaceOrderConfig);
 
 
-/* PLACE ORDER */
+// PLACE ORDER 
 const placeOrderConfig = {
     orderJSON: {
         "orderType": "MARKET",
@@ -275,7 +276,7 @@ const placeOrderConfig = {
 const placeOrderResult = await tdaclient.orders.placeOrder(placeOrderConfig);
 
 
-/* GET TRANSACTION */
+// GET TRANSACTION 
 const getTransactionConfig = {
     accountId: 1,
     transactionId: 321
@@ -283,7 +284,7 @@ const getTransactionConfig = {
 const getTransactionResult = await tdaclient.transactions.getTransaction(getTransactionConfig);
 
 
-/* GET TRANSACTIONS */
+// GET TRANSACTIONS 
 const getTransactionsConfig = {
     accountId: 1,
     symbol: '',
@@ -294,21 +295,21 @@ const getTransactionsConfig = {
 const getTransactionsResult = await tdaclient.transactions.getTransactions(getTransactionsConfig);
 
 
-/* GET USER PREFERENCES */
+// GET USER PREFERENCES 
 const getUserPrefConfig = {
     accountId: 1
 };
 const getUserPrefResult = await tdaclient.userinfo.getUserPreferences(getUserPrefConfig);
 
 
-/* GET STREAMER SUBSCRIPTION KEYS */
+// GET STREAMER SUBSCRIPTION KEYS 
 const getStreamerKeysConfig = {
     accountIds: '1,2'
 };
 const getStreamerKeysResult = await tdaclient.userinfo.getStreamerSubKeys(getStreamerKeysConfig);
 
 
-/* UPDATE USER PREFERENCES */
+// UPDATE USER PREFERENCES 
 const updateUserPrefsConfig = {
     accountId: 1,
     preferencesJSON: {
@@ -329,14 +330,14 @@ const updateUserPrefsConfig = {
 const updateUserPrefResult = await tdaclient.userinfo.updateUserPreferences(updateUserPrefsConfig);
 
 
-/* GET USER PRINCIPAL DATA */
+// GET USER PRINCIPAL DATA 
 const getUserPrinConfig = {
     fields: 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds'
 };
 const getUserPrinResult = await tdaclient.userinfo.getUserPrincipals(getUserPrinConfig);
 
 
-/* UPDATE WATCHLIST */
+// UPDATE WATCHLIST 
 const updateWatchlistConfig = {
     accountId: 1,
     watchlistId: 147,
@@ -359,7 +360,7 @@ const updateWatchlistConfig = {
 const updateWatchlistResult = await tdaclient.watchlists.updateWatchlist(updateWatchlistConfig);
 
 
-/* REPLACE WATCHLIST */
+// REPLACE WATCHLIST 
 const replaceWatchlistConfig = {
     accountId: 1,
     watchlistId: 321,
@@ -382,18 +383,18 @@ const replaceWatchlistConfig = {
 const replaceWatchlistResult = await tdaclient.watchlists.replaceWatchlist(replaceWatchlistConfig);
 
 
-/* GET WATCHLISTS SINGLE ACCOUNT */
+// GET WATCHLISTS SINGLE ACCOUNT 
 const getWatchlistsSingleAcctConfig = {
     accountId: 1
 };
 const getWatchlistsSingleAcctResult = await tdaclient.watchlists.getWatchlistsSingleAcct(getWatchlistsSingleAcctConfig);
 
 
-/* GET WATCHLISTS ALL LINKED ACCOUNTS */
+// GET WATCHLISTS ALL LINKED ACCOUNTS 
 const getWatchlistsAllAcctsResult = await tdaclient.watchlists.getWatchlistsMultiAcct({});
 
 
-/* GET SINGLE WATCHLIST */
+// GET SINGLE WATCHLIST 
 const getSingleWatchlistConfig = {
     accountId: 1,
     watchlistId: 321
@@ -401,7 +402,7 @@ const getSingleWatchlistConfig = {
 const getSingleWatchlistResult = await tdaclient.watchlists.getWatchlist(getSingleWatchlistConfig);
 
 
-/* DELETE WATCHLIST */
+// DELETE WATCHLIST 
 const deleteWatchlistConfig = {
     accountId: 1,
     watchlistId: 433
@@ -409,7 +410,7 @@ const deleteWatchlistConfig = {
 const deleteWatchlistResult = await tdaclient.watchlists.deleteWatchlist(deleteWatchlistConfig);
 
 
-/* CREATE WATCHLIST */
+// CREATE WATCHLIST 
 const createWatchlistConfig = {
     accountId: 1,
     watchlistJSON: {
@@ -429,3 +430,4 @@ const createWatchlistConfig = {
     }
 };
 const createWatchlistResult = await tdaclient.watchlists.createWatchlist(createWatchlistConfig);
+*/
