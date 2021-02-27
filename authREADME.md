@@ -2,7 +2,7 @@
 [Link back to main README](README.md)
 
 ## What do I actually HAVE to do?
-To use this library, you have to have a file in your project's config folder named tdaclientauth.json and with these two fields with the proper values filled in:
+To use this library, you MUST have a client_id (also known as apikey) to make unauthenticated requests. To make authenticated requests, you MUST ALSO have a refresh_token. Together, they form the basic auth object::
 ```json
 {
     "refresh_token":"REPLACEME",
@@ -10,8 +10,9 @@ To use this library, you have to have a file in your project's config folder nam
 }
 ```
 
-If you don't know what those are, then follow the guide below through step 10. After that you won't have to think about auth again until your refresh_token expires (90 days?) and you have to do steps 3 to 10 all over again.
+If you don't know what those fields are, then follow the guide below through step 10. After that you won't have to think about auth again until your refresh_token expires (90 days?) and you have to do steps 3b to 10 all over again.
 
+Once you have this info, you can plug it in right in the code (see the main [README](README.md)), or you can put it in a file at ```{project_root}/config/tdaclientauth.json```.
 ## Let's define some terms
 **Trading username and password**
 : this is what you use to log in to Thinkorswim or your trading account on https://www.tdameritrade.com.
@@ -44,7 +45,9 @@ Off3. https://developer.tdameritrade.com/content/simple-auth-local-apps
 
 (2) Navigate to My Apps and Add a New App. During setup, you'll be asked for a name and a description. The important part here is the Callback URL. For first time setup, use **(https://127.0.0.1)**
 
-(3) Now that you've created your app, in My Apps, you'll see your Consumer Key for your app. You'll need to urlencode it for the next step, so visit https://www.url-encode-decode.com/ and enter your Consumer Key, and encode it.
+(3a) Now that you've created your app, in My Apps, you'll see your Consumer Key for your app. IF YOU ONLY PLAN TO MAKE UNAUTHENTICATED REQUESTS (like get market data), YOU CAN STOP HERE. The Consumer Key is also known as the apikey that you'll use for unauthenticated requests.
+
+(3b) If you are continuing because you want to make authenticated requests, you'll need to urlencode your Consumer Key for the next step, so visit https://www.url-encode-decode.com/ and enter your Consumer Key, and encode it.
 
 (4) At this point, the **Off3** link above will make sense. In your browser address bar, enter: https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=https%3A%2F%2F127.0.0.1&client_id=EXAMPLE%40AMER.OAUTHAP except that you'd replace EXAMPLE with your URL ENCODED Consumer Key, so maybe that last part would look like client_id=23ALKFJ32LKJF2%40AMER.OAUTHAP
 
@@ -68,7 +71,7 @@ redirect_uri: {REDIRECT URI} (e.g. https://127.0.0.1)
 
 (9) The response will show up at the bottom and you will need to copy and SAVE the refresh_token somewhere, as you need it for step 10, for the JSON file.
 
-(10) For use with this library, you must have a file in {project root}/config/tdaclientauth.json. Please copy the example file from this library's config/ folder using the below command and fill in the appropriate values:
+(10) For use with this library, you must either have a file in ```{project root}/config/tdaclientauth.json``` or set the needed values in the config object with each request in your code. If the former, please copy the example file from this library's config/ folder using the below command and fill in the appropriate values:
 
 ```bash
 cp ./node_modules/tda-api-client/config/tdaclientauth.json ./config/tdaclientauth.json
@@ -81,7 +84,19 @@ OR copy this json and replace the values with your own:
     "client_id":"EXAMPLE@AMER.OAUTHAP"
 }
 ```
+Otherwise, if using this in code, this will be set as config.authConfig with each request. Example:
+```js
+ const configGetMarketHrs = {
+        market: 'OPTION',
+        date: '2021-03-02',
+        authConfig: {
+            "refresh_token": "SrgS0QJK",
+            "client_id": "P66@AMER.OAUTHAP",
+        }
+    };
 
+const hrs = await tdaapiclient.markethours.getSingleMarketHours(configGetMarketHrs);
+```
 ## DONE!!!! Sort of.....
 
 From now on, you can either leverage the authentication javascript code in this library, either directly in your code, or indirectly every time you make a request, or you can revisit the page in step 7. Note: as long as you put the refresh_token in the correct place in the config/ folder, you'll never have to personally deal with an access_token (the one that expires every 30 minutes). You'll just have to get a new refresh_token every 90 days.
