@@ -1,12 +1,13 @@
 // Copyright (C) 2020  Aaron Satterlee
 
 import { Arguments } from "yargs";
+const tdApiInterface = require ('./tdapiinterface');
 
 export interface IAuthConfig {
     refresh_token: string,
     client_id: string,
-    expires_on: number,
-    expires_in: number
+    expires_on?: number,
+    expires_in?: number
 }
 
 /**

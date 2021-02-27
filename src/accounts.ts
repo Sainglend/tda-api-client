@@ -1,6 +1,7 @@
 // Copyright (C) 2020  Aaron Satterlee
 
 import { Arguments } from "yargs";
+const tdApiInterface = require ('./tdapiinterface');
 
 /**
  * Gets account info for a single account. You can request additional fields with config.fields as a comma-separated string.

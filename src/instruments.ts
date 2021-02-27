@@ -1,6 +1,7 @@
 // Copyright (C) 2020  Aaron Satterlee
 
 import { Arguments } from "yargs";
+const tdApiInterface = require ('./tdapiinterface');
 
 const PROJECTION_TYPE = {
     SYMBOL_SEARCH: "symbol-search",

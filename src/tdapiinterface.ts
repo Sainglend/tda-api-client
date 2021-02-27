@@ -127,7 +127,7 @@ const performAxiosRequest = async (requestConfig: any, expectData: boolean) => {
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    rej(`ERROR [${error.response.status}]: ${error.response.data}`);
+                    rej(`ERROR [${error.response.status}]: ${JSON.stringify(error.response.data)}`);
                 } else if (error.request) {
                     // The request was made but no response was received
                     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
@@ -142,11 +142,10 @@ const performAxiosRequest = async (requestConfig: any, expectData: boolean) => {
     });
 };
 
-const writeOutAuthResultToFile = async (authConfig: IAuthConfig, config: any) => {
-    authConfig.expires_on = Date.now() + (authConfig.expires_in * 1000);
+const writeOutAuthResultToFile = async (authConfig: IAuthConfig, verbose: boolean = false) => {
     return new Promise((resolve, reject) => {
         const filePath = path.join(process.cwd(), `/config/tdaclientauth.json`);
-        if (config.verbose) {
+        if (verbose) {
             console.log(`writing new auth data to ${filePath}`);
         }
         fs.writeFile(filePath, JSON.stringify(authConfig, null, 2), (err: Error) => {
@@ -167,7 +166,7 @@ const getNewAccessTokenPostData = (authConfig: IAuthConfig) => {
     });
 };
 
-const doAuthenticationHandshake = async (auth_config: IAuthConfig, config: any) => {
+const doAuthenticationHandshake = async (auth_config: IAuthConfig, verbose: boolean = false) => {
 
     const authConfig = auth_config || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     const requestConfig = {
@@ -188,8 +187,16 @@ const doAuthenticationHandshake = async (auth_config: IAuthConfig, config: any) 
     }
     const result = await performAxiosRequest(requestConfig, true);
 
+    if (authConfig.expires_in) {
+        authConfig.expires_on = Date.now() + (authConfig.expires_in * 1000);
+    } else {
+        authConfig.expires_on = Date.now();
+    }
     Object.assign(authConfig, result);
-    await writeOutAuthResultToFile(authConfig, config);
+
+    if (!auth_config || Object.keys(auth_config).length === 0) {
+        await writeOutAuthResultToFile(authConfig, verbose);
+    }
     return authConfig;
 };
 
@@ -200,13 +207,12 @@ const doAuthenticationHandshake = async (auth_config: IAuthConfig, config: any) 
  * @returns {Object} auth info object with some calculated fields, including the all-important access_token; this is written to the auth json file in project's config/
  * @async
  */
-const refreshAuthentication = async (auth_config: IAuthConfig, config: any) => {
+const refreshAuthentication = async (auth_config: IAuthConfig, verbose: boolean = false) => {
     auth_config = auth_config || {};
-    config = config || {};
-    if (config.verbose) {
+    if (verbose) {
         console.log('refreshing authentication');
     }
-    return doAuthenticationHandshake(auth_config, config);
+    return doAuthenticationHandshake(auth_config, verbose);
 };
 
 /**
@@ -216,10 +222,10 @@ const refreshAuthentication = async (auth_config: IAuthConfig, config: any) => {
  * @async
  */
 const getAuthentication = async (config: any) => {
-    const authConfig = require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     config = config || {};
+    const authConfig = config.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     if (!authConfig.expires_on || authConfig.expires_on < Date.now() + (10*60*1000)) {
-        return refreshAuthentication(authConfig, config);
+        return refreshAuthentication(authConfig, config.verbose);
     } else {
         if (config.verbose) {
             console.log('not refreshing authentication as it has not expired');

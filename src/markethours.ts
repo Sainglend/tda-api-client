@@ -1,5 +1,9 @@
 // Copyright (C) 2020  Aaron Satterlee
 
+import { Arguments } from "yargs";
+
+const tdApiInterface = require ('./tdapiinterface');
+
 enum MARKETS {
     EQUITY = 'EQUITY',
     OPTION = 'OPTION',
@@ -47,7 +51,7 @@ exports.builder = (yargs: any) => {
     .command('get <date> <markets> [apikey]',
         'Get market open hours for a specified date <date> (e.g. 2020-09-18) and a comma-separated set of <markets> from EQUITY, OPTION, FUTURE, BOND, or FOREX, e.g. "EQUITY,OPTION". Including your optional <apikey> makes an unauthenticated request.',
         {},
-        async (argv: any) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting market hours for ${argv.date} for markets ${argv.markets}`);
             }
@@ -61,7 +65,7 @@ exports.builder = (yargs: any) => {
     .command('getone <date> <market> [apikey]',
         'Get market open hours for a specified date <date> and a single <market> from EQUITY, OPTION, FUTURE, BOND, or FOREX. Including your optional <apikey> makes an unauthenticated request.',
         {},
-        async (argv: any) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting market hours for ${argv.date} for market ${argv.market}`);
             }

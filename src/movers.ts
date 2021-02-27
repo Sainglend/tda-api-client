@@ -1,5 +1,6 @@
 // Copyright (C) 2020  Aaron Satterlee
 
+const tdApiInterface = require ('./tdapiinterface');
 import { Arguments } from "yargs";
 
 const INDEX = {
