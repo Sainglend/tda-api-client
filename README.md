@@ -1,6 +1,6 @@
 
 # TDA API CLIENT
-v1.0.4
+v1.1.0
 ## Summary
 This library is a client to use the API exposed by TD Ameritrade at https://developer.tdameritrade.com
 This project can also be cloned from github to use as a command line utility.
@@ -244,7 +244,7 @@ Here is an example:
 node ./cli_index.js hours get 2020-12-02 FUTURES > hours.json
 ```
 ## Version History
-v1.0.4 - (Feb 27, 2021) Converted to TypeScript, added in ability to make authenticated requests through the config object for each method, instead of requiring a config file.
+v1.1.0 - (Feb 27, 2021) Converted to TypeScript, added in ability to make authenticated requests through the config object for each method, instead of requiring a config file.
 
 v1.0.3 - (Feb 24, 2021) Removed logging statements and fixed auth
 
