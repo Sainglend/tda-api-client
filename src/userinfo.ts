@@ -1,6 +1,7 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require('./tdapiinterface');
+const tdApiInterface = require ('./tdapiinterface');
+import { Arguments } from "yargs";
 
 /**
  * Get user preferences for a given accountId
@@ -8,7 +9,7 @@ const tdApiInterface = require('./tdapiinterface');
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getUserPreferences = async (config) => {
+const getUserPreferences = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/preferences`;
 
     return tdApiInterface.apiGet(config);
@@ -20,7 +21,7 @@ const getUserPreferences = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getStreamerSubKeys = async (config) => {
+const getStreamerSubKeys = async (config: any) => {
     config.path = `/v1/userprincipals/streamersubscriptionkeys?accountIds=${config.accountIds}`;
 
     return tdApiInterface.apiGet(config);
@@ -32,7 +33,7 @@ const getStreamerSubKeys = async (config) => {
  * @returns {Promise<Object>} api PUT result
  * @async
  */
-const updateUserPreferences = async (config) => {
+const updateUserPreferences = async (config: any) => {
     config.bodyJSON = config.preferencesJSON;
     config.path = `/v1/accounts/${config.accountId}/preferences`;
 
@@ -45,7 +46,7 @@ const updateUserPreferences = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getUserPrincipals = async (config) => {
+const getUserPrincipals = async (config: any) => {
     config.path = `/v1/userprincipals?fields=${config.fields}`;
 
     return tdApiInterface.apiGet(config);
@@ -59,12 +60,12 @@ exports.api = {
 };
 exports.command = 'userinfo <command>';
 exports.desc = 'Get and update user information such as preferences and keys';
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
   return yargs
     .command('principals [fields]',
         'Get user info. Return additional fields with the [fields] param, a comma-separated string of up to 4 fields: streamerSubscriptionKeys, streamerConnectionInfo, preferences, surrogateIds',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting principal data with extra fields: ${argv.fields || ''}`);
             }
@@ -76,7 +77,7 @@ exports.builder = (yargs) => {
     .command('pref <accountId>',
         'Get user preferences for a given <accountid>',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting user preferences for account ${argv.accountId}`);
             }
@@ -88,7 +89,7 @@ exports.builder = (yargs) => {
     .command('streamerkeys <accountIds>',
         'Get streamer subscription keys for given <accountids> as a comma-separated list: 123,345',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting streamer sub keys for accounts ${argv.accountIds}`);
             }
@@ -100,7 +101,7 @@ exports.builder = (yargs) => {
     .command('updateprefs <accountId> <preferencesJSON>',
         'Update user preferences for a given <accountid> using <preferencesJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`updating preferences for account ${argv.accountId}`);
             }
@@ -112,4 +113,4 @@ exports.builder = (yargs) => {
         });
 
 };
-exports.handler = (argv) => {};
+exports.handler = (argv: Arguments) => {};

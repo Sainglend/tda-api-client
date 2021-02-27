@@ -1,5 +1,8 @@
 // Copyright (C) 2020  Aaron Satterlee
 
+import { AxiosError, AxiosResponse } from "axios";
+import { IAuthConfig } from "./authentication";
+
 const axios = require('axios').default;
 const fs = require('fs');
 const querystring = require('querystring');
@@ -25,8 +28,8 @@ const instance = axios.create({
  * @returns {Promise<Object>} resolve is api GET result, reject is error object
  * @async
  */
-const apiGet = async (config) => {
-    return apiNoWriteResource(config, 'get');
+const apiGet = async (config: any) => {
+    return apiNoWriteResource(config, 'get', false);
 };
 
 /**
@@ -35,8 +38,8 @@ const apiGet = async (config) => {
  * @returns {Promise<Object>} resolve is api DELETE result, reject is error object
  * @async
  */
-const apiDelete = async (config) => {
-    return apiNoWriteResource(config, 'delete');
+const apiDelete = async (config: any) => {
+    return apiNoWriteResource(config, 'delete', false);
 };
 
 /**
@@ -45,8 +48,8 @@ const apiDelete = async (config) => {
  * @returns {Promise<Object>} resolve is api PATCH result, reject is error object
  * @async
  */
-const apiPatch = async (config) => {
-    return apiWriteResource(config, 'patch');
+const apiPatch = async (config: any) => {
+    return apiWriteResource(config, 'patch', false);
 };
 
 /**
@@ -55,8 +58,8 @@ const apiPatch = async (config) => {
  * @returns {Promise<Object>} resolve is api PUT result, reject is error object
  * @async
  */
-const apiPut = async (config) => {
-    return apiWriteResource(config, 'put');
+const apiPut = async (config: any) => {
+    return apiWriteResource(config, 'put', false);
 };
 
 /**
@@ -65,11 +68,11 @@ const apiPut = async (config) => {
  * @returns {Promise<Object>} resolve is api POST result, reject is error object
  * @async
  */
-const apiPost = async (config) => {
-    return apiWriteResource(config, 'post');
+const apiPost = async (config: any) => {
+    return apiWriteResource(config, 'post', false);
 };
 
-const apiNoWriteResource = async (config, method, skipAuth) => {
+const apiNoWriteResource = async (config: any, method: string, skipAuth: boolean) => {
     const requestConfig = {
         method: method,
         url: config.path,
@@ -79,13 +82,14 @@ const apiNoWriteResource = async (config, method, skipAuth) => {
     if (!config.apikey && !skipAuth) {
         const authResponse = await getAuthentication(config);
         const token = authResponse.access_token;
+        // @ts-ignore
         requestConfig.headers['Authorization'] = `Bearer ${token}`;
     }
 
     return performAxiosRequest(requestConfig, true);
 };
 
-const apiWriteResource = async (config, method, skipAuth) => {
+const apiWriteResource = async (config: any, method: string, skipAuth: boolean) => {
     const requestConfig = {
         method: method,
         url: config.path,
@@ -98,16 +102,17 @@ const apiWriteResource = async (config, method, skipAuth) => {
     if (!config.apikey && !skipAuth) {
         const authResponse = await getAuthentication(config);
         const token = authResponse.access_token;
+        // @ts-ignore
         requestConfig.headers['Authorization'] = `Bearer ${token}`;
     }
 
     return performAxiosRequest(requestConfig, false);
 };
 
-const performAxiosRequest = async (requestConfig, expectData) => {
+const performAxiosRequest = async (requestConfig: any, expectData: boolean) => {
     return new Promise((res, rej) => {
         instance.request(requestConfig)
-            .then(function (response) {
+            .then(function (response: AxiosResponse) {
                 if (expectData) {
                     res(response.data);
                 } else {
@@ -118,11 +123,11 @@ const performAxiosRequest = async (requestConfig, expectData) => {
                     });
                 }
             })
-            .catch(function (error) {
+            .catch(function (error: AxiosError) {
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    rej(`ERROR [${error.response.status}]: ${error.response.data}`);
+                    rej(`ERROR [${error.response.status}]: ${JSON.stringify(error.response.data)}`);
                 } else if (error.request) {
                     // The request was made but no response was received
                     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
@@ -137,21 +142,20 @@ const performAxiosRequest = async (requestConfig, expectData) => {
     });
 };
 
-const writeOutAuthResultToFile = async (authConfig, config) => {
-    authConfig.expires_on = Date.now() + (authConfig.expires_in * 1000);
+const writeOutAuthResultToFile = async (authConfig: IAuthConfig, verbose: boolean = false) => {
     return new Promise((resolve, reject) => {
         const filePath = path.join(process.cwd(), `/config/tdaclientauth.json`);
-        if (config.verbose) {
+        if (verbose) {
             console.log(`writing new auth data to ${filePath}`);
         }
-        fs.writeFile(filePath, JSON.stringify(authConfig, null, 2), (err) => {
+        fs.writeFile(filePath, JSON.stringify(authConfig, null, 2), (err: Error) => {
             if (err) reject(err);
             resolve(authConfig);
         });
     });
 };
 
-const getNewAccessTokenPostData = (authConfig) => {
+const getNewAccessTokenPostData = (authConfig: IAuthConfig) => {
     return querystring.encode({
         "grant_type": "refresh_token",
         "refresh_token": authConfig.refresh_token,
@@ -162,7 +166,7 @@ const getNewAccessTokenPostData = (authConfig) => {
     });
 };
 
-const doAuthenticationHandshake = async (auth_config, config) => {
+const doAuthenticationHandshake = async (auth_config: IAuthConfig, verbose: boolean = false) => {
 
     const authConfig = auth_config || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     const requestConfig = {
@@ -181,10 +185,18 @@ const doAuthenticationHandshake = async (auth_config, config) => {
             'Sec-Fetch-Site': 'same-site'
         }
     }
-    const result = await performAxiosRequest(requestConfig);
+    const result = await performAxiosRequest(requestConfig, true);
 
-    Object.assign(authConfig, result.data);
-    await writeOutAuthResultToFile(authConfig, config);
+    if (authConfig.expires_in) {
+        authConfig.expires_on = Date.now() + (authConfig.expires_in * 1000);
+    } else {
+        authConfig.expires_on = Date.now();
+    }
+    Object.assign(authConfig, result);
+
+    if (!auth_config || Object.keys(auth_config).length === 0) {
+        await writeOutAuthResultToFile(authConfig, verbose);
+    }
     return authConfig;
 };
 
@@ -195,13 +207,12 @@ const doAuthenticationHandshake = async (auth_config, config) => {
  * @returns {Object} auth info object with some calculated fields, including the all-important access_token; this is written to the auth json file in project's config/
  * @async
  */
-const refreshAuthentication = async (auth_config, config) => {
+const refreshAuthentication = async (auth_config: IAuthConfig, verbose: boolean = false) => {
     auth_config = auth_config || {};
-    config = config || {};
-    if (config.verbose) {
+    if (verbose) {
         console.log('refreshing authentication');
     }
-    return doAuthenticationHandshake(auth_config, config);
+    return doAuthenticationHandshake(auth_config, verbose);
 };
 
 /**
@@ -210,11 +221,11 @@ const refreshAuthentication = async (auth_config, config) => {
  * @returns {Object} auth info object, including the all-important access_token
  * @async
  */
-const getAuthentication = async (config) => {
-    const authConfig = require(path.join(process.cwd(), `/config/tdaclientauth.json`));
+const getAuthentication = async (config: any) => {
     config = config || {};
+    const authConfig = config.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     if (!authConfig.expires_on || authConfig.expires_on < Date.now() + (10*60*1000)) {
-        return refreshAuthentication(authConfig, config);
+        return refreshAuthentication(authConfig, config.verbose);
     } else {
         if (config.verbose) {
             console.log('not refreshing authentication as it has not expired');

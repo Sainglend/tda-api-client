@@ -1,6 +1,7 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require('./tdapiinterface');
+const tdApiInterface = require ('./tdapiinterface');
+import { Arguments } from "yargs";
 
 /**
  * Create a new watchlist for a specified accountId using watchlistJSON
@@ -8,7 +9,7 @@ const tdApiInterface = require('./tdapiinterface');
  * @returns {Promise<Object>} api PATCH result
  * @async
  */
-const createWatchlist = async (config) => {
+const createWatchlist = async (config: any) => {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists`;
 
@@ -21,7 +22,7 @@ const createWatchlist = async (config) => {
  * @returns {Promise<Object>} api DELETE result
  * @async
  */
-const deleteWatchlist = async (config) => {
+const deleteWatchlist = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
     return tdApiInterface.apiDelete(config);
@@ -33,7 +34,7 @@ const deleteWatchlist = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getWatchlist = async (config) => {
+const getWatchlist = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
     return tdApiInterface.apiGet(config);
@@ -46,7 +47,7 @@ const getWatchlist = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getWatchlistsMultiAcct = async (config) => {
+const getWatchlistsMultiAcct = async (config: any) => {
     if (!config) config = {};
     config.path = `/v1/accounts/watchlists`;
 
@@ -60,7 +61,7 @@ const getWatchlistsMultiAcct = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getWatchlistsSingleAcct = async (config) => {
+const getWatchlistsSingleAcct = async (config: any) => {
     config.path = `/v1/accounts/${config.accountId}/watchlists`;
 
     return tdApiInterface.apiGet(config);
@@ -73,7 +74,7 @@ const getWatchlistsSingleAcct = async (config) => {
  * @returns {Promise<Object>} api PUT result
  * @async
  */
-const replaceWatchlist = async (config) => {
+const replaceWatchlist = async (config: any) => {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
@@ -87,7 +88,7 @@ const replaceWatchlist = async (config) => {
  * @returns {Promise<Object>} api PATCH result
  * @async
  */
-const updateWatchlist = async (config) => {
+const updateWatchlist = async (config: any) => {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
@@ -105,12 +106,12 @@ exports.api = {
 };
 exports.command = 'watchlists <command>';
 exports.desc = 'Manage your watchlists';
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
   return yargs
     .command('create <accountId> <orderJSON>',
         'Create a watchlist for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`creating a watchlist for ${argv.accountId}`);
             }
@@ -123,7 +124,7 @@ exports.builder = (yargs) => {
     .command('replace <watchlistId> <accountId> <watchlistJSON>',
         'Replace an entire watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`replacing watchlist ${argv.watchlistId} for ${argv.accountId}`);
             }
@@ -137,7 +138,7 @@ exports.builder = (yargs) => {
     .command('update <watchlistId> <accountId> <watchlistJSON>',
         'Append/update in place a watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`updating watchlist ${argv.watchlistId} for ${argv.accountId}`);
             }
@@ -151,7 +152,7 @@ exports.builder = (yargs) => {
     .command('get <watchlistId> <accountId>',
         'Get a single watchlist having <watchlistId> for a given <accountId>',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
             }
@@ -164,7 +165,7 @@ exports.builder = (yargs) => {
     .command('getall <accountId>',
         'Get all watchlists for a given <accountId>',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting all watchlists for account ${argv.accountId}`);
             }
@@ -176,7 +177,7 @@ exports.builder = (yargs) => {
     .command('getmulti',
         'Get all watchlists for all your linked accounts',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting all watchlists for all linked accounts`);
             }
@@ -188,7 +189,7 @@ exports.builder = (yargs) => {
     .command('delete <watchlistId> <accountId>',
         'Delete a specified watchlist with <watchlistId> for a given <accountId>',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`deleting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
             }
@@ -199,4 +200,4 @@ exports.builder = (yargs) => {
             }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
         });
 };
-exports.handler = (argv) => {};
+exports.handler = (argv: Arguments) => {};

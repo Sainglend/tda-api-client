@@ -1,5 +1,6 @@
 
 # TDA API CLIENT
+v1.1.0
 ## Summary
 This library is a client to use the API exposed by TD Ameritrade at https://developer.tdameritrade.com
 This project can also be cloned from github to use as a command line utility.
@@ -23,9 +24,52 @@ npm i tda-api-client
 
 ## Usage
 
-### DO THIS FIRST: You must have a configuration file
+You may make unauthenticated requests (which typically give delayed data) for some endpoints, but generally requests must be authenticated.
+### DO THIS FIRST: You must know your authentication information
+For a primer on Auth, see [authREADME.md](authREADME.md).
 
-You must have a file at **{project root}/config/tdaclientauth.json**. Please copy the example file from this library's [config/](config/) folder using the below command:
+For making unauthenticated requests, you must know your client_id, also known as apikey, which looks like: ```FIEJ33342@AMER.OAUTHAP```
+
+For making authenticated requests, you must additionally have a refresh_token.
+
+Using this library, there are three ways to make requests:
+### 1. Unauthenticated requests
+For the methods that support it, ```apikey``` can be passed in as a config option.
+Example:
+```js
+const tdaclient = require('tda-api-client');
+
+const configGetMarketHrs = {
+        market: 'OPTION',
+        date: '2021-03-02',
+        apikey: 'FIEJ33342@AMER.OAUTHAP'
+};
+
+const hrs = await tdaclient.markethours.getSingleMarketHours(configGetMarketHrs);
+
+```
+A list of methods allowing unauthenticated requests are listed below.
+
+### 2. Authenticated requests with a config object
+The difference here is that you'd pass in your client_id and refresh_token in as ```config.authConfig``` like this:
+```js
+const tdaclient = require('tda-api-client');
+
+const configGetMarketHrs = {
+        market: 'OPTION',
+        date: '2021-03-02',
+        authConfig: {
+            "refresh_token": "SrgS0QJK",
+            "client_id": "FIEJ33342@AMER.OAUTHAP",
+        }
+};
+
+const hrs = await tdaclient.markethours.getSingleMarketHours(configGetMarketHrs);
+
+```
+
+### 3. Authenticated requests with a config file
+To use this method, you must have a file at ```{project root}/config/tdaclientauth.json```. Please copy the example file from this library's [config/](config/) folder using the below command:
 
 ```bash
 cp ./node_modules/tda-api-client/config/tdaclientauth.json ./config/tdaclientauth.json
@@ -39,11 +83,9 @@ OR copy this json and replace the values with your own:
 }
 ```
 
-For a primer on Auth, see [authREADME.md](authREADME.md).
-
 ### Now that you've got your auth file ready...
 
-Here's a little sample code for a taste of how to use this thing.
+Here's a little sample code for a taste of how to use this thing. This is using auth from a file.
 
 ```javascript
 const tdaclient = require('tda-api-client');
@@ -53,29 +95,66 @@ await tdaclient.watchlists.deleteWatchlist({watchlistId: 4242, accountId: 456});
 const hours = await tdaclient.markethours.getSingleMarketHours({index: tdaclient.markethours.MARKETS.EQUITY, date: '2020-09-20'});
 ```
 
-The hierarchy is pretty flat. Under the root object, named "tdaclient" in the above example, there are:
+The hierarchy is pretty flat. Under the root object, named "tdaclient" in the above example, we have (asterisks indicate unauthenticated requests are possible):
 - accounts
+    - getAccount
+    - getAccounts
 - authentication
+    - getAuthentication
+    - refreshAuthentication
 - instruments
+    - getInstrument **
+    - searchInstrument **
 - markethours
+    - getSingleMarketHours **
+    - getMultipleMarketHours **
 - movers
+    - getMovers **
 - optionchain
+    - getOptionChain **
 - orders
+    - placeOrder
+    - replaceOrder
+    - cancelOrder
+    - getOrder
+    - getOrdersByAccount
+    - getOrdersByQuery
 - pricehistory
+    - getPriceHistory **
 - quotes
+    - getQuote **
+    - getQuotes **
 - savedorders
+    - createSavedOrder
+    - deleteSavedOrder
+    - getSavedOrderById
+    - getSavedOrders
+    - replaceSavedOrder
 - transactions
+    - getTransaction
+    - getTransactions
 - userinfo
+    - getUserPreferences
+    - getStreamerSubKeys
+    - getUserPrincipals
+    - updateUserPreferences
 - watchlists
+    - createWatchlist
+    - deleteWatchlist
+    - getWatchlist
+    - getWatchlistsSingleAcct
+    - getWatchlistsMultiAcct 
+    - replaceWatchlist
+    - updateWatchlist
 
-Each of these has their functions, which correspond 1-to-1 with an API endpoint, and possibly some useful ENUMS.
+Each of the 13 first-level objects has their functions, as listed, which correspond 1-to-1 with an API endpoint, and possibly some useful ENUMS.
 
 These aren't strictly organized like the API on the TD Developer site. For example, their site has Accounts, Orders, and Saved Orders grouped together.
 
 
 ## Documentation
 ### Mine
-I've used JSDoc to add comments to each enum and function that wraps an API.
+I've used JSDoc to add comments to each enum and function that wraps an API. I also converted this to TypeScript and will be adding in better and better type support.
 
 You can look in the [samples/](samples/) folder to see [code samples](samples/codesamples.md), which has a simple usage of each of the functions. That folder also has an inputJSON folder with sample inputs.
 
@@ -164,10 +243,21 @@ Here is an example:
 ```bash
 node ./cli_index.js hours get 2020-12-02 FUTURES > hours.json
 ```
+## Version History
+v1.1.0 - (Feb 27, 2021) Converted to TypeScript, added in ability to make authenticated requests through the config object for each method, instead of requiring a config file.
+
+v1.0.3 - (Feb 24, 2021) Removed logging statements and fixed auth
+
+v1.0.2 - (Feb 23, 2021) Fixed issues in 1.0.1 as well as fixed unauthenticated requests both through regular api and cli api
+
+v1.0.1 - (Feb 21, 2021) Attempt to fix http issues by using axios; unpublished due to bugs in auth
+
+v1.0.0 - (Sept 18, 2020) Initial publish of library
+
 ## Roadmap (no particular order)
 This was originally built for a particular set of use cases, and those will continue to be the driver for future project direction.
 In no particular order:
-- Type support for Typescript
+- Improved type support for Typescript
 - Data structures for the input and output types, like Order, for easy parsing
 - Helper methods for creating a properly formatted JSON input object (order, watchlist, etc.) given input params.
 - Streaming data support for daemon apps.

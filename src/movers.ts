@@ -1,6 +1,7 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require('./tdapiinterface');
+const tdApiInterface = require ('./tdapiinterface');
+import { Arguments } from "yargs";
 
 const INDEX = {
     COMPX: '$COMPX',
@@ -26,7 +27,7 @@ const CHANGE = {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getMovers = async (config) => {
+const getMovers = async (config: any) => {
     config.path = `/v1/marketdata/${config.index}/movers` +
         `?direction=${config.direction}` +
         `&change=${config.change}` +
@@ -43,12 +44,12 @@ exports.api = {
 };
 exports.command = 'movers <command>'
 exports.desc = 'Get market movers'
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
   return yargs
   .command('get <majorIndex> <direction> <change> [apikey]',
     `Get market movers for a specified <majorIndex> ('$COMPX', '$DJI', '$SPX.X'), a given <direction> ('up', 'down'), and the type of <change> ('value', 'percent'), e.g. "get \\$DJI up percent" (notice the escape character). Optionally takes an apikey for an unathenticated request.`,
     {},
-    async (argv) => {
+    async (argv: Arguments) => {
         if (argv.verbose) {
             console.log(`getting market movers for ${argv.majorIndex}, moving ${argv.direction} by ${argv.change}`);
         }
@@ -61,4 +62,4 @@ exports.builder = (yargs) => {
         }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
     });
 }
-exports.handler = (argv) => {}
+exports.handler = (argv: Arguments) => {}

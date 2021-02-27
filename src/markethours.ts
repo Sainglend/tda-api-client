@@ -1,13 +1,15 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require('./tdapiinterface');
+import { Arguments } from "yargs";
 
-const MARKETS = {
-    EQUITY: 'EQUITY',
-    OPTION: 'OPTION',
-    FUTURE: 'FUTURE',
-    BOND: 'BOND',
-    FOREX: 'FOREX'
+const tdApiInterface = require ('./tdapiinterface');
+
+enum MARKETS {
+    EQUITY = 'EQUITY',
+    OPTION = 'OPTION',
+    FUTURE = 'FUTURE',
+    BOND = 'BOND',
+    FOREX = 'FOREX'
 };
 
 /**
@@ -17,7 +19,7 @@ const MARKETS = {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getSingleMarketHours = async (config) => {
+const getSingleMarketHours = async (config: any) => {
     config.path = `/v1/marketdata/${config.market}/hours?date=${config.date}` +
         (config.apikey ? `&apikey=${config.apikey}` : '');
 
@@ -31,7 +33,7 @@ const getSingleMarketHours = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getMultipleMarketHours = async (config) => {
+const getMultipleMarketHours = async (config: any) => {
     config.path = `/v1/marketdata/hours?markets=${config.markets}&date=${config.date}` +
         (config.apikey ? `&apikey=${config.apikey}` : '');
 
@@ -44,12 +46,12 @@ exports.api = {
 }
 exports.command = 'hours <command>';
 exports.desc = 'Get market hours';
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
   return yargs
     .command('get <date> <markets> [apikey]',
         'Get market open hours for a specified date <date> (e.g. 2020-09-18) and a comma-separated set of <markets> from EQUITY, OPTION, FUTURE, BOND, or FOREX, e.g. "EQUITY,OPTION". Including your optional <apikey> makes an unauthenticated request.',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting market hours for ${argv.date} for markets ${argv.markets}`);
             }
@@ -63,7 +65,7 @@ exports.builder = (yargs) => {
     .command('getone <date> <market> [apikey]',
         'Get market open hours for a specified date <date> and a single <market> from EQUITY, OPTION, FUTURE, BOND, or FOREX. Including your optional <apikey> makes an unauthenticated request.',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting market hours for ${argv.date} for market ${argv.market}`);
             }
@@ -75,4 +77,4 @@ exports.builder = (yargs) => {
             }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
         });
 };
-exports.handler = (argv) => {};
+exports.handler = (argv: any) => {};

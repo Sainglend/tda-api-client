@@ -1,6 +1,7 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require('./tdapiinterface');
+import { Arguments } from "yargs";
+const tdApiInterface = require ('./tdapiinterface');
 
 const PROJECTION_TYPE = {
     SYMBOL_SEARCH: "symbol-search",
@@ -18,7 +19,7 @@ const PROJECTION_TYPE = {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const searchInstruments = async (config) => {
+const searchInstruments = async (config: any) => {
     config.path = `/v1/instruments?symbol=${config.symbol}&projection=${config.projection}` +
         (config.apikey ? `&apikey=${config.apikey}` : '');
 
@@ -33,7 +34,7 @@ const searchInstruments = async (config) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getInstrument = async (config) => {
+const getInstrument = async (config: any) => {
     config.path = `/v1/instruments/${config.cusip}` +
         (config.apikey ? `?apikey=${config.apikey}` : '');
 
@@ -47,12 +48,12 @@ exports.api = {
 };
 exports.command = 'instruments <command>';
 exports.desc = 'Search for an instrument with a text string, or get an instrument by CUSIP';
-exports.builder = (yargs) => {
+exports.builder = (yargs: any) => {
   return yargs
     .command('search <symbol> <projection> [apikey]',
         'Search for an instrument using search string <symbol> and search type indicated by <projection> (one of symbol-search, symbol-regex, desc-search, desc-regex, fundamental), can optionally use apikey for unauthenticated request',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`searching instruments for ${argv.symbol} with search type ${argv.projection}`);
             }
@@ -66,7 +67,7 @@ exports.builder = (yargs) => {
     .command('get <cusip> [apikey]',
         'Get an instrument by CUSIP <cusip> (unique id number assigned to all stocks and registered bonds in US/CA). List here: https://www.sec.gov/divisions/investment/13flists.htm , can use <apikey> for delayed data',
         {},
-        async (argv) => {
+        async (argv: Arguments) => {
             if (argv.verbose) {
                 console.log(`getting instrument info for cusip ${argv.cusip}`);
             }
@@ -77,4 +78,4 @@ exports.builder = (yargs) => {
             }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
         });
 };
-exports.handler = (argv) => {};
+exports.handler = (argv: Arguments) => {};
