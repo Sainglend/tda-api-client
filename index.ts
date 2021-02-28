@@ -1,5 +1,7 @@
 // Copyright (C) 2020  Aaron Satterlee
 
+import StreamingUtils from "./src/streaming/streamingutils";
+
 const accounts = require('./src/accounts');
 const authentication = require('./src/authentication');
 const instruments = require('./src/instruments');
@@ -13,8 +15,14 @@ const savedorders = require('./src/savedorders');
 const transactions = require('./src/transactions');
 const userinfo = require('./src/userinfo');
 const watchlists = require('./src/watchlists');
+import TDADataStream, * as streaming from './src/streaming/tdadatastream';
 
-module.exports = {
+exports = module.exports = {
+    streaming: {
+        ...streaming,
+        TDADataStream,
+        StreamingUtils
+    },
     accounts: accounts.api,
     authentication: authentication.api,
     instruments: instruments.api,

@@ -1,12 +1,13 @@
 
 # TDA API CLIENT
-v1.1.0
+v1.2.0
 ## Summary
 This library is a client to use the API exposed by TD Ameritrade at https://developer.tdameritrade.com
 This project can also be cloned from github to use as a command line utility.
 
 Other README files (also referenced in relevant sections below):
 - [Authentication](authREADME.md)
+- [Streaming](streamingREADME.md)
 - [Code Samples](samples/codesamples.md)
 
 ## Installation
@@ -15,8 +16,10 @@ Other README files (also referenced in relevant sections below):
 npm i tda-api-client
 ```
 ## What's New
-v 1.1.2 - Fixed the Get Price History API call. The query param names were wrong. 
+v 1.2.0 - Streaming! You can now utilize the full power of TD Ameritrade's API, both the REST and the Streaming sides. Click the link to the [Streaming README](streamingREADME.md).
 
+v 1.1.2 - Fixed the Get Price History API call. The query param names were wrong.
+> 
 v 1.1.1 - You can now use this library without a config file, instead passing in a lightweight config object with each request.
 
 Full version review in the Version History section at the bottom.
@@ -28,6 +31,7 @@ UPDATE in v1.0.2: I now understand the above to be because I have Advanced Featu
 
 Watchlists are a little wonky. When creating a watchlist, it can be retrieved with the API, but it doesn't appear in Thinkorswim unless it is restarted.
 
+Streaming: The documentation on TDA's website is crap, let's be honest. Book endpoints aren't documented at all.
 ## Usage
 
 You may make unauthenticated requests (which typically give delayed data) for some endpoints, but generally requests must be authenticated.
