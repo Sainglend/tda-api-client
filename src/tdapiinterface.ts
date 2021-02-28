@@ -132,10 +132,10 @@ const performAxiosRequest = async (requestConfig: any, expectData: boolean) => {
                     // The request was made but no response was received
                     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
                     // http.ClientRequest in node.js
-                    rej(`The request was made but no response was received: ${error.request}`);
+                    rej(`The request was made but no response was received: ${JSON.stringify(error.request)}`);
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    rej(`An error occurred while setting up the request: ${error.message}`);
+                    rej(`An error occurred while setting up the request: ${JSON.stringify(error.message)}`);
                 }
                 rej(error.config);
             });
