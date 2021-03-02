@@ -7,6 +7,33 @@ Put this at the top of any .js file that will use the client functions.
 const tdaclient = require('tda-api-client');
 ```
 
+### Authentication
+
+Using this requires either an auth config file or passing in an auth config object. All the examples below were written when the config file was required. To pass in auth config to each function, then here is an example using Accounts -> Get Account
+#### Get Account With Auth Config File (automatically picked up)
+```javascript
+const configGetAcct = {
+    accountId: 1,
+    fields: 'positions,orders'
+};
+const getAcctResult = await tdaclient.accounts.getAccount(configGetAcct);
+```
+
+#### Get Account With Auth in Config Object
+```javascript
+const configGetAcct = {
+    accountId: 1,
+    fields: 'positions,orders',
+    authConfig: {
+        "refresh_token": "SrgS0QJK",
+        "client_id": "FIEJ33342@AMER.OAUTHAP",
+    }
+};
+const getAcctResult = await tdaclient.accounts.getAccount(configGetAcct);
+```
+
+In the case that an auth config file is defined and you pass in an auth config object, the passed in config will take precedence.
+
 ## CATEGORIES
 Note: This is a file of code samples. For documentation, refer to the official website [https://developer.tdameritrade.com](https://developer.tdameritrade.com) or look in the apidocsarchive/ folder.
 - [ACCOUNTS](#accounts)

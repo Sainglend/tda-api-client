@@ -9,18 +9,23 @@ Other README files (also referenced in relevant sections below):
 - [Authentication](authREADME.md)
 - [Code Samples](samples/codesamples.md)
 
+## Installation
+
+```bash
+npm i tda-api-client
+```
+## What's New
+
+v 1.1.0 - You can now use this library without a config file, instead passing in a lightweight config object with each request.
+
+Full version review in the Version History section at the bottom.
+
 ## Known Issues
 When testing the Saved Orders API, a 400 response code was received as well as a message that said: "Saved Orders are not supported for this account." Using the feature Ask Ted on the main website, Ted said: "If you have upgraded trading features, you're unable to save orders on the website. However, there are equivalent tools on thinkorswim Desktop, thinkorswim Web, and thinkorswim Mobile." It isn't clear if this is related to the Saved Orders API. Saved orders worked fine when tested on the other platforms.
 
 UPDATE in v1.0.2: I now understand the above to be because I have Advanced Features turned on in my account. This will also preclude you from placing complex orders, like 1 TRG OCO. This boggles my mind. So again, you have to turn OFF Advanced Features in your account in order to unlock some API capabilities. I haven't yet completely mapped that.
 
 Watchlists are a little wonky. When creating a watchlist, it can be retrieved with the API, but it doesn't appear in Thinkorswim unless it is restarted.
-
-## Installation
-
-```bash
-npm i tda-api-client
-```
 
 ## Usage
 
