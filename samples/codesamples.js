@@ -1,6 +1,36 @@
 /*
 const tdaclient = require('tda-api-client');
 
+// ===============================================================================
+// ============================= AUTHENTICATION ==================================
+// ===============================================================================
+
+// Using this library requires either an auth config file or passing in an auth config object. All the examples below were written when the config file was required. To pass in auth config to each function, then here is an example using Accounts -> Get Account
+
+// Get Account With Auth Config File (automatically picked up)
+const configGetAcct = {
+    accountId: 1,
+    fields: 'positions,orders'
+};
+const getAcctResult = await tdaclient.accounts.getAccount(configGetAcct);
+
+
+// Get Account With Auth in Config Object
+const configGetAcct = {
+    accountId: 1,
+    fields: 'positions,orders',
+    authConfig: {
+        "refresh_token": "SrgS0QJK",
+        "client_id": "FIEJ33342@AMER.OAUTHAP",
+    }
+};
+const getAcctResult = await tdaclient.accounts.getAccount(configGetAcct);
+
+// In the case that an auth config file is defined and you pass in an auth config object, the passed in config will take precedence.
+
+// ===============================================================================
+// ================================= EXAMPLES ====================================
+// ===============================================================================
 
 // GET ACCOUNT 
 const configGetAcct = {
