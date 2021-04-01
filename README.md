@@ -15,8 +15,9 @@ Other README files (also referenced in relevant sections below):
 npm i tda-api-client
 ```
 ## What's New
+v 1.1.2 - Fixed the Get Price History API call. The query param names were wrong. 
 
-v 1.1.0 - You can now use this library without a config file, instead passing in a lightweight config object with each request.
+v 1.1.1 - You can now use this library without a config file, instead passing in a lightweight config object with each request.
 
 Full version review in the Version History section at the bottom.
 

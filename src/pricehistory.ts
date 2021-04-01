@@ -129,8 +129,8 @@ const FREQUENCY = {
  */
 const getPriceHistory = async (config: any) => {
     config.path = `/v1/marketdata/${config.symbol}/pricehistory?` +
-        `PERIOD_TYPE=${config.PERIOD_TYPE}` +
-        `&FREQUENCY_TYPE=${config.FREQUENCY_TYPE}` +
+        `periodType=${config.periodType || config.PERIOD_TYPE}` +
+        `&frequencyType=${config.frequencyType || config.FREQUENCY_TYPE}` +
         `&frequency=${config.frequency}` +
         `&needExtendedHoursData=${config.getExtendedHours}` +
         (config.period ? `&period=${config.period}` : '') +
