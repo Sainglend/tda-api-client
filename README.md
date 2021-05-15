@@ -19,7 +19,7 @@ npm i tda-api-client
 v 1.2.0 - Streaming! You can now utilize the full power of TD Ameritrade's API, both the REST and the Streaming sides. Click the link to the [Streaming README](streamingREADME.md).
 
 v 1.1.2 - Fixed the Get Price History API call. The query param names were wrong.
-> 
+
 v 1.1.1 - You can now use this library without a config file, instead passing in a lightweight config object with each request.
 
 Full version review in the Version History section at the bottom.
