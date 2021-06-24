@@ -59,15 +59,15 @@ The others, data and snapshot, are pretty coarse and you may want to subscribe t
 The symbol that is used as part of the emitted event is a normalized string. You can access this method with tdaclient.StreamingUtils.normalizeSymbol(), e.g.:
 ```js
 const ticker = '/ES';
-const normalizedTicker = tdaapiclient.streaming.StreamingUtils(ticker); // "_ES"
+const normalizedTicker = tdaapiclient.streaming.StreamingUtils.normalizeSymbol(ticker); // "_ES"
 ```
 
 Here is an example of how you could subscribe to the various data streams if you had them all turned on and you were about to subscribe to Level One Futures for /ES and /NQ.
 ```js
 const tickerES = '/ES';
-const normalizedTickerES = tdaapiclient.streaming.StreamingUtils(tickerES); // "_ES"
+const normalizedTickerES = tdaapiclient.streaming.StreamingUtils.normalizeSymbol(tickerES); // "_ES"
 const tickerNQ = '/ES';
-const normalizedTickerNQ = tdaapiclient.streaming.StreamingUtils(tickerNQ); // "_NQ"
+const normalizedTickerNQ = tdaapiclient.streaming.StreamingUtils.normalizeSymbol(tickerNQ); // "_NQ"
 stream.on('LEVELONE_FUTURES_RAW', (args) => console.log('all the faw L1 Futures data from this tick', JSON.stringify(args, null, 2)));
 stream.on(`LEVELONE_FUTURES_RAW_${normalizedTickerES}`, (args) => console.log('raw /ES data', JSON.stringify(args, null, 2)));
 stream.on(`LEVELONE_FUTURES_RAW_${normalizedTickerNQ}`, (args) => console.log('raw /NQ data', JSON.stringify(args, null, 2)));
@@ -215,8 +215,8 @@ The method is documented, but the most basic usage is to pass in a symbol, a can
 
 Just like the other data, you need to register an event listener. Once should suffice.
 ```js
-const normalizedTickerES = tdaapiclient.streaming.StreamingUtils('/ES'); // "_ES"
-stream.once(`CHART_HISTORY_FUTURES_TYPED_${normalizedSymbolES}`, (args: any) => console.log(`chart history futures typed for /ES`, JSON.stringify(args, null, 2)));
+const normalizedTickerES = tdaapiclient.streaming.StreamingUtils.normalizeSymbol('/ES'); // "_ES"
+stream.once(`CHART_HISTORY_FUTURES_TYPED_${normalizedTickerES}`, (args: any) => console.log(`chart history futures typed for /ES`, JSON.stringify(args, null, 2)));
 stream.chartHistoryFuturesGet('/ES', tdaapiclient.streaming.CHART_HISTORY_FUTURES_FREQUENCY.DAY_ONE, 'w2');
 ```
 

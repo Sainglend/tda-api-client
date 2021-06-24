@@ -10,6 +10,7 @@ import StreamingUtils from "./streamingutils";
 const EventEmitter = require('events');
 
 export import StreamingResponseData = require('./streamingdatatypes');
+import { timeStamp } from "node:console";
 
 export enum SERVICES {
 
@@ -145,6 +146,12 @@ export interface GenericStreamConfig {
     parameters?: IStreamParams,
 }
 
+enum QueueState {
+    INITIALIZED,
+    AVAILABLE,
+    BUSY,
+}
+
 export default class TDADataStream extends EventEmitter {
     private dataStreamSocket: any;
     private userKilled: boolean;
@@ -157,6 +164,10 @@ export default class TDADataStream extends EventEmitter {
     // internal state
     private subParams: {[index: string]: IStreamParams};
     private currentQosLevel: QOS_LEVELS;
+
+    // internal queue
+    private queueState: QueueState;
+    private queueArr:  any[];
 
     // configurable
     private retryAttempts: number;
@@ -193,6 +204,21 @@ export default class TDADataStream extends EventEmitter {
         if (streamConfig.authConfig != undefined)
             this.authConfig = streamConfig.authConfig;
         else throw 'You must provide authConfig as part of the config object in the constructor call.';
+
+        this.queueState = QueueState.INITIALIZED;
+        this.queueArr = [];
+
+        this.qpush(this.genericStreamRequest.bind(this.stream,{
+            service: SERVICES.NEWS_HEADLINE,
+            command: COMMANDS.SUBS,
+            parameters: {
+                keys: 'TSLA',
+            }
+        }));
+
+        this.stream.once('response', async (args:any) => {
+            await this.start();
+        });
     }
 
     private static setDefaultFields() : Map<string, string> {
@@ -281,7 +307,7 @@ export default class TDADataStream extends EventEmitter {
         }
     }
 
-    private handleIncoming(resp: string, resolve: any) {
+    private async handleIncoming(resp: string, resolve: any) {
         // console.log('handle incoming');
         this.streamLastAlive = moment.utc().valueOf();
         const respObj = JSON.parse(resp);
@@ -295,6 +321,8 @@ export default class TDADataStream extends EventEmitter {
 
         // such as in the case of acknowledging connection or new subscription or qos change
         if (respObj.response) {
+            this.queueState = QueueState.AVAILABLE;
+            await this.dequeueAndProcess();
             console.log(respObj.response);
             this.emit('response', respObj.response);
 
@@ -341,6 +369,9 @@ export default class TDADataStream extends EventEmitter {
         }
 
         if (respObj.snapshot) {
+            this.queueState = QueueState.AVAILABLE;
+            await this.dequeueAndProcess();
+
             if (this.emitDataRaw) {
                 this.emit('snapshot', respObj.snapshot);
             }
@@ -684,8 +715,46 @@ export default class TDADataStream extends EventEmitter {
         return this.genericStreamRequest(config);
     }
 
+    private async start() {
+        this.queueState = QueueState.AVAILABLE;
+        await this.dequeueAndProcess();
+    }
 
+    private async qpush(cb:any) {
+        this.queueArr.push(cb);
+        if (this.queueArr.length === 1 && this.queueState === QueueState.AVAILABLE) {
+            await this.dequeueAndProcess();
+        }
+    }
 
+    private async dequeueAndProcess() {
+        console.log('deq', `queuesize:${this.queueArr.length}`, `queuestate:${QueueState[this.queueState]}`);
+        if (this.queueArr.length > 0 && this.queueState === QueueState.AVAILABLE) {
+            this.queueState = QueueState.BUSY;
+            const nextInQueue = this.queueArr.pop();
+            await nextInQueue();
+        }
+    }
+
+    async qaccountUpdatesSub(accountIds: string = '', fields: string = "0,1,2,3", requestSeqNum?: number) : Promise<any> {
+        await this.qpush(this.accountUpdatesSub.bind(this, accountIds, fields, requestSeqNum));
+    }
+
+    async qchartHistoryFuturesGet(
+        symbol: string,
+        frequency: CHART_HISTORY_FUTURES_FREQUENCY,
+        period?: string,
+        startTimeMSEpoch?: number,
+        endTimeMSEpoch?: number,
+        requestSeqNum?: number
+    ) : Promise<any> {
+        // @ts-ignore
+        await this.qpush(this.chartHistoryFuturesGet.bind(this, symbol, frequency, period, startTimeMSEpoch, endTimeMSEpoch, requestSeqNum));
+    }
+
+    async qgenericStreamRequest(config: GenericStreamConfig) {
+        await this.qpush(this.genericStreamRequest.bind(this, config));
+    }
     
 }
 
