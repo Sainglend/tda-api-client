@@ -10,7 +10,6 @@ import StreamingUtils from "./streamingutils";
 const EventEmitter = require('events');
 
 export import StreamingResponseData = require('./streamingdatatypes');
-import { timeStamp } from "node:console";
 
 export enum SERVICES {
 
@@ -208,17 +207,13 @@ export default class TDADataStream extends EventEmitter {
         this.queueState = QueueState.INITIALIZED;
         this.queueArr = [];
 
-        this.qpush(this.genericStreamRequest.bind(this.stream,{
+        this.qpush(this.genericStreamRequest.bind(this,{
             service: SERVICES.NEWS_HEADLINE,
             command: COMMANDS.SUBS,
             parameters: {
                 keys: 'TSLA',
             }
         }));
-
-        this.stream.once('response', async (args:any) => {
-            await this.start();
-        });
     }
 
     private static setDefaultFields() : Map<string, string> {
@@ -321,8 +316,12 @@ export default class TDADataStream extends EventEmitter {
 
         // such as in the case of acknowledging connection or new subscription or qos change
         if (respObj.response) {
-            this.queueState = QueueState.AVAILABLE;
-            await this.dequeueAndProcess();
+            if (this.queueState === QueueState.INITIALIZED) {
+                await this.qstart();
+            } else {
+                this.queueState = QueueState.AVAILABLE;
+                await this.dequeueAndProcess();
+            }
             console.log(respObj.response);
             this.emit('response', respObj.response);
 
@@ -715,7 +714,7 @@ export default class TDADataStream extends EventEmitter {
         return this.genericStreamRequest(config);
     }
 
-    private async start() {
+    private async qstart() {
         this.queueState = QueueState.AVAILABLE;
         await this.dequeueAndProcess();
     }
