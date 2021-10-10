@@ -128,6 +128,8 @@ export interface IStreamConfig {
 
     retryAttempts?: number,
     retryIntervalSeconds?: number,
+
+    verbose?: boolean,
 }
 
 export interface IStreamParams {
@@ -176,6 +178,7 @@ export default class TDADataStream extends EventEmitter {
     private emitDataBySubTyped: boolean;
     private emitDataBySubAndTickerRaw: boolean;
     private emitDataBySubAndTickerTyped: boolean;
+    private verbose: boolean;
     private authConfig: IAuthConfig;
 
     constructor(streamConfig: IStreamConfig) {
@@ -199,7 +202,8 @@ export default class TDADataStream extends EventEmitter {
         this.emitDataBySubRaw = streamConfig.emitDataBySubRaw || false;
         this.emitDataBySubTyped = streamConfig.emitDataBySubTyped || false;
         this.emitDataBySubAndTickerRaw = streamConfig.emitDataBySubAndTickerRaw || false;
-        this.emitDataBySubAndTickerTyped = streamConfig.emitDataBySubAndTickerTyped || true;
+        this.emitDataBySubAndTickerTyped = streamConfig.emitDataBySubAndTickerTyped ?? true;
+        this.verbose = streamConfig.verbose || false;
         if (streamConfig.authConfig != undefined)
             this.authConfig = streamConfig.authConfig;
         else throw 'You must provide authConfig as part of the config object in the constructor call.';
@@ -258,6 +262,7 @@ export default class TDADataStream extends EventEmitter {
         this.emitDataBySubAndTickerTyped = config.emitDataBySubAndTickerTyped != undefined ? config.emitDataBySubAndTickerTyped : this.emitDataBySubAndTickerTyped;
         this.retryAttempts = config.retryAttempts !| this.retryAttempts;
         this.retryIntervalSeconds = config.retryIntervalSeconds || this.retryIntervalSeconds;
+        this.verbose = config.verbose || false;
     }
 
     getConfig() : IStreamConfig {
@@ -280,7 +285,7 @@ export default class TDADataStream extends EventEmitter {
     }
 
     private handleIncomingData(element: StreamingResponseData, emitEventBase: string, mappingFunction: any) {
-        console.log(`handle incoming data, ${emitEventBase}; subraw:${this.emitDataBySubRaw}, subtickerraw:${this.emitDataBySubAndTickerRaw}, subtyped:${this.emitDataBySubTyped}, subtickertyped:${this.emitDataBySubAndTickerTyped}`);
+        if (this.verbose) console.log(`handle incoming data, ${emitEventBase}; subraw:${this.emitDataBySubRaw}, subtickerraw:${this.emitDataBySubAndTickerRaw}, subtyped:${this.emitDataBySubTyped}, subtickertyped:${this.emitDataBySubAndTickerTyped}`);
         if (this.emitDataBySubRaw) {
             this.emit(`${emitEventBase}_RAW`, element.content);
         }
@@ -291,7 +296,7 @@ export default class TDADataStream extends EventEmitter {
         }
 
         if (this.emitDataBySubAndTickerTyped || this.emitDataBySubTyped) {
-            console.log('typed');
+            if (this.verbose) console.log('typed');
             const typedResponses: any[] = element.content.map((item: any) => mappingFunction(item, element.timestamp));
             if (this.emitDataBySubTyped) {
                 this.emit(`${emitEventBase}_TYPED`, typedResponses);
@@ -306,11 +311,13 @@ export default class TDADataStream extends EventEmitter {
         // console.log('handle incoming');
         this.streamLastAlive = moment.utc().valueOf();
         const respObj = JSON.parse(resp);
-        console.log('handle incoming: ' + Object.keys(respObj).join(','));
-        console.log(JSON.stringify(respObj, null, 2));
+        if (this.verbose) {
+            console.log('handle incoming: ' + Object.keys(respObj).join(','));
+            console.log(JSON.stringify(respObj, null, 2));
+        }
 
         if (respObj.notify) {
-            console.log(respObj.notify);
+            if (this.verbose) console.log(respObj.notify);
             this.emit('heartbeat', respObj.notify as IStreamNotify[]);
         }
 
@@ -322,7 +329,7 @@ export default class TDADataStream extends EventEmitter {
                 this.queueState = QueueState.AVAILABLE;
                 await this.dequeueAndProcess();
             }
-            console.log(respObj.response);
+            if (this.verbose) console.log(respObj.response);
             this.emit('response', respObj.response);
 
             // case 5.7 service === 'ADMIN' && command === 'QOS'
@@ -375,7 +382,7 @@ export default class TDADataStream extends EventEmitter {
                 this.emit('snapshot', respObj.snapshot);
             }
             respObj.snapshot.forEach((element: StreamingResponseData) => {
-                console.log(`service is ${element.service} and is that CHF? ${element.service === SERVICES.CHART_HISTORY_FUTURES}`);
+                if (this.verbose) console.log(`service is ${element.service} and is that CHF? ${element.service === SERVICES.CHART_HISTORY_FUTURES}`);
                 // this.handleIncomingData(element, element.service, StreamingUtils.transformChartHistoryFuturesResponse);
                 let fn = null;
                 switch (element.service) {
@@ -525,11 +532,11 @@ export default class TDADataStream extends EventEmitter {
 
     private async handleStreamClose() {
         if (this.userKilled) {
-            console.log('stream closed, killed by user');
+            if (this.verbose) console.log('stream closed, killed by user');
             this.emit('streamClosed', {attemptingReconnect: false});
         }
         else {
-            console.log('stream closed, not killed by user, attempting restart');
+            if (this.verbose) console.log('stream closed, not killed by user, attempting restart');
             this.emit('streamClosed', {attemptingReconnect: true});
             // attempt to reconnect
             await this.restartDataStream();
@@ -543,7 +550,7 @@ export default class TDADataStream extends EventEmitter {
     ) : Promise<any> {
         // if now is within 30 seconds of last alive, do nothing
         this.userKilled = false;
-        console.log('doDataStreamLogin');
+        if (this.verbose) console.log('doDataStreamLogin');
         this.userPrincipalsResponse = await userinfo.api.getUserPrincipals({fields: fields, authConfig: this.authConfig});
         // console.log(`userPrincipals: ${JSON.stringify(this.userPrincipalsResponse)}`);
 
@@ -727,7 +734,7 @@ export default class TDADataStream extends EventEmitter {
     }
 
     private async dequeueAndProcess() {
-        console.log('deq', `queuesize:${this.queueArr.length}`, `queuestate:${QueueState[this.queueState]}`);
+        if (this.verbose) console.log('deq', `queuesize:${this.queueArr.length}`, `queuestate:${QueueState[this.queueState]}`);
         if (this.queueArr.length > 0 && this.queueState === QueueState.AVAILABLE) {
             this.queueState = QueueState.BUSY;
             const nextInQueue = this.queueArr.pop();
