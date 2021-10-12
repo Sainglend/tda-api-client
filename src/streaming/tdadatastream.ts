@@ -1,15 +1,14 @@
 import {IAuthConfig} from "../authentication";
-const WebSocket = require('ws');
-const userinfo = require('../userinfo');
-const accounts = require('../accounts');
-const moment = require('moment');
+import WebSocket from 'ws';
+import moment from 'moment';
 import {
     StreamingResponseData,
 } from './streamingdatatypes';
 import StreamingUtils from "./streamingutils";
-const EventEmitter = require('events');
-
-export import StreamingResponseData = require('./streamingdatatypes');
+import EventEmitter from 'events';
+import {getStreamerSubKeys, getUserPrincipals} from "../userinfo";
+import {accounts} from "../accounts";
+import getAccounts = accounts.getAccounts;
 
 export enum SERVICES {
 
@@ -62,7 +61,7 @@ export enum CHART_HISTORY_FUTURES_FREQUENCY {
     MONTH_ONE='n1',
 }
 
-enum RESPONSE_CODES {
+export enum RESPONSE_CODES {
     ACCT_ACTIVITY='ACCT_ACTIVITY',
     ADMIN='ADMIN',
     ACTIVES_NASDAQ='ACTIVES_NASDAQ',
@@ -158,13 +157,16 @@ export default class TDADataStream extends EventEmitter {
     private userKilled: boolean;
     private userPrincipalsResponse: any;
     private requestId: number;
+    // @ts-ignore
     private streamLastAlive: number;
 
     readonly defaultFields: Map<string, string>;
 
     // internal state
     private subParams: {[index: string]: IStreamParams};
+    // @ts-ignore
     private currentQosLevel: QOS_LEVELS;
+    private retryAttemptTimeouts: any[];
 
     // internal queue
     private queueState: QueueState;
@@ -194,6 +196,7 @@ export default class TDADataStream extends EventEmitter {
         // internal state in case of restart
         this.subParams = {};
         this.currentQosLevel = QOS_LEVELS.L2_FAST_1000MS;
+        this.retryAttemptTimeouts = [];
 
         // configurable
         this.retryAttempts = streamConfig.retryAttempts || 3;
@@ -524,10 +527,14 @@ export default class TDADataStream extends EventEmitter {
     }
 
     private async restartDataStream() {
-        this.once('message', this.resubscribe); // set this to trigger on successful login
-        for (let i = 0; i < this.retryIntervalsSeconds.length; i++) {
-            setTimeout(() => this.doDataStreamLogin(), this.retryIntervalsSeconds[i]*1000);
+        this.once('message', () => { this.clearRetryAttempts(); this.resubscribe() }); // set this to trigger on successful login
+        for (let i = 0; i < this.retryAttempts; i++) {
+            this.retryAttemptTimeouts.push(setTimeout(() => this.doDataStreamLogin(), this.retryIntervalSeconds*i*1000));
         }
+    }
+
+    private clearRetryAttempts() {
+        this.retryAttemptTimeouts.forEach(t => clearTimeout(t));
     }
 
     private async handleStreamClose() {
@@ -551,7 +558,7 @@ export default class TDADataStream extends EventEmitter {
         // if now is within 30 seconds of last alive, do nothing
         this.userKilled = false;
         if (this.verbose) console.log('doDataStreamLogin');
-        this.userPrincipalsResponse = await userinfo.api.getUserPrincipals({fields: fields, authConfig: this.authConfig});
+        this.userPrincipalsResponse = await getUserPrincipals({fields: fields, authConfig: this.authConfig});
         // console.log(`userPrincipals: ${JSON.stringify(this.userPrincipalsResponse)}`);
 
         //Converts ISO-8601 response in snapshot to ms since epoch accepted by Streamer
@@ -694,7 +701,7 @@ export default class TDADataStream extends EventEmitter {
      */
     async accountUpdatesSub(accountIds: string = '', fields: string = "0,1,2,3", requestSeqNum: number = this.requestId++) : Promise<number> {
         if (accountIds === null || accountIds === '') {
-            const allAccounts = await accounts.api.getAccounts();
+            const allAccounts = await getAccounts({});
             accountIds = allAccounts
                 .map((acct: any) => {
                     let acctIds = [];
@@ -704,7 +711,7 @@ export default class TDADataStream extends EventEmitter {
                 .join(',');
         }
 
-        const streamKeyObj = await userinfo.api.getStreamerSubKeys({
+        const streamKeyObj = await getStreamerSubKeys({
             accountIds: accountIds,
             authConfig: this.authConfig,
         });

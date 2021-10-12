@@ -1,7 +1,7 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-const tdApiInterface = require ('./tdapiinterface');
 import { Arguments } from "yargs";
+import {apiDelete, apiGet, apiPatch, apiPost, apiPut} from "./tdapiinterface";
 
 /**
  * Create a new watchlist for a specified accountId using watchlistJSON
@@ -9,12 +9,12 @@ import { Arguments } from "yargs";
  * @returns {Promise<Object>} api PATCH result
  * @async
  */
-const createWatchlist = async (config: any) => {
+export async function createWatchlist(config: any) {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists`;
 
-    return tdApiInterface.apiPost(config);
-};
+    return apiPost(config);
+}
 
 /**
  * Delete a single watchlist having watchlistId for a specified accountId
@@ -22,11 +22,11 @@ const createWatchlist = async (config: any) => {
  * @returns {Promise<Object>} api DELETE result
  * @async
  */
-const deleteWatchlist = async (config: any) => {
+export async function deleteWatchlist(config: any) {
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
-    return tdApiInterface.apiDelete(config);
-};
+    return apiDelete(config);
+}
 
 /**
  * Get a single watchlist having watchlistId for a specified accountId
@@ -34,11 +34,11 @@ const deleteWatchlist = async (config: any) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getWatchlist = async (config: any) => {
+export async function getWatchlist(config: any) {
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
-    return tdApiInterface.apiGet(config);
-};
+    return apiGet(config);
+}
 
 
 /**
@@ -47,12 +47,12 @@ const getWatchlist = async (config: any) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getWatchlistsMultiAcct = async (config: any) => {
+export async function getWatchlistsMultiAcct(config: any) {
     if (!config) config = {};
     config.path = `/v1/accounts/watchlists`;
 
-    return tdApiInterface.apiGet(config);
-};
+    return apiGet(config);
+}
 
 
 /**
@@ -61,11 +61,11 @@ const getWatchlistsMultiAcct = async (config: any) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getWatchlistsSingleAcct = async (config: any) => {
+export async function getWatchlistsSingleAcct(config: any) {
     config.path = `/v1/accounts/${config.accountId}/watchlists`;
 
-    return tdApiInterface.apiGet(config);
-};
+    return apiGet(config);
+}
 
 
 /**
@@ -74,12 +74,12 @@ const getWatchlistsSingleAcct = async (config: any) => {
  * @returns {Promise<Object>} api PUT result
  * @async
  */
-const replaceWatchlist = async (config: any) => {
+export async function replaceWatchlist(config: any) {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
-    return tdApiInterface.apiPut(config);
-};
+    return apiPut(config);
+}
 
 
 /**
@@ -88,116 +88,109 @@ const replaceWatchlist = async (config: any) => {
  * @returns {Promise<Object>} api PATCH result
  * @async
  */
-const updateWatchlist = async (config: any) => {
+export async function updateWatchlist(config: any) {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
-    return tdApiInterface.apiPatch(config);
-};
+    return apiPatch(config);
+}
 
-exports.api = {
-    createWatchlist,
-    deleteWatchlist,
-    getWatchlist,
-    getWatchlistsSingleAcct,
-    getWatchlistsMultiAcct,
-    replaceWatchlist,
-    updateWatchlist
+export default {
+    command: 'watchlists <command>',
+    desc: 'Manage your watchlists',
+    builder: (yargs: any) => {
+        return yargs
+            .command('create <accountId> <orderJSON>',
+                'Create a watchlist for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
+                {},
+                async (argv: Arguments) => {
+                    if (argv.verbose) {
+                        console.log(`creating a watchlist for ${argv.accountId}`);
+                    }
+                    return createWatchlist({
+                        accountId: argv.accountId,
+                        watchlistJSON: (typeof (argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
+                        verbose: argv.verbose || false
+                    }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
+                })
+            .command('replace <watchlistId> <accountId> <watchlistJSON>',
+                'Replace an entire watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
+                {},
+                async (argv: Arguments) => {
+                    if (argv.verbose) {
+                        console.log(`replacing watchlist ${argv.watchlistId} for ${argv.accountId}`);
+                    }
+                    return replaceWatchlist({
+                        accountId: argv.accountId,
+                        watchlistJSON: (typeof (argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
+                        watchlistId: argv.watchlistId,
+                        verbose: argv.verbose || false
+                    }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
+                })
+            .command('update <watchlistId> <accountId> <watchlistJSON>',
+                'Append/update in place a watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
+                {},
+                async (argv: Arguments) => {
+                    if (argv.verbose) {
+                        console.log(`updating watchlist ${argv.watchlistId} for ${argv.accountId}`);
+                    }
+                    return updateWatchlist({
+                        accountId: argv.accountId,
+                        watchlistJSON: (typeof (argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
+                        watchlistId: argv.watchlistId,
+                        verbose: argv.verbose || false
+                    }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
+                })
+            .command('get <watchlistId> <accountId>',
+                'Get a single watchlist having <watchlistId> for a given <accountId>',
+                {},
+                async (argv: Arguments) => {
+                    if (argv.verbose) {
+                        console.log(`getting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
+                    }
+                    return getWatchlist({
+                        accountId: argv.accountId,
+                        watchlistId: argv.watchlistId,
+                        verbose: argv.verbose || false
+                    }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
+                })
+            .command('getall <accountId>',
+                'Get all watchlists for a given <accountId>',
+                {},
+                async (argv: Arguments) => {
+                    if (argv.verbose) {
+                        console.log(`getting all watchlists for account ${argv.accountId}`);
+                    }
+                    return getWatchlistsSingleAcct({
+                        accountId: argv.accountId,
+                        verbose: argv.verbose || false
+                    }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
+                })
+            .command('getmulti',
+                'Get all watchlists for all your linked accounts',
+                {},
+                async (argv: Arguments) => {
+                    if (argv.verbose) {
+                        console.log(`getting all watchlists for all linked accounts`);
+                    }
+                    return getWatchlistsMultiAcct({
+                        verbose: argv.verbose || false
+                    })
+                        .then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
+                })
+            .command('delete <watchlistId> <accountId>',
+                'Delete a specified watchlist with <watchlistId> for a given <accountId>',
+                {},
+                async (argv: Arguments) => {
+                    if (argv.verbose) {
+                        console.log(`deleting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
+                    }
+                    return deleteWatchlist({
+                        accountId: argv.accountId,
+                        watchlistId: argv.watchlistId,
+                        verbose: argv.verbose || false
+                    }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
+                });
+    },
+    handler: (argv: Arguments) => {},
 };
-exports.command = 'watchlists <command>';
-exports.desc = 'Manage your watchlists';
-exports.builder = (yargs: any) => {
-  return yargs
-    .command('create <accountId> <orderJSON>',
-        'Create a watchlist for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`creating a watchlist for ${argv.accountId}`);
-            }
-            return createWatchlist({
-                accountId: argv.accountId,
-                watchlistJSON: (typeof(argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('replace <watchlistId> <accountId> <watchlistJSON>',
-        'Replace an entire watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`replacing watchlist ${argv.watchlistId} for ${argv.accountId}`);
-            }
-            return replaceWatchlist({
-                accountId: argv.accountId,
-                watchlistJSON: (typeof(argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                watchlistId: argv.watchlistId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('update <watchlistId> <accountId> <watchlistJSON>',
-        'Append/update in place a watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`updating watchlist ${argv.watchlistId} for ${argv.accountId}`);
-            }
-            return updateWatchlist({
-                accountId: argv.accountId,
-                watchlistJSON: (typeof(argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                watchlistId: argv.watchlistId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('get <watchlistId> <accountId>',
-        'Get a single watchlist having <watchlistId> for a given <accountId>',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
-            }
-            return getWatchlist({
-                accountId: argv.accountId,
-                watchlistId: argv.watchlistId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('getall <accountId>',
-        'Get all watchlists for a given <accountId>',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting all watchlists for account ${argv.accountId}`);
-            }
-            return getWatchlistsSingleAcct({
-                accountId: argv.accountId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('getmulti',
-        'Get all watchlists for all your linked accounts',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting all watchlists for all linked accounts`);
-            }
-            return getWatchlistsMultiAcct({
-                verbose: argv.verbose || false
-            })
-            .then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('delete <watchlistId> <accountId>',
-        'Delete a specified watchlist with <watchlistId> for a given <accountId>',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`deleting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
-            }
-            return deleteWatchlist({
-                accountId: argv.accountId,
-                watchlistId: argv.watchlistId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        });
-};
-exports.handler = (argv: Arguments) => {};

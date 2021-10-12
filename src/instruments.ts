@@ -1,15 +1,15 @@
 // Copyright (C) 2020  Aaron Satterlee
 
 import { Arguments } from "yargs";
-const tdApiInterface = require ('./tdapiinterface');
+import {apiGet} from "./tdapiinterface";
 
-const PROJECTION_TYPE = {
-    SYMBOL_SEARCH: "symbol-search",
-    SYMBOL_REGEX: "symbol-regex",
-    DESC_SEARCH: "desc-search",
-    DESC_REGEX: "desc-regex",
-    FUNDAMENTAL: "fundamental"
-};
+export enum PROJECTION_TYPE {
+    SYMBOL_SEARCH = "symbol-search",
+    SYMBOL_REGEX = "symbol-regex",
+    DESC_SEARCH = "desc-search",
+    DESC_REGEX = "desc-regex",
+    FUNDAMENTAL = "fundamental",
+}
 
 /**
  * Search for an instrument using search string or regex (config.symbol) and search type (config.projection>)
@@ -19,12 +19,12 @@ const PROJECTION_TYPE = {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const searchInstruments = async (config: any) => {
+export async function searchInstruments(config: any) {
     config.path = `/v1/instruments?symbol=${config.symbol}&projection=${config.projection}` +
         (config.apikey ? `&apikey=${config.apikey}` : '');
 
-    return tdApiInterface.apiGet(config);
-};
+    return apiGet(config);
+}
 
 /**
  * Get an instrument by CUSIP (unique id number assigned to all stocks and registered bonds in US/CA).
@@ -34,48 +34,45 @@ const searchInstruments = async (config: any) => {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-const getInstrument = async (config: any) => {
+export async function getInstrument(config: any) {
     config.path = `/v1/instruments/${config.cusip}` +
         (config.apikey ? `?apikey=${config.apikey}` : '');
 
-    return tdApiInterface.apiGet(config);
-};
+    return apiGet(config);
+}
 
-exports.api = {
-    getInstrument,
-    searchInstruments,
-    PROJECTION_TYPE
+export default {
+    command: 'instruments <command>',
+    desc: 'Search for an instrument with a text string, or get an instrument by CUSIP',
+    builder: (yargs: any) => {
+        return yargs
+            .command('search <symbol> <projection> [apikey]',
+                'Search for an instrument using search string <symbol> and search type indicated by <projection> (one of symbol-search, symbol-regex, desc-search, desc-regex, fundamental), can optionally use apikey for unauthenticated request',
+                {},
+                async (argv: Arguments) => {
+                    if (argv.verbose) {
+                        console.log(`searching instruments for ${argv.symbol} with search type ${argv.projection}`);
+                    }
+                    return searchInstruments({
+                        symbol: argv.symbol,
+                        projection: argv.projection,
+                        verbose: argv.verbose || false,
+                        apikey: argv.apikey
+                    }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
+                })
+            .command('get <cusip> [apikey]',
+                'Get an instrument by CUSIP <cusip> (unique id number assigned to all stocks and registered bonds in US/CA). List here: https://www.sec.gov/divisions/investment/13flists.htm , can use <apikey> for delayed data',
+                {},
+                async (argv: Arguments) => {
+                    if (argv.verbose) {
+                        console.log(`getting instrument info for cusip ${argv.cusip}`);
+                    }
+                    return getInstrument({
+                        cusip: argv.cusip,
+                        apikey: argv.apikey || '',
+                        verbose: argv.verbose || false
+                    }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
+                });
+    },
+    handler: (argv: Arguments) => {},
 };
-exports.command = 'instruments <command>';
-exports.desc = 'Search for an instrument with a text string, or get an instrument by CUSIP';
-exports.builder = (yargs: any) => {
-  return yargs
-    .command('search <symbol> <projection> [apikey]',
-        'Search for an instrument using search string <symbol> and search type indicated by <projection> (one of symbol-search, symbol-regex, desc-search, desc-regex, fundamental), can optionally use apikey for unauthenticated request',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`searching instruments for ${argv.symbol} with search type ${argv.projection}`);
-            }
-            return searchInstruments({
-                symbol: argv.symbol,
-                projection: argv.projection,
-                verbose: argv.verbose || false,
-                apikey: argv.apikey
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('get <cusip> [apikey]',
-        'Get an instrument by CUSIP <cusip> (unique id number assigned to all stocks and registered bonds in US/CA). List here: https://www.sec.gov/divisions/investment/13flists.htm , can use <apikey> for delayed data',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting instrument info for cusip ${argv.cusip}`);
-            }
-            return getInstrument({
-                cusip: argv.cusip,
-                apikey: argv.apikey || '',
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        });
-};
-exports.handler = (argv: Arguments) => {};
