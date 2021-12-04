@@ -9,7 +9,8 @@
     "test": "echo \"Error: no test specified\" && exit 0"
   },
   "files": [
-    "./dist"
+    "dist/*",
+    "cli_index.js"
   ],
   "repository": {
     "type": "git",

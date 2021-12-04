@@ -7,8 +7,7 @@ import {
 import StreamingUtils from "./streamingutils";
 import EventEmitter from 'events';
 import {getStreamerSubKeys, getUserPrincipals} from "../userinfo";
-import {accounts} from "../accounts";
-import getAccounts = accounts.getAccounts;
+import {getAccounts} from "../accounts";
 
 export enum SERVICES {
 
