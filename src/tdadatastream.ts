@@ -1,4 +1,4 @@
-import {IAuthConfig} from "../authentication";
+import {IAuthConfig} from "./authentication";
 import WebSocket from 'ws';
 import moment from 'moment';
 import {
@@ -6,8 +6,8 @@ import {
 } from './streamingdatatypes';
 import StreamingUtils from "./streamingutils";
 import EventEmitter from 'events';
-import {getStreamerSubKeys, getUserPrincipals} from "../userinfo";
-import {getAccounts} from "../accounts";
+import {getStreamerSubKeys, getUserPrincipals} from "./userinfo";
+import {getAccounts} from "./accounts";
 
 export enum SERVICES {
 

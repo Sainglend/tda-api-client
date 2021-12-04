@@ -4,7 +4,7 @@
 const { terminalWidth } = require('yargs');
 
 require('yargs')
-  .commandDir('dist/src/cli')
+  .commandDir('cli')
   .demandCommand()
   .help()
   .wrap(terminalWidth())

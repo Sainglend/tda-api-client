@@ -1,6 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {apiGet} from "./tdapiinterface";
+import {IInstrument} from "./accounts";
 
 export enum PROJECTION_TYPE {
     SYMBOL_SEARCH = "symbol-search",
@@ -18,7 +19,7 @@ export enum PROJECTION_TYPE {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-export async function searchInstruments(config: any) {
+export async function searchInstruments(config: any): Promise<IInstrument> {
     config.path = `/v1/instruments?symbol=${config.symbol}&projection=${config.projection}` +
         (config.apikey ? `&apikey=${config.apikey}` : '');
 
