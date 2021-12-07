@@ -1,13 +1,12 @@
 // Copyright (C) 2020  Aaron Satterlee
 
-import { AxiosError, AxiosResponse } from "axios";
-import { IAuthConfig } from "./authentication";
+import {AxiosError, AxiosInstance, AxiosResponse} from "axios";
 import fs from 'fs';
-import querystring from 'querystring';
 import path from 'path';
+import {getAPIAuthentication} from "./authentication";
 const axios = require('axios').default;
 
-const instance = axios.create({
+const instance: AxiosInstance = axios.create({
     baseURL: 'https://api.tdameritrade.com',
     port: 443,
     headers: {
@@ -21,13 +20,34 @@ const instance = axios.create({
     }
 });
 
+export interface IAuthConfig {
+    refresh_token: string,
+    client_id: string,
+    access_token?: string,
+    expires_on?: number,
+    expires_in?: number,
+    code?: string,
+    redirect_uri?: string,
+}
+
+export interface TacRequestConfig extends TacBaseConfig {
+    path: string,
+    bodyJSON?: object,
+    apikey?: string,
+}
+
+export interface TacBaseConfig {
+    authConfig?: IAuthConfig,
+    verbose?: boolean,
+}
+
 /**
  * Use this for sending an HTTP GET request to api.tdameritrade.com
  * @param {Object} config - takes path, apikey (optional; if present this won't be an authenticated request)
  * @returns {Promise<Object>} resolve is api GET result, reject is error object
  * @async
  */
-export async function apiGet(config: any): Promise<any> {
+export async function apiGet(config: TacRequestConfig): Promise<any> {
     return apiNoWriteResource(config, 'get', false);
 }
 
@@ -37,7 +57,7 @@ export async function apiGet(config: any): Promise<any> {
  * @returns {Promise<Object>} resolve is api DELETE result, reject is error object
  * @async
  */
-export async function apiDelete(config: any): Promise<any> {
+export async function apiDelete(config: TacRequestConfig): Promise<any> {
     return apiNoWriteResource(config, 'delete', false);
 }
 
@@ -47,7 +67,7 @@ export async function apiDelete(config: any): Promise<any> {
  * @returns {Promise<Object>} resolve is api PATCH result, reject is error object
  * @async
  */
-export async function apiPatch(config: any): Promise<any> {
+export async function apiPatch(config: TacRequestConfig): Promise<any> {
     return apiWriteResource(config, 'patch', false);
 }
 
@@ -57,7 +77,7 @@ export async function apiPatch(config: any): Promise<any> {
  * @returns {Promise<Object>} resolve is api PUT result, reject is error object
  * @async
  */
-export async function apiPut(config: any): Promise<any> {
+export async function apiPut(config: TacRequestConfig): Promise<any> {
     return apiWriteResource(config, 'put', false);
 }
 
@@ -67,11 +87,11 @@ export async function apiPut(config: any): Promise<any> {
  * @returns {Promise<Object>} resolve is api POST result, reject is error object
  * @async
  */
-export async function apiPost(config: any) {
+export async function apiPost(config: TacRequestConfig) {
     return apiWriteResource(config, 'post', false);
 }
 
-const apiNoWriteResource = async (config: any, method: string, skipAuth: boolean) => {
+const apiNoWriteResource = async (config: TacRequestConfig, method: string, skipAuth: boolean) => {
     const requestConfig = {
         method: method,
         url: config.path,
@@ -154,23 +174,11 @@ async function writeOutAuthResultToFile(authConfig: IAuthConfig, verbose: boolea
     });
 }
 
-function getNewAccessTokenPostData(authConfig: IAuthConfig) {
-    return querystring.encode({
-        "grant_type": "refresh_token",
-        "refresh_token": authConfig.refresh_token,
-        "access_type": "",
-        "code": "",
-        "client_id": authConfig.client_id,
-        "redirect_uri": ""
-    });
-}
-
-export async function doAuthenticationHandshake(auth_config: IAuthConfig, verbose: boolean = false): Promise<IAuthConfig> {
-    const authConfig = auth_config || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
+export async function doAuthRequest(authConfig: IAuthConfig, data: any, verbose: boolean = false) {
     const requestConfig = {
         method: 'post',
         url: '/v1/oauth2/token',
-        data: getNewAccessTokenPostData(authConfig),
+        data,
         headers: {
             'Accept': '*/*',
             'Accept-Encoding': 'gzip',
@@ -185,49 +193,8 @@ export async function doAuthenticationHandshake(auth_config: IAuthConfig, verbos
     }
     const result = await performAxiosRequest(requestConfig, true);
 
-    if (authConfig.expires_in) {
-        authConfig.expires_on = Date.now() + (authConfig.expires_in * 1000);
-    } else {
-        authConfig.expires_on = Date.now();
-    }
+    authConfig.expires_on = Date.now() + (authConfig.expires_in ? authConfig.expires_in * 1000 : 0);
     Object.assign(authConfig, result);
-
-    if (!auth_config || Object.keys(auth_config).length === 0) {
-        await writeOutAuthResultToFile(authConfig, verbose);
-    }
+    await writeOutAuthResultToFile(authConfig, verbose);
     return authConfig;
-}
-
-/**
- * Use this to force the refresh of the access_token, regardless if it is expired or not
- * @param {Object} auth_config - optional, meant to be existing local auth data
- * @param {boolean} verbose whether to console.log system messages
- * @returns {Object} auth info object with some calculated fields, including the all-important access_token; this is written to the auth json file in project's config/
- * @async
- */
-export async function refreshAPIAuthentication(auth_config: IAuthConfig, verbose: boolean = false): Promise<IAuthConfig> {
-    auth_config = auth_config || {};
-    if (verbose) {
-        console.log('refreshing authentication');
-    }
-    return doAuthenticationHandshake(auth_config, verbose);
-}
-
-/**
- * Use this to get authentication info. Will serve up local copy if not yet expired.
- * @param {Object} config - optional: verbose
- * @returns {Object} auth info object, including the all-important access_token
- * @async
- */
-export async function getAPIAuthentication(config: any): Promise<IAuthConfig> {
-    config = config || {};
-    const authConfig = config.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
-    if (!authConfig.expires_on || authConfig.expires_on < Date.now() + (10*60*1000)) {
-        return refreshAPIAuthentication(authConfig, config.verbose);
-    } else {
-        if (config.verbose) {
-            console.log('not refreshing authentication as it has not expired');
-        }
-        return authConfig;
-    }
 }
