@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {Arguments} from "yargs";
-import {EXPIRATION_MONTH, getOptionChain, OPTION_TYPE, RANGE, STRATEGY} from "../optionschain";
+import {CONTRACT_TYPE, EXPIRATION_MONTH, getOptionChain, OPTION_TYPE, RANGE, STRATEGY} from "../optionschain";
 
 export default {
     command: 'options <command>',
@@ -109,23 +109,24 @@ export default {
                         console.log(`getting option chain for ${argv.symbol}`);
                     }
                     return getOptionChain({
-                        symbol: argv.symbol,
-                        contractType: argv.contractType, // has default
-                        expMonth: argv.expMonth, // has default
-                        optionType: argv.optionType, // has default
-                        strategy: argv.strategy, // has default
-                        range: argv.range, // has default
-                        includeQuotes: argv.includeQuotes, // has default
-                        apikey: argv.apikey || '',
-                        fromDate: argv.from || '',
-                        toDate: argv.to || '',
-                        strikeCount: argv.strikeCount || '',
-                        interval: argv.interval || '',
-                        volatility: argv.volatility || '',
-                        underlyingPrice: argv.underlyingPrice || '',
-                        interestRate: argv.interestRate || '',
-                        daysToExpiration: argv.daysToExpiration || '',
-                        verbose: argv.verbose || false
+                        symbol: argv.symbol as string,
+                        contractType: argv.contractType != null ? CONTRACT_TYPE[argv.contractType as keyof typeof CONTRACT_TYPE] : undefined, // has default
+                        expMonth: argv.expMonth != null ? EXPIRATION_MONTH[argv.expMonth as keyof typeof EXPIRATION_MONTH] : undefined, // has default
+                        optionType: argv.optionType != null ? OPTION_TYPE[argv.optionType as keyof typeof OPTION_TYPE] : undefined, // has default
+                        strategy: argv.strategy != null ? STRATEGY[argv.strategy as keyof typeof STRATEGY] : undefined, // has default
+                        range: argv.range != null ? RANGE[argv.range as keyof typeof RANGE] : undefined, // has default
+                        includeQuotes: argv.includeQuotes != null ? String(argv.includeQuotes) === "true" : undefined, // has default
+                        apikey: (argv.apikey || '') as string,
+                        fromDate: (argv.from || '') as string,
+                        toDate: (argv.to || '') as string,
+                        strikeCount: argv.strikeCount ? Number(argv.strikeCount) : undefined,
+                        interval: argv.interval ? Number(argv.interval) : undefined,
+                        volatility: argv.volatility ? Number(argv.volatility) : undefined,
+                        underlyingPrice: argv.underlyingPrice ? Number(argv.underlyingPrice) : undefined,
+                        interestRate: argv.interestRate ? Number(argv.interestRate) : undefined,
+                        daysToExpiration: argv.daysToExpiration ? Number(argv.daysToExpiration) : undefined,
+                        verbose: String(argv.verbose) === "true",
+                        path: "",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },

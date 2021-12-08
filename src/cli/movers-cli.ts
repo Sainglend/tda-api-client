@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {Arguments} from "yargs";
-import {getMovers} from "../movers";
+import {CHANGE, DIRECTION, getMovers, INDEX} from "../movers";
 
 export default {
     command: 'movers <command>',
@@ -16,11 +16,12 @@ export default {
                         console.log(`getting market movers for ${argv.majorIndex}, moving ${argv.direction} by ${argv.change}`);
                     }
                     return getMovers({
-                        index: argv.majorIndex,
-                        direction: argv.direction,
-                        change: argv.change,
-                        verbose: argv.verbose || false,
-                        apikey: argv.apikey
+                        index: INDEX[argv.majorIndex as keyof typeof INDEX],
+                        direction: DIRECTION[argv.direction as keyof typeof DIRECTION],
+                        change: CHANGE[argv.change as keyof typeof CHANGE],
+                        verbose: String(argv.verbose) === "true",
+                        apikey: argv.apikey as string,
+                        path: "",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },

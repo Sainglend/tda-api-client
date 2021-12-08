@@ -1,0 +1,153 @@
+curl -X GET --header "Authorization: " "https://api.tdameritrade.com/v1/marketdata/$SPX.X/movers?apikey=insesrtkeyhere&direction=up&change=percent"
+
+
+REQUEST
+
+GET /v1/marketdata/$SPX.X/movers?apikey=insertkeyhere&direction=up&change=percent HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+REPONSE
+
+HTTP/1.1 200
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Encoding:
+    gzip
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json
+Date:
+    Wed, 08 Dec 2021 06:55:37 GMT
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Transfer-Encoding:
+    chunked
+vary:
+    accept-encoding
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    SAMEORIGIN
+X-Xss-Protection:
+    1; mode=block
+
+[
+  {
+    "change": 0.08628954937679766,
+    "description": "Fortinet, Inc. - Common Stock",
+    "direction": "up",
+    "last": 317.24,
+    "symbol": "FTNT",
+    "totalVolume": 1290900
+  },
+  {
+    "change": 0.07956853214368938,
+    "description": "NVIDIA Corporation - Common Stock",
+    "direction": "up",
+    "last": 324.27,
+    "symbol": "NVDA",
+    "totalVolume": 59310100
+  },
+  {
+    "change": 0.07598858143834954,
+    "description": "ServiceNow, Inc. Common Stock",
+    "direction": "up",
+    "last": 663.39,
+    "symbol": "NOW",
+    "totalVolume": 2585898
+  },
+  {
+    "change": 0.06800332624965351,
+    "description": "Diamondback Energy, Inc. - Commmon Stock",
+    "direction": "up",
+    "last": 115.59,
+    "symbol": "FANG",
+    "totalVolume": 2954028
+  },
+  {
+    "change": 0.06518637417513824,
+    "description": "NXP Semiconductors N.V. - Common Stock",
+    "direction": "up",
+    "last": 238.9,
+    "symbol": "NXPI",
+    "totalVolume": 2934542
+  },
+  {
+    "change": 0.06515580736543905,
+    "description": "Devon Energy Corporation Common Stock",
+    "direction": "up",
+    "last": 45.12,
+    "symbol": "DVN",
+    "totalVolume": 16684652
+  },
+  {
+    "change": 0.06477508914440445,
+    "description": "DexCom, Inc. - Common Stock",
+    "direction": "up",
+    "last": 558.4,
+    "symbol": "DXCM",
+    "totalVolume": 1166038
+  },
+  {
+    "change": 0.06452707287284565,
+    "description": "Applied Materials, Inc. - Common Stock",
+    "direction": "up",
+    "last": 156.89,
+    "symbol": "AMAT",
+    "totalVolume": 10515491
+  },
+  {
+    "change": 0.06414653450420246,
+    "description": "Moderna, Inc. - Common Stock",
+    "direction": "up",
+    "last": 282.35,
+    "symbol": "MRNA",
+    "totalVolume": 10804291
+  },
+  {
+    "change": 0.058844550327575906,
+    "description": "Microchip Technology Incorporated - Common Stock",
+    "direction": "up",
+    "last": 88.89,
+    "symbol": "MCHP",
+    "totalVolume": 4046907
+  }
+]
