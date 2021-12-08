@@ -16,10 +16,11 @@ export default {
                         console.log(`getting market hours for ${argv.date} for markets ${argv.markets}`);
                     }
                     return getMultipleMarketHours({
-                        markets: argv.markets,
-                        date: argv.date,
-                        apikey: argv.apikey,
-                        verbose: argv.verbose || false
+                        markets: argv.markets as string,
+                        date: argv.date as string,
+                        apikey: argv.apikey as string,
+                        verbose: String(argv.verbose) === "true",
+                        path: "",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command('getone <date> <market> [apikey]',
@@ -30,10 +31,11 @@ export default {
                         console.log(`getting market hours for ${argv.date} for market ${argv.market}`);
                     }
                     return getSingleMarketHours({
-                        market: argv.market,
-                        date: argv.date,
-                        apikey: argv.apikey,
-                        verbose: argv.verbose || false
+                        market: argv.market as string,
+                        date: argv.date as string,
+                        apikey: argv.apikey as string,
+                        verbose: String(argv.verbose) === "true",
+                        path: "",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },

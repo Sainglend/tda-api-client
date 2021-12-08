@@ -1,6 +1,6 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
-import {apiGet} from "./tdapiinterface";
+import {apiGet, TacRequestConfig} from "./tdapiinterface";
 
 export interface IInstrument {
     assetType: string,
@@ -118,30 +118,32 @@ export interface IAccount {
     projectedBalances: IProjectedBalance,
 }
 
+export interface IGetAccountConfig extends TacRequestConfig {
+    accountId: string | number,
+    fields?: string,
+}
+
+export interface IGetAccountsConfig extends TacRequestConfig {
+    fields?: string
+}
+
+
 /**
  * Gets account info for a single account. You can request additional fields with config.fields as a comma-separated string.
  * Possible values for fields are: positions, orders
- * @param {Object} config - takes accountId, fields (optional)
- * @returns {Promise<Object>} api GET result
- * @async
  */
-export async function getAccount(config: any): Promise<IAccount> {
+export async function getAccount(config: IGetAccountConfig): Promise<IAccount> {
     config.path = `/v1/accounts/${config.accountId}` +
         (config.fields ? `?fields=${config.fields}` : '');
-
-    return apiGet(config);
+    return await apiGet(config);
 }
 
 /**
  * Gets account info for all linked accounts. You can request additional fields with config.fields as a comma-separated string.
  * Possible values for fields are: positions, orders
- * @param {Object} config - takes fields (optional)
- * @returns {Promise<Object>} api GET result
- * @async
  */
-export async function getAccounts(config: any): Promise<IAccount[]> {
+export async function getAccounts(config: IGetAccountsConfig): Promise<IAccount[]> {
     config.path = `/v1/accounts` +
         (config.fields ? `?fields=${config.fields}` : '');
-
-    return apiGet(config);
+    return await apiGet(config);
 }

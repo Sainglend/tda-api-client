@@ -14,21 +14,23 @@ export default {
                         console.log('getting account info for account %s with fields %s', argv.accountId, argv.fields);
                     }
                     return getAccount({
-                        accountId: argv.accountId,
-                        fields: argv.fields,
-                        verbose: argv.verbose || false
+                        accountId: argv.accountId as string,
+                        fields: argv.fields as string,
+                        verbose: String(argv.verbose) === "true",
+                        path: "",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command('getall <fields>',
                 'Get account info for all connected accounts. Data returned is based on <fields>, a common-separated string like "positions,orders"',
                 {},
                 async (argv: Arguments) => {
-                    if (argv.verbose) {
+                    if (String(argv.verbose) === "true") {
                         console.log('getting account info for all linked accounts fields %s', argv.fields);
                     }
                     return getAccounts({
-                        fields: argv.fields,
-                        verbose: argv.verbose || false
+                        fields: argv.fields as string,
+                        verbose: String(argv.verbose) === "true",
+                        path: "",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },

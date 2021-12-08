@@ -1,0 +1,138 @@
+curl -X GET --header "Authorization: " "https://api.tdameritrade.com/v1/marketdata/hours?apikey=insertkeyhere&markets=EQUITY%2COPTION&date=2022-02-23"
+
+
+REQUEST
+
+GET /v1/marketdata/hours?apikey=insertkeyhere&markets=EQUITY%2COPTION&date=2022-02-23 HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+RESPONSE
+
+HTTP/1.1 200 OK
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json;charset=UTF-8
+Date:
+    Wed, 08 Dec 2021 06:20:12 GMT
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Transfer-Encoding:
+    chunked
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    SAMEORIGIN
+X-Vcap-Request-Id:
+    6bdf0ce6-9a18-4acd-7e87-a0a6a63bc771
+X-Xss-Protection:
+    1; mode=block
+
+{
+  "equity": {
+    "EQ": {
+      "date": "2022-02-23",
+      "marketType": "EQUITY",
+      "exchange": "NULL",
+      "category": "NULL",
+      "product": "EQ",
+      "productName": "equity",
+      "isOpen": true,
+      "sessionHours": {
+        "preMarket": [
+          {
+            "start": "2022-02-23T07:00:00-05:00",
+            "end": "2022-02-23T09:30:00-05:00"
+          }
+        ],
+        "regularMarket": [
+          {
+            "start": "2022-02-23T09:30:00-05:00",
+            "end": "2022-02-23T16:00:00-05:00"
+          }
+        ],
+        "postMarket": [
+          {
+            "start": "2022-02-23T16:00:00-05:00",
+            "end": "2022-02-23T20:00:00-05:00"
+          }
+        ]
+      }
+    }
+  },
+  "option": {
+    "EQO": {
+      "date": "2022-02-23",
+      "marketType": "OPTION",
+      "exchange": "NULL",
+      "category": "NULL",
+      "product": "EQO",
+      "productName": "equity option",
+      "isOpen": true,
+      "sessionHours": {
+        "regularMarket": [
+          {
+            "start": "2022-02-23T09:30:00-05:00",
+            "end": "2022-02-23T16:00:00-05:00"
+          }
+        ]
+      }
+    },
+    "IND": {
+      "date": "2022-02-23",
+      "marketType": "OPTION",
+      "exchange": "NULL",
+      "category": "NULL",
+      "product": "IND",
+      "productName": "index option",
+      "isOpen": true,
+      "sessionHours": {
+        "regularMarket": [
+          {
+            "start": "2022-02-23T09:30:00-05:00",
+            "end": "2022-02-23T16:15:00-05:00"
+          }
+        ]
+      }
+    }
+  }
+}

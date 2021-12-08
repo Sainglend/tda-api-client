@@ -284,7 +284,7 @@ Email: sainglend@gmail.com
 
 tda-api-client : a client library for the TD Ameritrade API
 
-Copyright (C) 2020  Aaron Satterlee
+Copyright (C) 2020-1  Aaron Satterlee
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

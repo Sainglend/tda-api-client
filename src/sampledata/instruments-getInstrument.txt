@@ -1,0 +1,77 @@
+curl -X GET --header "Authorization: " "https://api.tdameritrade.com/v1/instruments/Q8881G103?apikey=insertkeyhere"
+
+REQUEST
+
+GET /v1/instruments/Q8881G103?apikey=insertkeyhere HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+RESPONSE
+
+HTTP/1.1 200 OK
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Length:
+    146
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json;charset=UTF-8
+Date:
+    Tue, 07 Dec 2021 08:38:09 GMT
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+X-Application-Context:
+    application:8080
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    SAMEORIGIN
+X-Xss-Protection:
+    1; mode=block
+
+[
+  {
+    "cusip": "Q8881G103",
+    "symbol": "TSLLF",
+    "description": "Tassal Group Ltd Ordinary Shares (Australia)",
+    "exchange": "Pink Sheet",
+    "assetType": "EQUITY"
+  }
+]

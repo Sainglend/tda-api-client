@@ -65,7 +65,7 @@ export async function refreshAPIAuthentication(config?: TacBaseConfig): Promise<
 export async function getAPIAuthentication(config?: TacBaseConfig): Promise<IAuthConfig> {
     const authConfig: IAuthConfig = config?.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     if (!authConfig.expires_on || authConfig.expires_on < Date.now() + (10*60*1000)) {
-        return refreshAPIAuthentication({ ...config, authConfig });
+        return await refreshAPIAuthentication({ ...config, authConfig });
     } else {
         if (config?.verbose) {
             console.log('not refreshing authentication as it has not expired');
