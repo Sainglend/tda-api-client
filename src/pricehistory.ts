@@ -1,12 +1,12 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
-import {apiGet} from "./tdapiinterface";
+import {apiGet, TacRequestConfig} from "./tdapiinterface";
 
 /**
  * The type of period by which to group price data (which will be subdivided into candles by FREQUENCY_TYPE)
  * @enum {string}
  */
-export enum PERIOD_TYPE {
+export enum EPeriodType {
     /** DEFAULT */
     DAY = 'day',
     MONTH = 'month',
@@ -14,109 +14,162 @@ export enum PERIOD_TYPE {
     YTD = 'ytd',
 }
 
+export enum EPeriod {
+    ONE = 1,
+    TWO = 2,
+    THREE = 3,
+    FOUR = 4,
+    FIVE = 5,
+    SIX = 6,
+    TEN = 10,
+    FIFTEEN = 15,
+    TWENTY = 20,
+}
+
 /**
  * The number of periods to show. Acceptable values depend on, and are enumerated by, PERIOD_TYPE
  * @enum {number}
  */
-export const PERIOD = {
+export const EPERIOD_BY_PERIOD_TYPE = {
     /** Use these values if you selected PERIOD_TYPE.DAY */
-    DAY: {
+    [EPeriodType.DAY]: {
         /** DEFAULT */
-        10: 10,
-        5: 5,
-        4: 4,
-        3: 3,
-        2: 2,
-        1: 1
+        TEN: EPeriod.TEN,
+        FIVE: EPeriod.FIVE,
+        FOUR: EPeriod.FOUR,
+        THREE: EPeriod.THREE,
+        TWO: EPeriod.TWO,
+        ONE: EPeriod.ONE,
     },
     /** Use these values if you selected PERIOD_TYPE.MONTH */
-    MONTH: {
-        6: 6,
-        3: 3,
-        2: 2,
+    [EPeriodType.MONTH]: {
+        SIX: EPeriod.SIX,
+        THREE: EPeriod.THREE,
+        TWO: EPeriod.TWO,
         /** DEFAULT */
-        1: 1
+        ONE: EPeriod.ONE,
     },
     /** Use these values if you selected PERIOD_TYPE.YEAR */
-    YEAR: {
-        20: 20,
-        15: 15,
-        10: 10,
-        5: 5,
-        3: 3,
-        2: 2,
+    [EPeriodType.YEAR]: {
+        TWENTY: EPeriod.TWENTY,
+        FIFTEEN: EPeriod.FIFTEEN,
+        TEN: EPeriod.TEN,
+        FIVE: EPeriod.FIVE,
+        THREE: EPeriod.THREE,
+        TWO: EPeriod.TWO,
         /** DEFAULT */
-        1: 1
+        ONE: EPeriod.ONE,
     },
     /** Use these values if you selected PERIOD_TYPE.YTD */
-    YTD: {
+    [EPeriodType.YTD]: {
         /** DEFAULT */
-        1: 1
+        ONE: EPeriod.ONE,
     }
 
 };
+
+export enum EFrequencyType {
+    MINUTE = "minute",
+    DAILY = "daily",
+    WEEKLY = "weekly",
+    MONTHLY = "monthly",
+}
 
 /**
  * The type of frequency for the price candles. Valid FREQUENCY_TYPEs depend on, and are enumerated by, PERIOD_TYPE
  * @enum {string}
  */
-export const FREQUENCY_TYPE = {
+export const EFREQUENCY_TYPE_BY_PERIOD_TYPE = {
     /** Use these values if you selected PERIOD_TYPE.DAY */
-    DAY: {
+    [EPeriodType.DAY]: {
         /** DEFAULT */
-        MINUTE: 'minute'
+        MINUTE: EFrequencyType.MINUTE,
     },
     /** Use these values if you selected PERIOD_TYPE.MONTH */
-    MONTH: {
+    [EPeriodType.MONTH]: {
         /** DEFAULT */
-        WEEKLY: 'weekly',
-        DAILY: 'daily'
+        WEEKLY: EFrequencyType.WEEKLY,
+        DAILY: EFrequencyType.DAILY,
     },
     /** Use these values if you selected PERIOD_TYPE.YEAR */
-    YEAR: {
+    [EPeriodType.YEAR]: {
         /** DEFAULT */
-        MONTHLY: 'monthly',
-        WEEKLY: 'weekly',
-        DAILY: 'daily'
+        MONTHLY: EFrequencyType.MONTHLY,
+        WEEKLY: EFrequencyType.WEEKLY,
+        DAILY: EFrequencyType.DAILY,
     },
     /** Use these values if you selected PERIOD_TYPE.YTD */
-    YTD: {
+    [EPeriodType.YTD]: {
         /** DEFAULT */
-        WEEKLY: 'weekly',
-        DAILY: 'daily'
+        WEEKLY: EFrequencyType.WEEKLY,
+        DAILY: EFrequencyType.DAILY,
     }
 };
+
+export enum EFrequency {
+    ONE = 1,
+    FIVE = 5,
+    TEN = 10,
+    FIFTEEN = 15,
+    THIRTY = 30,
+}
 
 /**
  * How many units of the FREQUENCY_TYPE make up a candle. Valid frequencies depend on, and are enumerated by, FREQUENCY_TYPE
  * @enum {number}
  */
-export const FREQUENCY = {
+export const EFREQUENCY_BY_FREQUENCY_TYPE = {
     /** Use these values if you selected FREQUENCY_TYPE.MINUTE */
-    MINUTE: {
+    [EFrequencyType.MINUTE]: {
         /** DEFAULT */
-        ONE: 1,
-        FIVE: 5,
-        TEN: 10,
-        FIFTEEN: 15,
-        THIRTY: 30
+        ONE: EFrequency.ONE,
+        FIVE: EFrequency.FIVE,
+        TEN: EFrequency.TEN,
+        FIFTEEN: EFrequency.FIFTEEN,
+        THIRTY: EFrequency.THIRTY,
     },
     /** Use this value if you selected FREQUENCY_TYPE.DAILY */
-    DAILY: {
+    [EFrequencyType.DAILY]: {
         /** DEFAULT */
-        ONE: 1
+        ONE: EFrequency.ONE,
     },
     /** Use these values if you selected FREQUENCY_TYPE.WEEKLY */
-    WEEKLY: {
+    [EFrequencyType.WEEKLY]: {
         /** DEFAULT */
-        ONE: 1
+        ONE: EFrequency.ONE,
     },
     /** Use these values if you selected FREQUENCY_TYPE.MONTHLY */
-    MONTHLY: {
+    [EFrequencyType.MONTHLY]: {
         /** DEFAULT */
-        ONE: 1
+        ONE: EFrequency.ONE,
     }
 };
+
+export interface IPriceHistoryConfig extends TacRequestConfig {
+    symbol: string,
+    periodType: EPeriodType | string,
+    frequencyType: EFrequencyType | string,
+    frequency: EFrequency | number,
+    getExtendedHours: boolean,
+    period?: EPeriod | number,
+    startDate?: string,
+    endDate?: string,
+}
+
+export interface ICandle {
+    open: number,
+    high: number,
+    low: number,
+    close: number,
+    volume: number,
+    datetime: number,
+}
+
+export interface IPriceHistory {
+    candles: ICandle[],
+    symbol: string,
+    empty: boolean,
+}
 
 /**
  * Get price history info in the form of candles data for a particular symbol. Provide either start and end dates OR period
@@ -126,10 +179,10 @@ export const FREQUENCY = {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-export async function getPriceHistory(config: any) {
+export async function getPriceHistory(config: IPriceHistoryConfig): Promise<IPriceHistory> {
     config.path = `/v1/marketdata/${config.symbol}/pricehistory?` +
-        `periodType=${config.periodType || config.PERIOD_TYPE}` +
-        `&frequencyType=${config.frequencyType || config.FREQUENCY_TYPE}` +
+        `periodType=${config.periodType}` +
+        `&frequencyType=${config.frequencyType}` +
         `&frequency=${config.frequency}` +
         `&needExtendedHoursData=${config.getExtendedHours}` +
         (config.period ? `&period=${config.period}` : '') +

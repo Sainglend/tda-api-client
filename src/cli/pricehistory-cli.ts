@@ -66,16 +66,17 @@ export default {
                     }
 
                     return getPriceHistory({
-                        symbol: argv.symbol,
-                        PERIOD_TYPE: argv.PERIOD_TYPE,
-                        period: argv.period || (argv.from ? '' : (argv.PERIOD_TYPE === 'day' ? 10 : 1)),
-                        FREQUENCY_TYPE: argv.FREQUENCY_TYPE || '',
-                        frequency: argv.frequency,
-                        startDate: argv.from || '',
-                        endDate: argv.to || '',
-                        getExtendedHours: argv.needExtendedHoursData,
-                        verbose: argv.verbose || false,
-                        apikey: argv.apikey
+                        symbol: argv.symbol as string,
+                        periodType: argv.PERIOD_TYPE ? String(argv.PERIOD_TYPE) : '',
+                        period: argv.period ? Number(argv.period) : (argv.from ? undefined : (argv.PERIOD_TYPE === 'day' ? 10 : 1)),
+                        frequencyType: argv.FREQUENCY_TYPE ? String(argv.FREQUENCY_TYPE) : '',
+                        frequency: parseInt(argv.frequency as string),
+                        startDate: argv.from ? String(argv.from) : undefined,
+                        endDate: argv.to ? String(argv.to) : undefined,
+                        getExtendedHours: String(argv.needExtendedHoursData) === "true",
+                        verbose: String(argv.verbose) === "true",
+                        apikey: argv.apikey ? String(argv.apikey) : undefined,
+                        path: "",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
