@@ -31,14 +31,20 @@ export interface IAuthConfig {
 }
 
 export interface TacRequestConfig extends TacBaseConfig {
-    path: string,
+    path?: string,
     bodyJSON?: object,
-    apikey?: string,
 }
 
 export interface TacBaseConfig {
     authConfig?: IAuthConfig,
     verbose?: boolean,
+    apikey?: string,
+}
+
+export interface IWriteResponse {
+    data: any,
+    statusCode: number,
+    location: string,
 }
 
 /**
@@ -48,7 +54,7 @@ export interface TacBaseConfig {
  * @async
  */
 export async function apiGet(config: TacRequestConfig): Promise<any> {
-    return apiNoWriteResource(config, 'get', false);
+    return await apiNoWriteResource(config, 'get', false);
 }
 
 /**
@@ -58,7 +64,7 @@ export async function apiGet(config: TacRequestConfig): Promise<any> {
  * @async
  */
 export async function apiDelete(config: TacRequestConfig): Promise<any> {
-    return apiNoWriteResource(config, 'delete', false);
+    return await apiNoWriteResource(config, 'delete', false);
 }
 
 /**
@@ -67,8 +73,8 @@ export async function apiDelete(config: TacRequestConfig): Promise<any> {
  * @returns {Promise<Object>} resolve is api PATCH result, reject is error object
  * @async
  */
-export async function apiPatch(config: TacRequestConfig): Promise<any> {
-    return apiWriteResource(config, 'patch', false);
+export async function apiPatch(config: TacRequestConfig): Promise<IWriteResponse> {
+    return await apiWriteResource(config, 'patch', false);
 }
 
 /**
@@ -77,8 +83,8 @@ export async function apiPatch(config: TacRequestConfig): Promise<any> {
  * @returns {Promise<Object>} resolve is api PUT result, reject is error object
  * @async
  */
-export async function apiPut(config: TacRequestConfig): Promise<any> {
-    return apiWriteResource(config, 'put', false);
+export async function apiPut(config: TacRequestConfig): Promise<IWriteResponse> {
+    return await apiWriteResource(config, 'put', false);
 }
 
 /**
@@ -87,11 +93,11 @@ export async function apiPut(config: TacRequestConfig): Promise<any> {
  * @returns {Promise<Object>} resolve is api POST result, reject is error object
  * @async
  */
-export async function apiPost(config: TacRequestConfig) {
-    return apiWriteResource(config, 'post', false);
+export async function apiPost(config: TacRequestConfig): Promise<IWriteResponse> {
+    return await apiWriteResource(config, 'post', false);
 }
 
-const apiNoWriteResource = async (config: TacRequestConfig, method: string, skipAuth: boolean) => {
+async function apiNoWriteResource(config: TacRequestConfig, method: string, skipAuth: boolean): Promise<any> {
     const requestConfig = {
         method: method,
         url: config.path,
@@ -105,17 +111,17 @@ const apiNoWriteResource = async (config: TacRequestConfig, method: string, skip
         requestConfig.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return performAxiosRequest(requestConfig, true);
-};
+    return await performAxiosRequest(requestConfig, true);
+}
 
-async function apiWriteResource(config: any, method: string, skipAuth: boolean) {
+async function apiWriteResource(config: any, method: string, skipAuth: boolean): Promise<IWriteResponse> {
     const requestConfig = {
         method: method,
         url: config.path,
         headers: {
             'Content-Type': 'application/json'
         },
-        data: config.bodyJSON
+        data: config.bodyJSON,
     };
 
     if (!config.apikey && !skipAuth) {
@@ -125,11 +131,11 @@ async function apiWriteResource(config: any, method: string, skipAuth: boolean) 
         requestConfig.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return performAxiosRequest(requestConfig, false);
+    return await performAxiosRequest(requestConfig, false);
 }
 
-const performAxiosRequest = async (requestConfig: any, expectData: boolean) => {
-    return new Promise((res, rej) => {
+async function performAxiosRequest(requestConfig: any, expectData: boolean): Promise<IWriteResponse> {
+    return await new Promise<IWriteResponse>((res, rej) => {
         instance.request(requestConfig)
             .then(function (response: AxiosResponse) {
                 if (expectData) {
@@ -159,10 +165,10 @@ const performAxiosRequest = async (requestConfig: any, expectData: boolean) => {
                 rej(error.config);
             });
     });
-};
+}
 
-async function writeOutAuthResultToFile(authConfig: IAuthConfig, verbose: boolean = false) {
-    return new Promise((resolve, reject) => {
+async function writeOutAuthResultToFile(authConfig: IAuthConfig, verbose: boolean = false): Promise<IAuthConfig> {
+    return await new Promise<IAuthConfig>((resolve, reject) => {
         const filePath = path.join(process.cwd(), `/config/tdaclientauth.json`);
         if (verbose) {
             console.log(`writing new auth data to ${filePath}`);
@@ -174,7 +180,7 @@ async function writeOutAuthResultToFile(authConfig: IAuthConfig, verbose: boolea
     });
 }
 
-export async function doAuthRequest(authConfig: IAuthConfig, data: any, verbose: boolean = false) {
+export async function doAuthRequest(authConfig: IAuthConfig, data: any, verbose: boolean = false): Promise<IAuthConfig> {
     const requestConfig = {
         method: 'post',
         url: '/v1/oauth2/token',

@@ -1,16 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
-
-export interface IInstrument {
-    assetType: string,
-    cusip: string,
-    symbol: string,
-    description: string,
-    putCall: string,
-    exchange: string,
-    underlyingSymbol: string,
-}
+import {IInstrument} from "./types_AA";
 
 export interface IAccountBalance {
     accruedInterest: number,

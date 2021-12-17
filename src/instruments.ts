@@ -1,6 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
+import {IInstrument} from "./types_AA";
 
 export enum PROJECTION_TYPE {
     SYMBOL_SEARCH = "symbol-search",
@@ -10,19 +11,6 @@ export enum PROJECTION_TYPE {
     FUNDAMENTAL = "fundamental",
 }
 
-export enum EAssetType {
-    EQUITY = "EQUITY",
-    ETF = "ETF",
-    FOREX = "FOREX",
-    FUTURE = "FUTURE",
-    FUTURE_OPTION = "FUTURE_OPTION",
-    INDEX = "INDEX",
-    INDICATOR = "INDICATOR",
-    MUTUAL_FUND = "MUTUAL_FUND",
-    OPTION = "OPTION",
-    UNKNOWN = "UNKNOWN",
-}
-
 export enum EFundamentalAssetType {
     EQUITY = 'EQUITY',
     ETF = 'ETF',
@@ -30,7 +18,7 @@ export enum EFundamentalAssetType {
     UNKNOWN = 'UNKNOWN'
 }
 
-export interface IFundamental extends BaseInstrument {
+export interface IFundamental extends IInstrument {
     assetType: EFundamentalAssetType,
     high52: number, // double
     low52: number, // double
@@ -77,22 +65,6 @@ export interface IFundamental extends BaseInstrument {
     vol1DayAvg: number, // double
     vol10DayAvg: number, // double
     vol3MonthAvg: number, // double
-}
-
-interface BaseInstrument {
-    cusip: string,
-    symbol: string,
-    description: string,
-    exchange: string,
-}
-
-export interface IBond extends BaseInstrument {
-    bondPrice: number,
-    assetType: "BOND",
-}
-
-export interface IInstrument extends BaseInstrument {
-    assetType: EAssetType,
 }
 
 export interface ISearchInstrumentsFundamentalsConfig extends TacRequestConfig {
