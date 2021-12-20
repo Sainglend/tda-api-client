@@ -1,3 +1,5 @@
+import {ICandle} from "./sharedTypes";
+
 export interface FuturesChartResponseRough extends StringIndexed {
     key: string,
     seq: number,
@@ -10,7 +12,7 @@ export interface FuturesChartResponseRough extends StringIndexed {
     "6": number // volume
 }
 
-export interface FuturesChartResponse extends StringIndexed, Candle {
+export interface FuturesChartResponse extends StringIndexed, ICandle {
     key: string,
     seq: number
 }
@@ -29,7 +31,7 @@ export interface EquityChartResponseRough extends StringIndexed {
     "8"?: number, // chart day
 }
 
-export interface EquityChartResponse extends StringIndexed, Candle {
+export interface EquityChartResponse extends StringIndexed, ICandle {
     key: string,
     seq: number
 }
@@ -56,7 +58,7 @@ export interface ChartHistoryFutures extends StringIndexed {
     requestId: string,
     prop1: number,
     count: number,
-    candles: Candle[]
+    candles: ICandle[]
 }
 
 export interface StringIndexed {
@@ -67,15 +69,6 @@ export interface StreamingResponseData {
     service: string,
     content?: any,
     timestamp: number
-}
-
-export default interface Candle {
-    datetime: number,
-    open: number,
-    high: number,
-    low: number,
-    close: number,
-    volume: number
 }
 
 export enum EXCHANGES {
@@ -99,12 +92,6 @@ export enum TRADING_STATUS {
     HALTED='Halted',
     CLOSED='Closed',
 }
-
-
-
-
-
-
 
 export interface L1FuturesOptionsQuoteRough extends StringIndexed {
     "0": string, // symbol
@@ -706,12 +693,4 @@ export interface AcctActivity extends StringIndexed {
     messageData: object, // xml
     key: string, // subscription key
     sequence: number, // sequence number
-}
-
-
-export interface TickData {
-    symbol: string,
-    normalizedSymbol: string,
-    last: number
-    timestamp: number
 }

@@ -1,6 +1,7 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
+import {ICandle} from "./sharedTypes";
 
 /**
  * The type of period by which to group price data (which will be subdivided into candles by FREQUENCY_TYPE)
@@ -156,15 +157,6 @@ export interface IPriceHistoryConfig extends TacRequestConfig {
     endDate?: string,
 }
 
-export interface ICandle {
-    open: number,
-    high: number,
-    low: number,
-    close: number,
-    volume: number,
-    datetime: number,
-}
-
 export interface IPriceHistory {
     candles: ICandle[],
     symbol: string,
@@ -174,10 +166,8 @@ export interface IPriceHistory {
 /**
  * Get price history info in the form of candles data for a particular symbol. Provide either start and end dates OR period
  * Can optionally use apikey for delayed data with an unauthenticated request.
- * @param {Object} config - takes symbol, PERIOD_TYPE (ENUM is PERIOD_TYPE), period (ENUM is PERIOD), FREQUENCY_TYPE (ENUM is FREQUENCY_TYPE), frequency (ENUM is FREQUENCY),
+ * Takes as input: symbol, PERIOD_TYPE (ENUM is PERIOD_TYPE), period (ENUM is PERIOD), FREQUENCY_TYPE (ENUM is FREQUENCY_TYPE), frequency (ENUM is FREQUENCY),
  * and optionals are: needExtendedHoursData (true [default] or false), startDate (ms since epoch), endDate (ms since epoch), apikey
- * @returns {Promise<Object>} api GET result
- * @async
  */
 export async function getPriceHistory(config: IPriceHistoryConfig): Promise<IPriceHistory> {
     config.path = `/v1/marketdata/${config.symbol}/pricehistory?` +
@@ -190,5 +180,5 @@ export async function getPriceHistory(config: IPriceHistoryConfig): Promise<IPri
         (config.endDate ? `&endDate=${config.endDate}` : '') +
         (config.apikey ? `&apikey=${config.apikey}` : '');
 
-    return apiGet(config);
+    return await apiGet(config);
 }

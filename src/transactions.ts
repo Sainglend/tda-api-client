@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
-import {IInstrument_Transaction} from "./types_AA";
+import {IInstrument_Transaction} from "./sharedTypes";
 
 /**
  * Enum for the transaction types

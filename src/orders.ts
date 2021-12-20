@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
 import {apiDelete, apiGet, apiPost, apiPut, IWriteResponse, TacBaseConfig, TacRequestConfig} from "./tdapiinterface";
-import {IInstrument} from "./types_AA";
+import {IInstrument} from "./sharedTypes";
 
 /**
  * Enum for order statuses, to use when retrieving account orders.
@@ -35,7 +35,7 @@ export async function replaceOrder(config: any) {
     config.bodyJSON = config.orderJSON;
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
 
-    return apiPut(config);
+    return await apiPut(config);
 }
 
 /**
@@ -67,7 +67,7 @@ export async function getOrdersByAccount(config: any) {
         (config.toEnteredTime ? `toEnteredTime=${config.toEnteredTime}&` : '') +
         (config.status ? `status=${config.status}` : '');
 
-    return apiGet(config);
+    return await apiGet(config);
 }
 
 /**
@@ -85,7 +85,7 @@ export async function getOrdersByQuery(config: any) {
         (config.toEnteredTime ? `toEnteredTime=${config.toEnteredTime}&` : '') +
         (config.status ? `status=${config.status}` : '');
 
-    return apiGet(config);
+    return await apiGet(config);
 }
 
 /**
@@ -97,7 +97,7 @@ export async function getOrdersByQuery(config: any) {
 export async function getOrder(config: IGetOrderConfig): Promise<IOrderGet> {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
 
-    return apiGet(config);
+    return await apiGet(config);
 }
 
 export interface IGetOrderConfig extends TacRequestConfig {
@@ -114,7 +114,7 @@ export interface IGetOrderConfig extends TacRequestConfig {
 export async function cancelOrder(config: any) {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
 
-    return apiDelete(config);
+    return await apiDelete(config);
 }
 
 export enum EOrderSession {

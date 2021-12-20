@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {apiDelete, apiGet, apiPatch, apiPost, apiPut, IWriteResponse, TacRequestConfig} from "./tdapiinterface";
-import {EAssetType} from "./types_AA";
+import {EAssetType} from "./sharedTypes";
 
 export interface ICreateWatchlistInstrument {
     symbol: string,

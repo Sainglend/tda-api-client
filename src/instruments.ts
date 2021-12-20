@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
-import {IInstrument} from "./types_AA";
+import {IBond, IInstrument} from "./sharedTypes";
 
 export enum PROJECTION_TYPE {
     SYMBOL_SEARCH = "symbol-search",
@@ -11,15 +11,7 @@ export enum PROJECTION_TYPE {
     FUNDAMENTAL = "fundamental",
 }
 
-export enum EFundamentalAssetType {
-    EQUITY = 'EQUITY',
-    ETF = 'ETF',
-    MUTUAL_FUND = 'MUTUAL_FUND',
-    UNKNOWN = 'UNKNOWN'
-}
-
 export interface IFundamental extends IInstrument {
-    assetType: EFundamentalAssetType,
     high52: number, // double
     low52: number, // double
     dividendAmount: number, // double

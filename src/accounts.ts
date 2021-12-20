@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
-import {IInstrument} from "./types_AA";
+import {IInstrument} from "./sharedTypes";
 
 export interface IAccountBalance {
     accruedInterest: number,

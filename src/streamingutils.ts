@@ -1,4 +1,4 @@
-import Candle, {
+import {
     L1FuturesQuote,
     L1FuturesQuoteRough,
     FuturesChartResponse,
@@ -23,6 +23,7 @@ import Candle, {
     AcctActivityRough,
     AcctActivity,
 } from './streamingdatatypes';
+import {ICandle} from "./sharedTypes";
 const convert = require('xml-js');
 
 export default class StreamingUtils {
@@ -85,7 +86,7 @@ export default class StreamingUtils {
         };
     }
 
-    static transformChartHistoryFuturesCandle(candle: ChartHistoryFuturesCandleRough) : Candle {
+    static transformChartHistoryFuturesCandle(candle: ChartHistoryFuturesCandleRough) : ICandle {
         return {
             datetime: candle["0"],
             open: candle["1"],

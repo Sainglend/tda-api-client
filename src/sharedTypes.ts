@@ -18,8 +18,6 @@ export interface IInstrument {
     symbol: string,
     description: string,
     exchange: string,
-    putCall?: string,
-    underlyingSymbol?: string,
 }
 
 export interface IEquity extends IInstrument {
@@ -34,9 +32,6 @@ export interface IFixedIncome extends IInstrument {
     // "cusip": "string",
     // "symbol": "string",
     // "description": "string",
-    // "maturityDate": "string",
-    // "variableRate": 0,
-    // "factor": 0
     maturityDate: string, // date-time
     variableRate: number, // double
     factor: number, // double
@@ -58,10 +53,11 @@ export interface ICashEquivalent extends IInstrument {
     type: ECashEquivalentType
 }
 
-// instruments
-export interface IBond extends IInstrument {
+export interface IBond extends Omit<IInstrument, "assetType"> {
     bondPrice: number,
     assetType: "BOND",
+    bondMaturityDate: string,
+    bondInterestRate: number,
 }
 
 export enum ECashEquivalentType {
@@ -75,12 +71,14 @@ export enum EOptionType {
     BARRIER,
 }
 
-export interface IOption extends IInstrument {
+export interface IOptionInstrument extends IInstrument {
     type: EOptionType,
     putCall: 'PUT' | 'CALL',
     underlyingSymbol: string,
     optionMultiplier: number, // int32
-    optionDeliverables: IOptionDeliverable[]
+    optionDeliverables: IOptionDeliverable[],
+    optionExpirationDate: string,
+    optionStrikePrice: number,
 }
 
 export interface IOptionDeliverable {
@@ -97,15 +95,11 @@ export enum ECurrencyType {
     JPY,
 }
 
-export interface IInstrument_Transaction {
-    symbol: string,
-    underlyingSymbol: string,
-    optionExpirationDate: string,
-    optionStrikePrice: number,
-    putCall: string,
-    cusip: string,
-    description: string,
-    assetType: string,
-    bondMaturityDate: string,
-    bondInterestRate: number,
+export interface ICandle {
+    open: number,
+    high: number,
+    low: number,
+    close: number,
+    volume: number,
+    datetime: number,
 }

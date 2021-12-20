@@ -1,6 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
+import {IOptionDeliverable} from './sharedTypes';
 
 /**
  * Defines what range of strikes to return as results
@@ -110,13 +111,6 @@ export interface IOptionStrike {
     [index:string]: IOption[],
 }
 
-export interface IOptionDeliverables {
-    symbol: string,
-    assetType: string,
-    deliverableUnits: string,
-    currencyType: string,
-}
-
 export interface IOption {
     putCall: 'PUT' | 'CALL',
     symbol: string,
@@ -150,7 +144,7 @@ export interface IOption {
     theoreticalVolatility: number,
     isMini: boolean,
     isNonStandard: boolean,
-    optionDeliverablesList: IOptionDeliverables[],
+    optionDeliverablesList: IOptionDeliverable[],
     strikePrice: number,
     expirationDate: string,
     expirationType: string,

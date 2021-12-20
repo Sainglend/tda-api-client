@@ -1,0 +1,125 @@
+curl -X GET --header "Authorization: " --header "Authorization: Bearer INSERT_ACCESS_TOKEN" "https://api.tdameritrade.com/v1/marketdata/SPY/quotes"
+
+
+REQUEST
+
+GET /v1/marketdata/SPY/quotes HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+    Bearer INSERT_ACCESS_TOKEN
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+RESPONSE
+
+HTTP/1.1 200
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Encoding:
+    gzip
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json
+Date:
+    Mon, 20 Dec 2021 07:18:10 GMT
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Transfer-Encoding:
+    chunked
+vary:
+    accept-encoding
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    SAMEORIGIN
+X-Xss-Protection:
+    1; mode=block
+
+{
+  "SPY": {
+    "assetType": "ETF",
+    "assetMainType": "EQUITY",
+    "cusip": "78462F103",
+    "assetSubType": "ETF",
+    "symbol": "SPY",
+    "description": "SPDR S&P 500",
+    "bidPrice": 461.42,
+    "bidSize": 300,
+    "bidId": "P",
+    "askPrice": 461.58,
+    "askSize": 200,
+    "askId": "P",
+    "lastPrice": 459.87,
+    "lastSize": 2071900,
+    "lastId": "P",
+    "openPrice": 461.55,
+    "highPrice": 464.74,
+    "lowPrice": 458.06,
+    "bidTick": " ",
+    "closePrice": 459.87,
+    "netChange": 0,
+    "totalVolume": 135636510,
+    "quoteTimeInLong": 1639789200948,
+    "tradeTimeInLong": 1639789200000,
+    "mark": 459.87,
+    "exchange": "p",
+    "exchangeName": "PACIFIC",
+    "marginable": true,
+    "shortable": true,
+    "volatility": 0.0111,
+    "digits": 2,
+    "52WkHigh": 473.54,
+    "52WkLow": 362.03,
+    "nAV": 0,
+    "peRatio": 0,
+    "divAmount": 5.6618,
+    "divYield": 1.23,
+    "divDate": "2021-09-17 00:00:00.000",
+    "securityStatus": "Normal",
+    "regularMarketLastPrice": 459.87,
+    "regularMarketLastSize": 0,
+    "regularMarketNetChange": 0,
+    "regularMarketTradeTimeInLong": 1639789200000,
+    "netPercentChangeInDouble": 0,
+    "markChangeInDouble": 0,
+    "markPercentChangeInDouble": 0,
+    "regularMarketPercentChangeInDouble": 0,
+    "delayed": false,
+    "realtimeEntitled": true
+  }
+}

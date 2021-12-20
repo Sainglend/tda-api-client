@@ -1,12 +1,10 @@
-import {IAuthConfig} from "./authentication";
+import {IAuthConfig} from "./tdapiinterface";
 import WebSocket from 'ws';
 import moment from 'moment';
-import {
-    StreamingResponseData,
-} from './streamingdatatypes';
+import {StreamingResponseData,} from './streamingdatatypes';
 import StreamingUtils from "./streamingutils";
 import EventEmitter from 'events';
-import {getStreamerSubKeys, getUserPrincipals} from "./userinfo";
+import {EUserPrincipalFields, getStreamerSubKeys, getUserPrincipals} from "./userinfo";
 import {getAccounts} from "./accounts";
 
 export enum SERVICES {
@@ -312,7 +310,14 @@ export default class TDADataStream extends EventEmitter {
     private async handleIncoming(resp: string, resolve: any) {
         // console.log('handle incoming');
         this.streamLastAlive = moment.utc().valueOf();
-        const respObj = JSON.parse(resp);
+        let respObj = null;
+        try {
+            respObj = JSON.parse(resp);
+        } catch (e) {
+            if (this.verbose) console.log("An exception occurred while trying to parse stream data: ", resp);
+        }
+        if (!respObj) return;
+
         if (this.verbose) {
             console.log('handle incoming: ' + Object.keys(respObj).join(','));
             console.log(JSON.stringify(respObj, null, 2));
@@ -521,11 +526,11 @@ export default class TDADataStream extends EventEmitter {
     }
 
     // called after connect success, and OPEN event received; do login, then something to keep stream alive
-    private async open(loginRequest: any) {
+    private async open(loginRequest: any): Promise<void> {
         this.dataStreamSocket.send(JSON.stringify(loginRequest));
     }
 
-    private async restartDataStream() {
+    private async restartDataStream(): Promise<void> {
         this.once('message', () => { this.clearRetryAttempts(); this.resubscribe() }); // set this to trigger on successful login
         for (let i = 0; i < this.retryAttempts; i++) {
             this.retryAttemptTimeouts.push(setTimeout(() => this.doDataStreamLogin(), this.retryIntervalSeconds*i*1000));
@@ -536,7 +541,7 @@ export default class TDADataStream extends EventEmitter {
         this.retryAttemptTimeouts.forEach(t => clearTimeout(t));
     }
 
-    private async handleStreamClose() {
+    private async handleStreamClose(): Promise<void> {
         if (this.userKilled) {
             if (this.verbose) console.log('stream closed, killed by user');
             this.emit('streamClosed', {attemptingReconnect: false});
@@ -547,17 +552,18 @@ export default class TDADataStream extends EventEmitter {
             // attempt to reconnect
             await this.restartDataStream();
         }
-        return Promise.resolve();
+        return;
     }
 
     async doDataStreamLogin(
-        fields: string = 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds',
+        //fields: string = 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds',
+        fields: EUserPrincipalFields[] = [EUserPrincipalFields.PREFERENCES, EUserPrincipalFields.SURROGATE_IDS, EUserPrincipalFields.STREAMER_SUB_KEYS, EUserPrincipalFields.STREAMER_CONNECTION_INFO],
         qosLevel: QOS_LEVELS = QOS_LEVELS.L2_FAST_1000MS
     ) : Promise<any> {
         // if now is within 30 seconds of last alive, do nothing
         this.userKilled = false;
         if (this.verbose) console.log('doDataStreamLogin');
-        this.userPrincipalsResponse = await getUserPrincipals({fields: fields, authConfig: this.authConfig});
+        this.userPrincipalsResponse = await getUserPrincipals({fields, authConfig: this.authConfig});
         // console.log(`userPrincipals: ${JSON.stringify(this.userPrincipalsResponse)}`);
 
         //Converts ISO-8601 response in snapshot to ms since epoch accepted by Streamer
@@ -633,7 +639,7 @@ export default class TDADataStream extends EventEmitter {
     async qosRequest(qosLevel: QOS_LEVELS, requestSeqNum: number = this.requestId++) : Promise<number> {
         if (!QOS_LEVELS[qosLevel]) return 0;
         this.currentQosLevel = qosLevel;
-        return this.genericStreamRequest({
+        return await this.genericStreamRequest({
             service: SERVICES.ADMIN,
             requestSeqNum,
             command: COMMANDS.QOS,
@@ -724,7 +730,7 @@ export default class TDADataStream extends EventEmitter {
             command: COMMANDS.SUBS
         }
 
-        return this.genericStreamRequest(config);
+        return await this.genericStreamRequest(config);
     }
 
     private async qstart() {
@@ -748,11 +754,11 @@ export default class TDADataStream extends EventEmitter {
         }
     }
 
-    async qaccountUpdatesSub(accountIds: string = '', fields: string = "0,1,2,3", requestSeqNum?: number) : Promise<any> {
+    async queueAccountUpdatesSub(accountIds: string = '', fields: string = "0,1,2,3", requestSeqNum?: number) : Promise<any> {
         await this.qpush(this.accountUpdatesSub.bind(this, accountIds, fields, requestSeqNum));
     }
 
-    async qchartHistoryFuturesGet(
+    async queueChartHistoryFuturesGet(
         symbol: string,
         frequency: CHART_HISTORY_FUTURES_FREQUENCY,
         period?: string,
@@ -764,7 +770,7 @@ export default class TDADataStream extends EventEmitter {
         await this.qpush(this.chartHistoryFuturesGet.bind(this, symbol, frequency, period, startTimeMSEpoch, endTimeMSEpoch, requestSeqNum));
     }
 
-    async qgenericStreamRequest(config: GenericStreamConfig) {
+    async queueGenericStreamRequest(config: GenericStreamConfig) {
         await this.qpush(this.genericStreamRequest.bind(this, config));
     }
     

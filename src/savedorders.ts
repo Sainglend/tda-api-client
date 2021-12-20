@@ -1,66 +1,74 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
-import {apiDelete, apiGet, apiPost, apiPut} from "./tdapiinterface";
+import {apiDelete, apiGet, apiPost, apiPut, IWriteResponse, TacRequestConfig} from "./tdapiinterface";
+import {IOrderGet} from "./orders";
+
+export interface ICreateSavedOrderConfig extends TacRequestConfig {
+    accountId: string | number,
+    orderJSON: any,
+}
+
+export interface IReplaceSaveOrderConfig extends TacRequestConfig {
+    accountId: string | number,
+    savedOrderId: string,
+    orderJSON: any,
+}
+
+export interface ISimpleSavedOrderConfig extends TacRequestConfig {
+    accountId: string | number,
+    savedOrderId: string,
+}
+
+export interface IGetSavedOrdersConfig extends TacRequestConfig {
+    accountId: string | number,
+}
 
 /**
  * Create a saved order for a given account
- * @param {Object} config - takes accountId, orderJSON
- * @returns {Promise<Object>} api POST result
- * @async
+ * The id is part of the uri in the location property of the return object
  */
-export async function createSavedOrder(config: any) {
+export async function createSavedOrder(config: ICreateSavedOrderConfig): Promise<IWriteResponse> {
     config.bodyJSON = config.orderJSON;
     config.path = `/v1/accounts/${config.accountId}/savedorders`;
 
-    return apiPost(config);
+    return await apiPost(config);
 }
 
 /**
  * Delete a specified saved order for a given account
- * @param {Object} config - takes accountId, savedOrderId
- * @returns {Promise<Object>} api DELETE result
- * @async
+ * Just an acknowledgement response code is returned.
  */
-export async function deleteSavedOrder(config: any) {
-    if (!config) config = {};
+export async function deleteSavedOrder(config: ISimpleSavedOrderConfig): Promise<any> {
     config.path = `/v1/accounts/${config.accountId}/savedorders/${config.savedOrderId}`;
 
-    return apiDelete(config);
+    return await apiDelete(config);
 }
 
 /**
  * Get a particular saved order for a given account
- * @param {Object} config - takes accountId, savedOrderId
- * @returns {Promise<Object>} api GET result
- * @async
  */
-export async function getSavedOrderById(config: any) {
+export async function getSavedOrderById(config: ISimpleSavedOrderConfig): Promise<IOrderGet> {
     config.path = `/v1/accounts/${config.accountId}/savedorders/${config.savedOrderId}`;
 
-    return apiGet(config);
+    return await apiGet(config);
 }
 
 /**
  * Get all saved orders for a given account
- * @param {Object} config - takes accountId
- * @returns {Promise<Object>} api GET result
- * @async
  */
-export async function getSavedOrders(config: any) {
+export async function getSavedOrders(config: IGetSavedOrdersConfig): Promise<IOrderGet[]> {
     config.path = `/v1/accounts/${config.accountId}/savedorders`;
 
-    return apiGet(config);
+    return await apiGet(config);
 }
 
 /**
  * Replace an existing saved order for a specified account using the properly formatted orderJSON
- * @param {Object} config - takes accountId, savedOrderId, orderJSON
- * @returns {Promise<Object>} api PUT result
- * @async
+ * The saved order id will be part of the location uri in the returned object
  */
-export async function replaceSavedOrder(config: any) {
+export async function replaceSavedOrder(config: IReplaceSaveOrderConfig): Promise<IWriteResponse> {
     config.bodyJSON = config.orderJSON;
     config.path = `/v1/accounts/${config.accountId}/savedorders/${config.savedOrderId}`;
 
-    return apiPut(config);
+    return await apiPut(config);
 }
