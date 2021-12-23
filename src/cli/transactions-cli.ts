@@ -6,7 +6,7 @@ import {getTransaction, getTransactions, TRANSACTION_TYPE} from "../transactions
 export default {
     command: "trans <command>",
     desc: "Retrieve transaction history",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("get <transactionId> <accountId>",
                 "Get a specific transaction by <transactionId> for a specific <accountId>",
@@ -18,7 +18,7 @@ export default {
                     return getTransaction({
                         accountId: argv.accountId,
                         transactionId: argv.transactionId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getall <accountId>",
@@ -26,20 +26,20 @@ export default {
                 {
                     type: {
                         type: "string",
-                        choices: Object.keys(TRANSACTION_TYPE)
+                        choices: Object.keys(TRANSACTION_TYPE),
                     },
                     from: {
                         type: "string",
-                        desc: "date, e.g. 2020-11-22"
+                        desc: "date, e.g. 2020-11-22",
                     },
                     to: {
                         type: "string",
-                        desc: "date, e.g. 2020-11-29"
+                        desc: "date, e.g. 2020-11-29",
                     },
                     symbol: {
                         type: "string",
-                        desc: "ticker symbol, e.g. TSLA"
-                    }
+                        desc: "ticker symbol, e.g. TSLA",
+                    },
                 },
                 async (argv: Arguments) => {
                     if (argv.verbose) {
@@ -48,10 +48,10 @@ export default {
                     return getTransactions({
                         accountId: argv.accountId,
                         transactionId: argv.transactionId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
 
     },
-    handler: (argv: Arguments) => {},
+    handler: (argv: Arguments): any => { /* no op */ },
 };

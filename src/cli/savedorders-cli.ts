@@ -6,7 +6,7 @@ import {createSavedOrder, deleteSavedOrder, getSavedOrderById, getSavedOrders, r
 export default {
     command: "savedorders <command>",
     desc: "Manage your saved orders",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("create <accountId> <orderJSON>",
                 "Create a saved order for a specified <accountId> using the properly formatted <orderJSON> (enclose in quotes, escape inner quotes, e.g. \"{\\\"orderType\\\":\\\"MARKET\\\"}\" )",
@@ -18,7 +18,7 @@ export default {
                     return createSavedOrder({
                         accountId: argv.accountId,
                         orderJSON: (typeof (argv.orderJSON) === "string" ? JSON.parse(argv.orderJSON) : argv.orderJSON),
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("replace <savedOrderId> <accountId> <orderJSON>",
@@ -32,7 +32,7 @@ export default {
                         accountId: argv.accountId,
                         orderJSON: (typeof (argv.orderJSON) === "string" ? JSON.parse(argv.orderJSON) : argv.orderJSON),
                         savedOrderId: argv.savedOrderId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("get <savedOrderId> <accountId>",
@@ -45,7 +45,7 @@ export default {
                     return getSavedOrderById({
                         accountId: argv.accountId,
                         savedOrderId: argv.savedOrderId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("delete <savedOrderId> <accountId>",
@@ -58,7 +58,7 @@ export default {
                     return deleteSavedOrder({
                         accountId: argv.accountId,
                         savedOrderId: argv.savedOrderId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getall <accountId>",
@@ -70,9 +70,9 @@ export default {
                     }
                     return getSavedOrders({
                         accountId: argv.accountId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
-    handler: (argv: Arguments) => {},
+    handler: (argv: Arguments): void => { /* no op */ },
 };

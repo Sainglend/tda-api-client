@@ -4,7 +4,7 @@ import {getAccount, getAccounts} from "../accounts";
 export default {
     command: `accounts <command>`,
     desc: "Get your account info for one or all linked accounts",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("get <accountId> <fields>",
                 "Get <accountId> account info that returns data based on <fields>. Fields is a common-separated string like \"positions,orders\"",
@@ -34,5 +34,5 @@ export default {
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
-    handler: (argv: any) => {},
+    handler: (argv: Arguments): void => { /* no op */ },
 };

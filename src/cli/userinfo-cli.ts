@@ -6,7 +6,7 @@ import {getStreamerSubKeys, getUserPreferences, getUserPrincipals, updateUserPre
 export default {
     command: "userinfo <command>",
     desc: "Get and update user information such as preferences and keys",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("principals [fields]",
                 "Get user info. Return additional fields with the [fields] param, a comma-separated string of up to 4 fields: streamerSubscriptionKeys, streamerConnectionInfo, preferences, surrogateIds",
@@ -17,7 +17,7 @@ export default {
                     }
                     return getUserPrincipals({
                         fields: argv.fields || "",
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("pref <accountId>",
@@ -29,7 +29,7 @@ export default {
                     }
                     return getUserPreferences({
                         accountId: argv.accountId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("streamerkeys <accountIds>",
@@ -41,7 +41,7 @@ export default {
                     }
                     return getStreamerSubKeys({
                         accountIds: argv.accountIds,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("updateprefs <accountId> <preferencesJSON>",
@@ -54,10 +54,10 @@ export default {
                     return updateUserPreferences({
                         accountId: argv.accountId,
                         preferencesJSON: (typeof (argv.preferencesJSON) === "string" ? JSON.parse(argv.preferencesJSON) : argv.preferencesJSON),
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
 
     },
-    handler: (argv: Arguments) => {},
+    handler: (argv: Arguments): void => { /* no op */ },
 };

@@ -1,6 +1,6 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
-import {apiGet, apiPut, TacRequestConfig} from "./tdapiinterface";
+import {apiGet, apiPut, IWriteResponse, TacRequestConfig} from "./tdapiinterface";
 
 export enum EPrefOrderLegInstruction {
     BUY = "BUY",
@@ -218,7 +218,7 @@ export async function getStreamerSubKeys(config: IGetStreamerKeysConfig): Promis
 /**
  * Update user preferences for a given accountId using a preferencesJSON
  */
-export async function updateUserPreferences(config: IUpdateUserPrefConfig) {
+export async function updateUserPreferences(config: IUpdateUserPrefConfig): Promise<IWriteResponse> {
     config.bodyJSON = config.preferences;
     config.path = `/v1/accounts/${config.accountId}/preferences`;
 

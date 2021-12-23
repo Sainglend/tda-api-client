@@ -4,9 +4,11 @@ import {AxiosError, AxiosInstance, AxiosResponse} from "axios";
 import fs from "fs";
 import path from "path";
 import {getAPIAuthentication} from "./authentication";
-const axios = require("axios").default;
+import axios = require("axios");
 
-const instance: AxiosInstance = axios.create({
+const axiosDefault = axios.default;
+
+const instance: AxiosInstance = axiosDefault.create({
     baseURL: "https://api.tdameritrade.com",
     port: 443,
     headers: {
@@ -16,8 +18,8 @@ const instance: AxiosInstance = axios.create({
         "Host": "api.tdameritrade.com",
         "Sec-Fetch-Dest": "empty",
         "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site"
-    }
+        "Sec-Fetch-Site": "same-site",
+    },
 });
 
 export interface IAuthConfig {
@@ -32,7 +34,7 @@ export interface IAuthConfig {
 
 export interface TacRequestConfig extends TacBaseConfig {
     path?: string,
-    bodyJSON?: object,
+    bodyJSON?: any,
 }
 
 export interface TacBaseConfig {
@@ -101,7 +103,7 @@ async function apiNoWriteResource(config: TacRequestConfig, method: string, skip
     const requestConfig = {
         method: method,
         url: config.path,
-        headers: {}
+        headers: {},
     };
 
     if (!config.apikey && !skipAuth) {
@@ -119,7 +121,7 @@ async function apiWriteResource(config: any, method: string, skipAuth: boolean):
         method: method,
         url: config.path,
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         },
         data: config.bodyJSON,
     };
@@ -144,7 +146,7 @@ async function performAxiosRequest(requestConfig: any, expectData: boolean): Pro
                     res({
                         data: response.data,
                         statusCode: response.status,
-                        location: response.headers.location
+                        location: response.headers.location,
                     });
                 }
             })
@@ -194,8 +196,8 @@ export async function doAuthRequest(authConfig: IAuthConfig, data: any, verbose 
             "Host": "api.tdameritrade.com",
             "Sec-Fetch-Dest": "empty",
             "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-site"
-        }
+            "Sec-Fetch-Site": "same-site",
+        },
     };
     const result = await performAxiosRequest(requestConfig, true);
 

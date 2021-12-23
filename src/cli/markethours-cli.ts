@@ -6,7 +6,7 @@ import {getMultipleMarketHours, getSingleMarketHours} from "../markethours";
 export default {
     command: "hours <command>",
     desc: "Get market hours",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("get <date> <markets> [apikey]",
                 "Get market open hours for a specified date <date> (e.g. 2020-09-18) and a comma-separated set of <markets> from EQUITY, OPTION, FUTURE, BOND, or FOREX, e.g. \"EQUITY,OPTION\". Including your optional <apikey> makes an unauthenticated request.",
@@ -39,5 +39,5 @@ export default {
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
-    handler: (argv: any) => {},
+    handler: (argv: Arguments): void => { /* no op */ },
 };

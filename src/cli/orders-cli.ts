@@ -6,7 +6,7 @@ import {cancelOrder, getOrder, getOrdersByQuery, ORDER_STATUS, placeOrder, repla
 export default {
     command: "orders <command>",
     desc: "Manage your orders",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("place <accountId> <orderJSON>",
                 "Place an order for a specified <accountId> using the properly formatted <orderJSON> (enclose in quotes, escape inner quotes, e.g. \"{\\\"orderType\\\":\\\"MARKET\\\"}\" )",
@@ -18,7 +18,7 @@ export default {
                     return placeOrder({
                         accountId: argv.accountId,
                         orderJSON: (typeof (argv.orderJSON) === "string") ? JSON.parse(argv.orderJSON) : argv.orderJSON,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("replace <orderId> <accountId> <orderJSON>",
@@ -32,7 +32,7 @@ export default {
                         accountId: argv.accountId,
                         orderJSON: (typeof (argv.orderJSON) === "string") ? JSON.parse(argv.orderJSON) : argv.orderJSON,
                         orderId: argv.orderId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getorder <orderId> <accountId>",
@@ -45,7 +45,7 @@ export default {
                     return getOrder({
                         accountId: argv.accountId,
                         orderId: argv.orderId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("cancel <orderId> <accountId>",
@@ -58,7 +58,7 @@ export default {
                     return cancelOrder({
                         accountId: argv.accountId,
                         orderId: argv.orderId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getorders [accountId]",
@@ -67,21 +67,21 @@ export default {
                 + "from and to must either both be included or excluded. Date format is yyyy-MM-dd",
                 {
                     maxResults: {
-                        type: "number"
+                        type: "number",
                     },
                     from: {
                         type: "string",
-                        desc: "date, e.g. 2020-11-22"
+                        desc: "date, e.g. 2020-11-22",
                     },
                     to: {
                         type: "string",
-                        desc: "date, e.g. 2020-11-29"
+                        desc: "date, e.g. 2020-11-29",
                     },
                     status: {
                         type: "string",
                         desc: "filter by status",
-                        choices: Object.keys(ORDER_STATUS)
-                    }
+                        choices: Object.keys(ORDER_STATUS),
+                    },
                 },
                 async (argv: Arguments) => {
                     if (argv.verbose) {
@@ -93,9 +93,9 @@ export default {
                         fromEnteredTime: argv.from || "",
                         toEnteredTime: argv.to || "",
                         status: argv.status || "",
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
-    handler: (argv: Arguments) => {},
+    handler: (argv: Arguments): void => { /* no op */ },
 };

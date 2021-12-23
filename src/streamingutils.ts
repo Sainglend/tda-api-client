@@ -24,7 +24,7 @@ import {
     AcctActivity,
 } from "./streamingdatatypes";
 import {ICandle} from "./sharedTypes";
-const convert = require("xml-js");
+import convert = require("xml-js");
 
 export default class StreamingUtils {
     static buildNumberArray(start: number, finish: number) : string {
@@ -35,14 +35,14 @@ export default class StreamingUtils {
         return arr.join(",");
     }
 
-    static normalizeSymbol(ticker: string) {
+    static normalizeSymbol(ticker: string): string {
         // console.log(`in normalizesymbol with ticker: ${ticker}`);
         if (ticker) {
             return ticker.replace(/\W/g, "_");
         } else return ticker;
     }
 
-    static jsonToQueryString(json: any) {
+    static jsonToQueryString(json: any): string {
         return Object.keys(json).map(function(key) {
             return encodeURIComponent(key) + "=" +
                 encodeURIComponent(json[key]);
@@ -59,7 +59,7 @@ export default class StreamingUtils {
             high: resp["3"],
             low: resp["4"],
             close: resp["5"],
-            volume: resp["6"]
+            volume: resp["6"],
         };
     }
 
@@ -72,7 +72,7 @@ export default class StreamingUtils {
             high: resp["2"],
             low: resp["3"],
             close: resp["4"],
-            volume: resp["5"]
+            volume: resp["5"],
         };
     }
 
@@ -82,7 +82,7 @@ export default class StreamingUtils {
             requestId: resp["0"],
             prop1: resp["1"],
             count: resp["2"],
-            candles: resp["3"].map(candle => StreamingUtils.transformChartHistoryFuturesCandle(candle))
+            candles: resp["3"].map(candle => StreamingUtils.transformChartHistoryFuturesCandle(candle)),
         };
     }
 
@@ -93,7 +93,7 @@ export default class StreamingUtils {
             high: candle["2"],
             low: candle["3"],
             close: candle["4"],
-            volume: candle["5"]
+            volume: candle["5"],
         };
     }
 
@@ -104,7 +104,7 @@ export default class StreamingUtils {
             tradeTime: timeSaleRough["1"],
             lastPrice: timeSaleRough["2"],
             lastSize: timeSaleRough["3"],
-            lastSequence: timeSaleRough["4"]
+            lastSequence: timeSaleRough["4"],
         };
     }
 

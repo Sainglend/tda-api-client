@@ -690,7 +690,7 @@ export interface AcctActivityRough extends StringIndexed {
 export interface AcctActivity extends StringIndexed {
     accountNumber: string,
     messageType: string,
-    messageData: object, // xml
+    messageData: any, // xml
     key: string, // subscription key
     sequence: number, // sequence number
 }

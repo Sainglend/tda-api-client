@@ -5,9 +5,9 @@ export default {
     desc: "View license information. license -w for warranty, license -c for conditions. Copyright (C) 2020 Aaron Satterlee",
     builder: {
         warranty: {alias: "w", desc: "View warranty information fron GNU GPL v3.0"},
-        conditions: {alias: "c", desc: "View conditions information fron GNU GPL v3.0"}
+        conditions: {alias: "c", desc: "View conditions information fron GNU GPL v3.0"},
     },
-    handler: (argv: any) => {
+    handler: (argv: any): any => {
         if (argv.c) {
             console.log("\nTERMS AND CONDITIONS\n" +
                 "\n" +
@@ -570,5 +570,5 @@ export default {
                 "ALL NECESSARY SERVICING, REPAIR OR CORRECTION.");
         }
         console.log(`\nView full license info in the LICENSE file in this project's root folder.`);
-    }
+    },
 };

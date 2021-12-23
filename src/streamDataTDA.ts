@@ -1,7 +1,7 @@
 import {IAuthConfig} from "./tdapiinterface";
 import WebSocket from "ws";
 import moment from "moment";
-import {StreamingResponseData,} from "./streamingdatatypes";
+import {StreamingResponseData} from "./streamingdatatypes";
 import StreamingUtils from "./streamingutils";
 import EventEmitter from "events";
 import {EUserPrincipalFields, getStreamerSubKeys, getUserPrincipals} from "./userinfo";
@@ -390,7 +390,7 @@ export class StreamDataTDA extends EventEmitter {
                 let fn = null;
                 switch (element.service) {
                 case EServices.CHART_HISTORY_FUTURES: fn = StreamingUtils.transformChartHistoryFuturesResponse; break;
-                default: fn = () => {}; break;
+                default: fn = () => { /* no op */ }; break;
                 }
                 if (fn != null) {
                     this.handleIncomingData(element, element.service, fn);
@@ -406,7 +406,7 @@ export class StreamDataTDA extends EventEmitter {
         if (config.command === ECommands.SUBS) {
             // overwrite
             this.subParams[config.service] = {
-                ...config.parameters
+                ...config.parameters,
             };
         } else if (config.command === ECommands.ADD) {
             // superset
@@ -426,7 +426,7 @@ export class StreamDataTDA extends EventEmitter {
             });
             this.subParams[config.service] = {
                 keys: Array.from(keys).join(","),
-                fields: Array.from(fields).join(",")
+                fields: Array.from(fields).join(","),
             };
         } else if (config.command === ECommands.UNSUBS) {
             // if there are keys, that means the unsub is selective
@@ -440,7 +440,7 @@ export class StreamDataTDA extends EventEmitter {
                 });
                 this.subParams[config.service] = {
                     ...currentParams,
-                    keys: Array.from(keys).join(",")
+                    keys: Array.from(keys).join(","),
                 };
             } else {
                 this.subParams[config.service] = {};
@@ -478,7 +478,8 @@ export class StreamDataTDA extends EventEmitter {
      */
     async genericStreamRequest(config: IGenericStreamConfig) : Promise<number> {
         if (!config) throw "You must pass in a config object";
-        let {service, command, requestSeqNum, parameters, account, source} = config;
+        let {requestSeqNum, parameters} = config;
+        const {service, command, account, source} = config;
         if ([ECommands.SUBS, ECommands.ADD].includes(command)) {
             if (!parameters || !parameters.keys) throw "With commands ADD or SUBS, your config object must have parameters";
             if (!parameters.fields) {
@@ -501,8 +502,8 @@ export class StreamDataTDA extends EventEmitter {
                     account: account || this.userPrincipalsResponse.accounts[0].accountId,
                     source: source || this.userPrincipalsResponse.streamerInfo.appId,
                     parameters,
-                }
-            ]
+                },
+            ],
         };
         this.dataStreamSocket.send(JSON.stringify(request));
         return requestSeqNum;
@@ -556,7 +557,7 @@ export class StreamDataTDA extends EventEmitter {
     async doDataStreamLogin(
         //fields: string = 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds',
         fields: EUserPrincipalFields[] = [EUserPrincipalFields.PREFERENCES, EUserPrincipalFields.SURROGATE_IDS, EUserPrincipalFields.STREAMER_SUB_KEYS, EUserPrincipalFields.STREAMER_CONNECTION_INFO],
-        qosLevel: EQosLevels = EQosLevels.L2_FAST_1000MS
+        qosLevel: EQosLevels = EQosLevels.L2_FAST_1000MS,
     ) : Promise<any> {
         // if now is within 30 seconds of last alive, do nothing
         this.userKilled = false;
@@ -579,7 +580,7 @@ export class StreamDataTDA extends EventEmitter {
             "authorized": "Y",
             "timestamp": tokenTimeStampAsMs,
             "appid": this.userPrincipalsResponse.streamerInfo.appId,
-            "acl": this.userPrincipalsResponse.streamerInfo.acl
+            "acl": this.userPrincipalsResponse.streamerInfo.acl,
         };
 
         const loginRequest = {
@@ -594,10 +595,10 @@ export class StreamDataTDA extends EventEmitter {
                         "credential": StreamingUtils.jsonToQueryString(credentials),
                         "token": this.userPrincipalsResponse.streamerInfo.token,
                         "version": "1.0",
-                        "qoslevel": `${qosLevel}`
-                    }
-                }
-            ]
+                        "qoslevel": `${qosLevel}`,
+                    },
+                },
+            ],
         };
 
         return new Promise((resolve, reject) => {
@@ -614,13 +615,13 @@ export class StreamDataTDA extends EventEmitter {
     /**
      * After calling this, wait for the emitting event 'streamClosed' with {attemptingReconnect: false}
      */
-    async doDataStreamLogout() {
+    async doDataStreamLogout(): Promise<void> {
         this.userKilled = true;
         await this.genericStreamRequest({
             service: EServices.ADMIN,
             requestSeqNum: this.requestId++,
             command: ECommands.LOGOUT,
-            parameters: {}
+            parameters: {},
         });
     }
 
@@ -642,8 +643,8 @@ export class StreamDataTDA extends EventEmitter {
             requestSeqNum,
             command: ECommands.QOS,
             parameters: {
-                qoslevel: qosLevel
-            }
+                qoslevel: qosLevel,
+            },
         });
     }
 
@@ -665,7 +666,7 @@ export class StreamDataTDA extends EventEmitter {
         period?: string,
         startTimeMSEpoch?: number,
         endTimeMSEpoch?: number,
-        requestSeqNum: number = this.requestId++
+        requestSeqNum: number = this.requestId++,
     ) : Promise<number> {
         if (!period && (!startTimeMSEpoch || !endTimeMSEpoch)) return 0;
 
@@ -683,9 +684,9 @@ export class StreamDataTDA extends EventEmitter {
                         "period": period,
                         "START_TIME": startTimeMSEpoch,
                         "END_TIME": endTimeMSEpoch,
-                    }
-                }
-            ]
+                    },
+                },
+            ],
         };
         this.dataStreamSocket.send(JSON.stringify(request));
         return requestSeqNum;
@@ -724,7 +725,7 @@ export class StreamDataTDA extends EventEmitter {
                 fields: fields,
             },
             service: EServices.ACCT_ACTIVITY,
-            command: ECommands.SUBS
+            command: ECommands.SUBS,
         };
 
         return await this.genericStreamRequest(config);
@@ -761,13 +762,13 @@ export class StreamDataTDA extends EventEmitter {
         period?: string,
         startTimeMSEpoch?: number,
         endTimeMSEpoch?: number,
-        requestSeqNum?: number
+        requestSeqNum?: number,
     ) : Promise<any> {
         // @ts-ignore
         await this.qpush(this.chartHistoryFuturesGet.bind(this, symbol, frequency, period, startTimeMSEpoch, endTimeMSEpoch, requestSeqNum));
     }
 
-    async queueGenericStreamRequest(config: IGenericStreamConfig) {
+    async queueGenericStreamRequest(config: IGenericStreamConfig): Promise<void> {
         await this.qpush(this.genericStreamRequest.bind(this, config));
     }
 }

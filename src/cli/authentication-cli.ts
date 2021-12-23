@@ -6,7 +6,7 @@ import {getAPIAuthentication, refreshAPIAuthentication, refreshAPIAuthorization}
 export default {
     command: "auth <command>",
     desc: "Perform some authentication operations",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("get",
                 "Gets the current authentication data that is locally stored, and refreshes the access_token if expired",
@@ -39,5 +39,5 @@ export default {
                     return refreshAPIAuthorization({ verbose: String(argv.verbose) === "true" }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
-    handler: (argv: Arguments) => {},
+    handler: (argv: Arguments): void => { /* no op */ },
 };

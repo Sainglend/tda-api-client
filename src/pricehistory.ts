@@ -65,7 +65,7 @@ export const EPERIOD_BY_PERIOD_TYPE = {
     [EPeriodType.YTD]: {
         /** DEFAULT */
         ONE: EPeriod.ONE,
-    }
+    },
 
 };
 
@@ -104,7 +104,7 @@ export const EFREQUENCY_TYPE_BY_PERIOD_TYPE = {
         /** DEFAULT */
         WEEKLY: EFrequencyType.WEEKLY,
         DAILY: EFrequencyType.DAILY,
-    }
+    },
 };
 
 export enum EFrequency {
@@ -143,7 +143,7 @@ export const EFREQUENCY_BY_FREQUENCY_TYPE = {
     [EFrequencyType.MONTHLY]: {
         /** DEFAULT */
         ONE: EFrequency.ONE,
-    }
+    },
 };
 
 export interface IPriceHistoryConfig extends TacRequestConfig {

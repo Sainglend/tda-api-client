@@ -6,7 +6,7 @@ import {getInstrument, searchInstruments} from "../instruments";
 export default {
     command: "instruments <command>",
     desc: "Search for an instrument with a text string, or get an instrument by CUSIP",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("search <symbol> <projection> [apikey]",
                 "Search for an instrument using search string <symbol> and search type indicated by <projection> (one of symbol-search, symbol-regex, desc-search, desc-regex, fundamental), can optionally use apikey for unauthenticated request",
@@ -19,7 +19,7 @@ export default {
                         symbol: argv.symbol,
                         projection: argv.projection,
                         verbose: argv.verbose || false,
-                        apikey: argv.apikey
+                        apikey: argv.apikey,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("get <cusip> [apikey]",
@@ -32,9 +32,9 @@ export default {
                     return getInstrument({
                         cusip: argv.cusip,
                         apikey: argv.apikey || "",
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
-    handler: (argv: Arguments) => {},
+    handler: (argv: Arguments): void => { /* no op */ },
 };

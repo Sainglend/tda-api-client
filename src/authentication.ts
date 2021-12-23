@@ -3,7 +3,7 @@
 import {
     doAuthRequest,
     IAuthConfig,
-    TacBaseConfig
+    TacBaseConfig,
 } from "./tdapiinterface";
 import path from "path";
 import querystring from "querystring";
@@ -50,7 +50,7 @@ export async function refreshAPIAuthentication(config?: TacBaseConfig): Promise<
             "access_type": "",
             "code": "",
             "client_id": authConfig.client_id,
-            "redirect_uri": ""
+            "redirect_uri": "",
         }),
         config?.verbose,
     );

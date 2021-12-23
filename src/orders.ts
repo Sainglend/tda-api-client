@@ -27,11 +27,9 @@ export enum ORDER_STATUS {
 
 /**
  * Replace an existing order by a specified account using the properly formatted orderJSON
- * @param {Object} config - takes accountId, orderId, orderJSON
- * @returns {Promise<Object>} api PUT result
- * @async
+ * The new order number can be parsed from the location property on the return object
  */
-export async function replaceOrder(config: any) {
+export async function replaceOrder(config: any): Promise<IWriteResponse> {
     config.bodyJSON = config.orderJSON;
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
 
@@ -46,7 +44,7 @@ export async function placeOrder(config: IPlaceOrderConfig): Promise<IWriteRespo
     return await apiPost({
         ...config,
         bodyJSON: config.orderJSON,
-        path: `/v1/accounts/${config.accountId}/orders`
+        path: `/v1/accounts/${config.accountId}/orders`,
     });
 }
 
@@ -60,7 +58,7 @@ export interface IPlaceOrderConfig extends TacBaseConfig {
  * Takes accountId, and optionally: maxResults, fromEnteredTime, toEnteredTime
  * (times must either both be included or omitted), status (ENUM is ORDER_STATUS)
  */
-export async function getOrdersByAccount(config: any) {
+export async function getOrdersByAccount(config: any): Promise<IOrderGet[]> {
     config.path = `/v1/accounts/${config.accountId}/orders?` +
         (config.maxResults ? `maxResults=${config.maxResults}&` : "") +
         (config.fromEnteredTime ? `fromEnteredTime=${config.fromEnteredTime}&` : "") +
@@ -77,7 +75,7 @@ export async function getOrdersByAccount(config: any) {
  * @returns {Promise<Object>} api GET result
  * @async
  */
-export async function getOrdersByQuery(config: any) {
+export async function getOrdersByQuery(config: any): Promise<IOrderGet[]> {
     config.path = `/v1/orders?` +
         (config.accountId ? `accountId=${config.accountId}&` : "") +
         (config.maxResults ? `maxResults=${config.maxResults}&` : "") +
@@ -111,7 +109,7 @@ export interface IGetOrderConfig extends TacRequestConfig {
  * @returns {Promise<Object>} api DELETE result
  * @async
  */
-export async function cancelOrder(config: any) {
+export async function cancelOrder(config: any): Promise<any> {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
 
     return await apiDelete(config);

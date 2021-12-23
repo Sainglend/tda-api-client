@@ -7,13 +7,13 @@ import {
     getWatchlistsMultiAcct,
     getWatchlistsSingleAcct,
     replaceWatchlist,
-    updateWatchlist
+    updateWatchlist,
 } from "../watchlists";
 
 export default {
     command: "watchlists <command>",
     desc: "Manage your watchlists",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("create <accountId> <orderJSON>",
                 "Create a watchlist for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. \"{\\\"prop1\\\":\\\"abc\\\"}\" )",
@@ -25,7 +25,7 @@ export default {
                     return createWatchlist({
                         accountId: argv.accountId,
                         watchlistJSON: (typeof (argv.watchlistJSON) === "string" ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("replace <watchlistId> <accountId> <watchlistJSON>",
@@ -39,7 +39,7 @@ export default {
                         accountId: argv.accountId,
                         watchlistJSON: (typeof (argv.watchlistJSON) === "string" ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
                         watchlistId: argv.watchlistId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("update <watchlistId> <accountId> <watchlistJSON>",
@@ -53,7 +53,7 @@ export default {
                         accountId: argv.accountId,
                         watchlistJSON: (typeof (argv.watchlistJSON) === "string" ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
                         watchlistId: argv.watchlistId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("get <watchlistId> <accountId>",
@@ -66,7 +66,7 @@ export default {
                     return getWatchlist({
                         accountId: argv.accountId,
                         watchlistId: argv.watchlistId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getall <accountId>",
@@ -78,7 +78,7 @@ export default {
                     }
                     return getWatchlistsSingleAcct({
                         accountId: argv.accountId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getmulti",
@@ -89,7 +89,7 @@ export default {
                         console.log(`getting all watchlists for all linked accounts`);
                     }
                     return getWatchlistsMultiAcct({
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     })
                         .then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
@@ -103,9 +103,9 @@ export default {
                     return deleteWatchlist({
                         accountId: argv.accountId,
                         watchlistId: argv.watchlistId,
-                        verbose: argv.verbose || false
+                        verbose: argv.verbose || false,
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
-    handler: (argv: Arguments) => {},
+    handler: (argv: Arguments): void => { /* no op */ },
 };

@@ -9,21 +9,21 @@ async function addStuff(futures, equity) {
         command: "SUBS",
         parameters: {
             keys: futures,
-        }
+        },
     });
     await tdastream.qgenericStreamRequest({
         service: "CHART_EQUITY",
         command: "SUBS",
         parameters: {
             keys: equity,
-        }
+        },
     });
 }
 
 const streamConfig = {
     authConfig: {
         "refresh_token": "",
-        "client_id": ""
+        "client_id": "",
     },
 };
 

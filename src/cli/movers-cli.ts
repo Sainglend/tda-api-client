@@ -6,7 +6,7 @@ import {CHANGE, DIRECTION, getMovers, INDEX} from "../movers";
 export default {
     command: "movers <command>",
     desc: "Get market movers",
-    builder: (yargs: any) => {
+    builder: (yargs: any): any => {
         return yargs
             .command("get <majorIndex> <direction> <change> [apikey]",
                 `Get market movers for a specified <majorIndex> ('$COMPX', '$DJI', '$SPX.X'), a given <direction> ('up', 'down'), and the type of <change> ('value', 'percent'), e.g. "get \\$DJI up percent" (notice the escape character). Optionally takes an apikey for an unathenticated request.`,
@@ -25,5 +25,5 @@ export default {
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
-    handler: (argv: Arguments) => {},
+    handler: (argv: Arguments): void => { /* no op */ },
 };
