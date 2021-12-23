@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
-import {IInstrument_Transaction} from "./sharedTypes";
+import {IInstrument} from "./sharedTypes";
 
 /**
  * Enum for the transaction types
@@ -54,7 +54,7 @@ export interface ITransactionItem {
     parentChildIndicator: string,
     instruction: string,
     positionEffect: string,
-    "instrument": IInstrument_Transaction,
+    instrument: IInstrument,
 }
 
 export interface ITransaction {
@@ -76,7 +76,7 @@ export interface ITransaction {
     achStatus: EAchStatus,
     accruedInterest: number,
     fees: {[index:string]: number},
-    "transactionItem": ITransactionItem[],
+    transactionItem: ITransactionItem[],
 }
 
 export interface IGetTransactionsConfig extends TacRequestConfig {

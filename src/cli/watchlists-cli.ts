@@ -23,9 +23,9 @@ export default {
                         console.log(`creating a watchlist for ${argv.accountId}`);
                     }
                     return createWatchlist({
-                        accountId: argv.accountId,
+                        accountId: argv.accountId as string,
                         watchlistJSON: (typeof (argv.watchlistJSON) === "string" ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                        verbose: argv.verbose || false,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("replace <watchlistId> <accountId> <watchlistJSON>",
@@ -36,10 +36,10 @@ export default {
                         console.log(`replacing watchlist ${argv.watchlistId} for ${argv.accountId}`);
                     }
                     return replaceWatchlist({
-                        accountId: argv.accountId,
+                        accountId: argv.accountId as string,
                         watchlistJSON: (typeof (argv.watchlistJSON) === "string" ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                        watchlistId: argv.watchlistId,
-                        verbose: argv.verbose || false,
+                        watchlistId: argv.watchlistId as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("update <watchlistId> <accountId> <watchlistJSON>",
@@ -50,10 +50,10 @@ export default {
                         console.log(`updating watchlist ${argv.watchlistId} for ${argv.accountId}`);
                     }
                     return updateWatchlist({
-                        accountId: argv.accountId,
+                        accountId: argv.accountId as string,
                         watchlistJSON: (typeof (argv.watchlistJSON) === "string" ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                        watchlistId: argv.watchlistId,
-                        verbose: argv.verbose || false,
+                        watchlistId: argv.watchlistId as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("get <watchlistId> <accountId>",
@@ -64,9 +64,9 @@ export default {
                         console.log(`getting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
                     }
                     return getWatchlist({
-                        accountId: argv.accountId,
-                        watchlistId: argv.watchlistId,
-                        verbose: argv.verbose || false,
+                        accountId: argv.accountId as string,
+                        watchlistId: argv.watchlistId as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getall <accountId>",
@@ -77,8 +77,8 @@ export default {
                         console.log(`getting all watchlists for account ${argv.accountId}`);
                     }
                     return getWatchlistsSingleAcct({
-                        accountId: argv.accountId,
-                        verbose: argv.verbose || false,
+                        accountId: argv.accountId as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getmulti",
@@ -89,7 +89,7 @@ export default {
                         console.log(`getting all watchlists for all linked accounts`);
                     }
                     return getWatchlistsMultiAcct({
-                        verbose: argv.verbose || false,
+                        verbose: String(argv.verbose) === "true",
                     })
                         .then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
@@ -101,9 +101,9 @@ export default {
                         console.log(`deleting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
                     }
                     return deleteWatchlist({
-                        accountId: argv.accountId,
-                        watchlistId: argv.watchlistId,
-                        verbose: argv.verbose || false,
+                        accountId: argv.accountId as string,
+                        watchlistId: argv.watchlistId as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },

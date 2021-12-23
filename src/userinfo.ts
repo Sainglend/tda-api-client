@@ -182,7 +182,7 @@ export interface UserPrincipal {
 }
 
 export interface IGetUserPrincipalsConfig extends TacRequestConfig {
-    fields?: EUserPrincipalFields[],
+    fields?: EUserPrincipalFields[] | string,
 }
 
 export enum EUserPrincipalFields {
@@ -230,7 +230,8 @@ export async function updateUserPreferences(config: IUpdateUserPrefConfig): Prom
  * streamerSubscriptionKeys, streamerConnectionInfo, preferences, surrogateIds
  */
 export async function getUserPrincipals(config: IGetUserPrincipalsConfig): Promise<UserPrincipal> {
-    config.path = `/v1/userprincipals?fields=${(config.fields ?? "")}`;
+    const fields = Array.isArray(config.fields) ? config.fields.join(",") : config.fields;
+    config.path = `/v1/userprincipals?fields=${(fields ?? "")}`;
 
     return await apiGet(config);
 }

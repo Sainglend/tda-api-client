@@ -16,9 +16,9 @@ export default {
                         console.log(`getting quotes for ${argv.symbols}`);
                     }
                     return getQuotes({
-                        symbol: argv.symbols,
-                        apikey: argv.apikey || "",
-                        verbose: argv.verbose || false,
+                        symbol: argv.symbols as string,
+                        apikey: argv.apikey ? String(argv.apikey) : "",
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },

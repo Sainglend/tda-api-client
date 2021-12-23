@@ -16,8 +16,8 @@ export default {
                         console.log(`getting principal data with extra fields: ${argv.fields || ""}`);
                     }
                     return getUserPrincipals({
-                        fields: argv.fields || "",
-                        verbose: argv.verbose || false,
+                        fields: argv.fields ? String(argv.fields) : "",
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("pref <accountId>",
@@ -28,8 +28,8 @@ export default {
                         console.log(`getting user preferences for account ${argv.accountId}`);
                     }
                     return getUserPreferences({
-                        accountId: argv.accountId,
-                        verbose: argv.verbose || false,
+                        accountId: argv.accountId as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("streamerkeys <accountIds>",
@@ -40,8 +40,8 @@ export default {
                         console.log(`getting streamer sub keys for accounts ${argv.accountIds}`);
                     }
                     return getStreamerSubKeys({
-                        accountIds: argv.accountIds,
-                        verbose: argv.verbose || false,
+                        accountIds: argv.accountIds as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("updateprefs <accountId> <preferencesJSON>",
@@ -52,9 +52,9 @@ export default {
                         console.log(`updating preferences for account ${argv.accountId}`);
                     }
                     return updateUserPreferences({
-                        accountId: argv.accountId,
-                        preferencesJSON: (typeof (argv.preferencesJSON) === "string" ? JSON.parse(argv.preferencesJSON) : argv.preferencesJSON),
-                        verbose: argv.verbose || false,
+                        accountId: argv.accountId as string,
+                        preferences: (typeof (argv.preferencesJSON) === "string" ? JSON.parse(argv.preferencesJSON) : argv.preferencesJSON),
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
 

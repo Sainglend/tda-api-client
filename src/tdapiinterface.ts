@@ -10,7 +10,6 @@ const axiosDefault = axios.default;
 
 const instance: AxiosInstance = axiosDefault.create({
     baseURL: "https://api.tdameritrade.com",
-    port: 443,
     headers: {
         "Accept": "*/*",
         "Accept-Language": "en-US",

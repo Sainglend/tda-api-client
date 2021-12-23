@@ -16,9 +16,9 @@ export default {
                         console.log(`placing an order for ${argv.accountId}`);
                     }
                     return placeOrder({
-                        accountId: argv.accountId,
+                        accountId: argv.accountId as string,
                         orderJSON: (typeof (argv.orderJSON) === "string") ? JSON.parse(argv.orderJSON) : argv.orderJSON,
-                        verbose: argv.verbose || false,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("replace <orderId> <accountId> <orderJSON>",
@@ -43,9 +43,9 @@ export default {
                         console.log(`getting order details for order ${argv.orderId} for account ${argv.accountId}`);
                     }
                     return getOrder({
-                        accountId: argv.accountId,
-                        orderId: argv.orderId,
-                        verbose: argv.verbose || false,
+                        accountId: argv.accountId as string,
+                        orderId: argv.orderId as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("cancel <orderId> <accountId>",

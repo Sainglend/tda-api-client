@@ -16,9 +16,9 @@ export default {
                         console.log(`getting transaction ${argv.transactionId} for ${argv.accountId}`);
                     }
                     return getTransaction({
-                        accountId: argv.accountId,
-                        transactionId: argv.transactionId,
-                        verbose: argv.verbose || false,
+                        accountId: argv.accountId as string,
+                        transactionId: argv.transactionId as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getall <accountId>",
@@ -46,9 +46,8 @@ export default {
                         console.log(`getting transactions for ${argv.accountId}`);
                     }
                     return getTransactions({
-                        accountId: argv.accountId,
-                        transactionId: argv.transactionId,
-                        verbose: argv.verbose || false,
+                        accountId: argv.accountId as string,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
 

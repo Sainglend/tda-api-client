@@ -16,10 +16,10 @@ export default {
                         console.log(`searching instruments for ${argv.symbol} with search type ${argv.projection}`);
                     }
                     return searchInstruments({
-                        symbol: argv.symbol,
-                        projection: argv.projection,
-                        verbose: argv.verbose || false,
-                        apikey: argv.apikey,
+                        symbol: argv.symbol as string,
+                        projection: argv.projection as string,
+                        verbose: String(argv.verbose) === "true",
+                        apikey: argv.apikey ? String(argv.apikey) : "",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("get <cusip> [apikey]",
@@ -30,9 +30,9 @@ export default {
                         console.log(`getting instrument info for cusip ${argv.cusip}`);
                     }
                     return getInstrument({
-                        cusip: argv.cusip,
-                        apikey: argv.apikey || "",
-                        verbose: argv.verbose || false,
+                        cusip: argv.cusip as string,
+                        apikey: argv.apikey ? String(argv.apikey) : "",
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },
