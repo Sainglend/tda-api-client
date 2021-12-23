@@ -20,12 +20,7 @@ export interface IInstrument {
     exchange: string,
 }
 
-export interface IEquity extends IInstrument {
-    // assetType: string,
-    // cusip: string,
-    // symbol: string,
-    // description: string,
-}
+export type IEquity = IInstrument
 
 export interface IFixedIncome extends IInstrument {
     // "assetType": "'EQUITY' or 'OPTION' or 'INDEX' or 'MUTUAL_FUND' or 'CASH_EQUIVALENT' or 'FIXED_INCOME' or 'CURRENCY'",
@@ -73,7 +68,7 @@ export enum EOptionType {
 
 export interface IOptionInstrument extends IInstrument {
     type: EOptionType,
-    putCall: 'PUT' | 'CALL',
+    putCall: "PUT" | "CALL",
     underlyingSymbol: string,
     optionMultiplier: number, // int32
     optionDeliverables: IOptionDeliverable[],

@@ -1,22 +1,22 @@
 // Copyright (C) 2020  Aaron Satterlee
 
 import {AxiosError, AxiosInstance, AxiosResponse} from "axios";
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 import {getAPIAuthentication} from "./authentication";
-const axios = require('axios').default;
+const axios = require("axios").default;
 
 const instance: AxiosInstance = axios.create({
-    baseURL: 'https://api.tdameritrade.com',
+    baseURL: "https://api.tdameritrade.com",
     port: 443,
     headers: {
-        'Accept': '*/*',
-        'Accept-Language': 'en-US',
-        'DNT': 1,
-        'Host': 'api.tdameritrade.com',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-site'
+        "Accept": "*/*",
+        "Accept-Language": "en-US",
+        "DNT": 1,
+        "Host": "api.tdameritrade.com",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-site"
     }
 });
 
@@ -54,7 +54,7 @@ export interface IWriteResponse {
  * @async
  */
 export async function apiGet(config: TacRequestConfig): Promise<any> {
-    return await apiNoWriteResource(config, 'get', false);
+    return await apiNoWriteResource(config, "get", false);
 }
 
 /**
@@ -64,7 +64,7 @@ export async function apiGet(config: TacRequestConfig): Promise<any> {
  * @async
  */
 export async function apiDelete(config: TacRequestConfig): Promise<any> {
-    return await apiNoWriteResource(config, 'delete', false);
+    return await apiNoWriteResource(config, "delete", false);
 }
 
 /**
@@ -74,7 +74,7 @@ export async function apiDelete(config: TacRequestConfig): Promise<any> {
  * @async
  */
 export async function apiPatch(config: TacRequestConfig): Promise<IWriteResponse> {
-    return await apiWriteResource(config, 'patch', false);
+    return await apiWriteResource(config, "patch", false);
 }
 
 /**
@@ -84,7 +84,7 @@ export async function apiPatch(config: TacRequestConfig): Promise<IWriteResponse
  * @async
  */
 export async function apiPut(config: TacRequestConfig): Promise<IWriteResponse> {
-    return await apiWriteResource(config, 'put', false);
+    return await apiWriteResource(config, "put", false);
 }
 
 /**
@@ -94,7 +94,7 @@ export async function apiPut(config: TacRequestConfig): Promise<IWriteResponse> 
  * @async
  */
 export async function apiPost(config: TacRequestConfig): Promise<IWriteResponse> {
-    return await apiWriteResource(config, 'post', false);
+    return await apiWriteResource(config, "post", false);
 }
 
 async function apiNoWriteResource(config: TacRequestConfig, method: string, skipAuth: boolean): Promise<any> {
@@ -102,13 +102,13 @@ async function apiNoWriteResource(config: TacRequestConfig, method: string, skip
         method: method,
         url: config.path,
         headers: {}
-    }
+    };
 
     if (!config.apikey && !skipAuth) {
         const authResponse = await getAPIAuthentication(config);
         const token = authResponse.access_token;
         // @ts-ignore
-        requestConfig.headers['Authorization'] = `Bearer ${token}`;
+        requestConfig.headers["Authorization"] = `Bearer ${token}`;
     }
 
     return await performAxiosRequest(requestConfig, true);
@@ -119,7 +119,7 @@ async function apiWriteResource(config: any, method: string, skipAuth: boolean):
         method: method,
         url: config.path,
         headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json"
         },
         data: config.bodyJSON,
     };
@@ -128,7 +128,7 @@ async function apiWriteResource(config: any, method: string, skipAuth: boolean):
         const authResponse = await getAPIAuthentication(config);
         const token = authResponse.access_token;
         // @ts-ignore
-        requestConfig.headers['Authorization'] = `Bearer ${token}`;
+        requestConfig.headers["Authorization"] = `Bearer ${token}`;
     }
 
     return await performAxiosRequest(requestConfig, false);
@@ -167,7 +167,7 @@ async function performAxiosRequest(requestConfig: any, expectData: boolean): Pro
     });
 }
 
-async function writeOutAuthResultToFile(authConfig: IAuthConfig, verbose: boolean = false): Promise<IAuthConfig> {
+async function writeOutAuthResultToFile(authConfig: IAuthConfig, verbose = false): Promise<IAuthConfig> {
     return await new Promise<IAuthConfig>((resolve, reject) => {
         const filePath = path.join(process.cwd(), `/config/tdaclientauth.json`);
         if (verbose) {
@@ -180,23 +180,23 @@ async function writeOutAuthResultToFile(authConfig: IAuthConfig, verbose: boolea
     });
 }
 
-export async function doAuthRequest(authConfig: IAuthConfig, data: any, verbose: boolean = false): Promise<IAuthConfig> {
+export async function doAuthRequest(authConfig: IAuthConfig, data: any, verbose = false): Promise<IAuthConfig> {
     const requestConfig = {
-        method: 'post',
-        url: '/v1/oauth2/token',
+        method: "post",
+        url: "/v1/oauth2/token",
         data,
         headers: {
-            'Accept': '*/*',
-            'Accept-Encoding': 'gzip',
-            'Accept-Language': 'en-US',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'DNT': 1,
-            'Host': 'api.tdameritrade.com',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-site'
+            "Accept": "*/*",
+            "Accept-Encoding": "gzip",
+            "Accept-Language": "en-US",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "DNT": 1,
+            "Host": "api.tdameritrade.com",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-site"
         }
-    }
+    };
     const result = await performAxiosRequest(requestConfig, true);
 
     authConfig.expires_on = Date.now() + (authConfig.expires_in ? authConfig.expires_in * 1000 : 0);

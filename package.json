@@ -6,7 +6,9 @@
   "types": "dist/index.d.ts",
   "prepublish": "tsc",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0"
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "lint": "eslint src --ext .ts,.js",
+    "lint:fix": "eslint --fix src --ext .ts,.js"
   },
   "files": [
     "dist/*",

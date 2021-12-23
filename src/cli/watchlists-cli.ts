@@ -11,12 +11,12 @@ import {
 } from "../watchlists";
 
 export default {
-    command: 'watchlists <command>',
-    desc: 'Manage your watchlists',
+    command: "watchlists <command>",
+    desc: "Manage your watchlists",
     builder: (yargs: any) => {
         return yargs
-            .command('create <accountId> <orderJSON>',
-                'Create a watchlist for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
+            .command("create <accountId> <orderJSON>",
+                "Create a watchlist for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. \"{\\\"prop1\\\":\\\"abc\\\"}\" )",
                 {},
                 async (argv: Arguments) => {
                     if (argv.verbose) {
@@ -24,12 +24,12 @@ export default {
                     }
                     return createWatchlist({
                         accountId: argv.accountId,
-                        watchlistJSON: (typeof (argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
+                        watchlistJSON: (typeof (argv.watchlistJSON) === "string" ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
                         verbose: argv.verbose || false
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
-            .command('replace <watchlistId> <accountId> <watchlistJSON>',
-                'Replace an entire watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
+            .command("replace <watchlistId> <accountId> <watchlistJSON>",
+                "Replace an entire watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. \"{\\\"prop1\\\":\\\"abc\\\"}\" )",
                 {},
                 async (argv: Arguments) => {
                     if (argv.verbose) {
@@ -37,13 +37,13 @@ export default {
                     }
                     return replaceWatchlist({
                         accountId: argv.accountId,
-                        watchlistJSON: (typeof (argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
+                        watchlistJSON: (typeof (argv.watchlistJSON) === "string" ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
                         watchlistId: argv.watchlistId,
                         verbose: argv.verbose || false
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
-            .command('update <watchlistId> <accountId> <watchlistJSON>',
-                'Append/update in place a watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
+            .command("update <watchlistId> <accountId> <watchlistJSON>",
+                "Append/update in place a watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. \"{\\\"prop1\\\":\\\"abc\\\"}\" )",
                 {},
                 async (argv: Arguments) => {
                     if (argv.verbose) {
@@ -51,13 +51,13 @@ export default {
                     }
                     return updateWatchlist({
                         accountId: argv.accountId,
-                        watchlistJSON: (typeof (argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
+                        watchlistJSON: (typeof (argv.watchlistJSON) === "string" ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
                         watchlistId: argv.watchlistId,
                         verbose: argv.verbose || false
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
-            .command('get <watchlistId> <accountId>',
-                'Get a single watchlist having <watchlistId> for a given <accountId>',
+            .command("get <watchlistId> <accountId>",
+                "Get a single watchlist having <watchlistId> for a given <accountId>",
                 {},
                 async (argv: Arguments) => {
                     if (argv.verbose) {
@@ -69,8 +69,8 @@ export default {
                         verbose: argv.verbose || false
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
-            .command('getall <accountId>',
-                'Get all watchlists for a given <accountId>',
+            .command("getall <accountId>",
+                "Get all watchlists for a given <accountId>",
                 {},
                 async (argv: Arguments) => {
                     if (argv.verbose) {
@@ -81,8 +81,8 @@ export default {
                         verbose: argv.verbose || false
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
-            .command('getmulti',
-                'Get all watchlists for all your linked accounts',
+            .command("getmulti",
+                "Get all watchlists for all your linked accounts",
                 {},
                 async (argv: Arguments) => {
                     if (argv.verbose) {
@@ -93,8 +93,8 @@ export default {
                     })
                         .then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
-            .command('delete <watchlistId> <accountId>',
-                'Delete a specified watchlist with <watchlistId> for a given <accountId>',
+            .command("delete <watchlistId> <accountId>",
+                "Delete a specified watchlist with <watchlistId> for a given <accountId>",
                 {},
                 async (argv: Arguments) => {
                     if (argv.verbose) {

@@ -18,7 +18,6 @@
     "rules": {
         "indent": [
             "error",
-            "space",
             4
         ],
         "linebreak-style": [
@@ -27,7 +26,7 @@
         ],
         "quotes": [
             "error",
-            "single",
+            "double",
             { "allowTemplateLiterals": true }
         ],
         "semi": [

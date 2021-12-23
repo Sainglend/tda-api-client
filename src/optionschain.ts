@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
-import {IOptionDeliverable} from './sharedTypes';
+import {IOptionDeliverable} from "./sharedTypes";
 
 /**
  * Defines what range of strikes to return as results
@@ -10,19 +10,19 @@ import {IOptionDeliverable} from './sharedTypes';
  */
 export enum RANGE {
     /** DEFAULT */
-    ALL = 'ALL',
+    ALL = "ALL",
     /** In-the-money strikes */
-    ITM = 'ITM',
+    ITM = "ITM",
     /** Near-the-money strikes */
-    NTM = 'NTM',
+    NTM = "NTM",
     /** Out-of-the-money strikes */
-    OTM = 'OTM',
+    OTM = "OTM",
     /** Strikes Above Market */
-    SAK = 'SAK',
+    SAK = "SAK",
     /** Strikes Below Market */
-    SBK = 'SBK',
+    SBK = "SBK",
     /** Strikes Near Market */
-    SNK = 'SNK',
+    SNK = "SNK",
 }
 
 /**
@@ -31,19 +31,19 @@ export enum RANGE {
  */
 export enum STRATEGY {
     /** DEFAULT */
-    SINGLE = 'SINGLE',
+    SINGLE = "SINGLE",
     /** allows use of the volatility, underlyingPrice, interestRate, and daysToExpiration params to calculate theoretical values */
-    ANALYTICAL = 'ANALYTICAL',
-    COVERED = 'COVERED',
-    VERTICAL = 'VERTICAL',
-    CALENDAR = 'CALENDAR',
-    STRANGLE = 'STRANGLE',
-    STRADDLE = 'STRADDLE',
-    BUTTERFLY = 'BUTTERFLY',
-    CONDOR = 'CONDOR',
-    DIAGONAL = 'DIAGONAL',
-    COLLAR = 'COLLAR',
-    ROLL = 'ROLL',
+    ANALYTICAL = "ANALYTICAL",
+    COVERED = "COVERED",
+    VERTICAL = "VERTICAL",
+    CALENDAR = "CALENDAR",
+    STRANGLE = "STRANGLE",
+    STRADDLE = "STRADDLE",
+    BUTTERFLY = "BUTTERFLY",
+    CONDOR = "CONDOR",
+    DIAGONAL = "DIAGONAL",
+    COLLAR = "COLLAR",
+    ROLL = "ROLL",
 }
 
 /**
@@ -52,9 +52,9 @@ export enum STRATEGY {
  */
 export enum CONTRACT_TYPE {
     /** DEFAULT */
-    ALL = 'ALL',
-    CALL = 'CALL',
-    PUT = 'PUT',
+    ALL = "ALL",
+    CALL = "CALL",
+    PUT = "PUT",
 }
 
 /**
@@ -63,19 +63,19 @@ export enum CONTRACT_TYPE {
  */
 export enum EXPIRATION_MONTH {
     /** DEFAULT */
-    ALL = 'ALL',
-    JAN = 'JAN',
-    FEB = 'FEB',
-    MAR = 'MAR',
-    APR = 'APR',
-    MAY = 'MAY',
-    JUN = 'JUN',
-    JUL = 'JUL',
-    AUG = 'AUG',
-    SEP = 'SEP',
-    OCT = 'OCT',
-    NOV = 'NOV',
-    DEC = 'DEC',
+    ALL = "ALL",
+    JAN = "JAN",
+    FEB = "FEB",
+    MAR = "MAR",
+    APR = "APR",
+    MAY = "MAY",
+    JUN = "JUN",
+    JUL = "JUL",
+    AUG = "AUG",
+    SEP = "SEP",
+    OCT = "OCT",
+    NOV = "NOV",
+    DEC = "DEC",
 }
 
 /**
@@ -84,11 +84,11 @@ export enum EXPIRATION_MONTH {
  */
 export enum OPTION_TYPE {
     /** DEFAULT */
-    ALL = 'ALL',
+    ALL = "ALL",
     /** Standard contracts */
-    STANDARD = 'S',
+    STANDARD = "S",
     /** Non-standard contracts */
-    NONSTANDARD = 'NS'
+    NONSTANDARD = "NS"
 }
 
 export interface IOptionChain {
@@ -112,7 +112,7 @@ export interface IOptionStrike {
 }
 
 export interface IOption {
-    putCall: 'PUT' | 'CALL',
+    putCall: "PUT" | "CALL",
     symbol: string,
     description: string,
     exchangeName: string,
@@ -158,14 +158,14 @@ export interface IOption {
 }
 
 export enum EOptionsExchange {
-    IND = 'IND',
-    ASE = 'ASE',
-    NYS = 'NYS',
-    NAS = 'NAS',
-    NAP = 'NAP',
-    PAC = 'PAC',
-    OPR = 'OPR',
-    BATS = 'BATS',
+    IND = "IND",
+    ASE = "ASE",
+    NYS = "NYS",
+    NAS = "NAS",
+    NAP = "NAP",
+    PAC = "PAC",
+    OPR = "OPR",
+    BATS = "BATS",
 }
 
 export interface IUnderlying {
@@ -226,20 +226,20 @@ export interface IGetOptionChainConfig extends TacRequestConfig {
 export async function getOptionChain(config: IGetOptionChainConfig): Promise<IOptionChain> {
     config.path =  `/v1/marketdata/chains?` +
         `symbol=${config.symbol}` +
-        (config.contractType ? `&contractType=${config.contractType}` : '') +
-        (config.expMonth ? `&expMonth=${config.expMonth}` : '') +
-        (config.optionType ? `&optionType=${config.optionType}` : '') +
-        (config.strategy ? `&strategy=${config.strategy}` : '') +
-        (config.range ? `&range=${config.range}` : '') +
-        (config.includeQuotes ? `&includeQuotes=${config.includeQuotes}` : '') +
-        (config.fromDate ? `&fromDate=${config.fromDate}` : '') +
-        (config.toDate ? `&toDate=${config.toDate}` : '') +
-        (config.strikeCount ? `&strikeCount=${config.strikeCount}` : '') +
-        (config.interval ? `&interval=${config.interval}` : '') +
-        (config.volatility ? `&volatility=${config.volatility}` : '') +
-        (config.underlyingPrice ? `&underlyingPrice=${config.underlyingPrice}` : '') +
-        (config.interestRate ? `&interestRate=${config.interestRate}` : '') +
-        (config.daysToExpiration ? `&daysToExpiration=${config.daysToExpiration}` : '') +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+        (config.contractType ? `&contractType=${config.contractType}` : "") +
+        (config.expMonth ? `&expMonth=${config.expMonth}` : "") +
+        (config.optionType ? `&optionType=${config.optionType}` : "") +
+        (config.strategy ? `&strategy=${config.strategy}` : "") +
+        (config.range ? `&range=${config.range}` : "") +
+        (config.includeQuotes ? `&includeQuotes=${config.includeQuotes}` : "") +
+        (config.fromDate ? `&fromDate=${config.fromDate}` : "") +
+        (config.toDate ? `&toDate=${config.toDate}` : "") +
+        (config.strikeCount ? `&strikeCount=${config.strikeCount}` : "") +
+        (config.interval ? `&interval=${config.interval}` : "") +
+        (config.volatility ? `&volatility=${config.volatility}` : "") +
+        (config.underlyingPrice ? `&underlyingPrice=${config.underlyingPrice}` : "") +
+        (config.interestRate ? `&interestRate=${config.interestRate}` : "") +
+        (config.daysToExpiration ? `&daysToExpiration=${config.daysToExpiration}` : "") +
+        (config.apikey ? `&apikey=${config.apikey}` : "");
     return await apiGet(config);
 }

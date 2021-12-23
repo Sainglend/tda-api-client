@@ -279,7 +279,7 @@ export interface IQuoteEquity {
  */
 export async function getQuote(config: IGetQuoteConfig): Promise<IQuoteETF | IOption | IForex | IQuoteEquity | IQuoteFuture | IQuoteFutureOption | IQuoteIndex | IQuoteMutualFund> {
     config.path = `/v1/marketdata/${config.symbol}/quotes` +
-        (config.apikey ? `?apikey=${config.apikey}` : '');
+        (config.apikey ? `?apikey=${config.apikey}` : "");
 
     return await apiGet(config);
 }
@@ -291,7 +291,7 @@ export async function getQuote(config: IGetQuoteConfig): Promise<IQuoteETF | IOp
  */
 export async function getQuotes(config: IGetQuoteConfig): Promise<(IQuoteETF | IOption | IForex | IQuoteEquity | IQuoteFuture | IQuoteFutureOption | IQuoteIndex | IQuoteMutualFund)[]> {
     config.path = `/v1/marketdata/quotes?symbol=${config.symbol}` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+        (config.apikey ? `&apikey=${config.apikey}` : "");
 
     return await apiGet(config);
 }

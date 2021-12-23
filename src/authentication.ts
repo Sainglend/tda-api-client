@@ -16,7 +16,7 @@ import querystring from "querystring";
  */
 export async function refreshAPIAuthorization(config?: TacBaseConfig): Promise<IAuthConfig> {
     if (config?.verbose) {
-        console.log('refreshing authentication');
+        console.log("refreshing authentication");
     }
     const authConfig = config?.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     return await doAuthRequest(
@@ -39,7 +39,7 @@ export async function refreshAPIAuthorization(config?: TacBaseConfig): Promise<I
  */
 export async function refreshAPIAuthentication(config?: TacBaseConfig): Promise<IAuthConfig> {
     if (config?.verbose) {
-        console.log('refreshing authentication');
+        console.log("refreshing authentication");
     }
     const authConfig = config?.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     return await doAuthRequest(
@@ -68,7 +68,7 @@ export async function getAPIAuthentication(config?: TacBaseConfig): Promise<IAut
         return await refreshAPIAuthentication({ ...config, authConfig });
     } else {
         if (config?.verbose) {
-            console.log('not refreshing authentication as it has not expired');
+            console.log("not refreshing authentication as it has not expired");
         }
         return authConfig;
     }

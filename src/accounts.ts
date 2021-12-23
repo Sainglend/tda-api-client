@@ -125,7 +125,7 @@ export interface IGetAccountsConfig extends TacRequestConfig {
  */
 export async function getAccount(config: IGetAccountConfig): Promise<IAccount> {
     config.path = `/v1/accounts/${config.accountId}` +
-        (config.fields ? `?fields=${config.fields}` : '');
+        (config.fields ? `?fields=${config.fields}` : "");
     return await apiGet(config);
 }
 
@@ -135,6 +135,6 @@ export async function getAccount(config: IGetAccountConfig): Promise<IAccount> {
  */
 export async function getAccounts(config: IGetAccountsConfig): Promise<IAccount[]> {
     config.path = `/v1/accounts` +
-        (config.fields ? `?fields=${config.fields}` : '');
+        (config.fields ? `?fields=${config.fields}` : "");
     return await apiGet(config);
 }

@@ -4,11 +4,11 @@ import {Arguments} from "yargs";
 import {CHANGE, DIRECTION, getMovers, INDEX} from "../movers";
 
 export default {
-    command: 'movers <command>',
-    desc: 'Get market movers',
+    command: "movers <command>",
+    desc: "Get market movers",
     builder: (yargs: any) => {
         return yargs
-            .command('get <majorIndex> <direction> <change> [apikey]',
+            .command("get <majorIndex> <direction> <change> [apikey]",
                 `Get market movers for a specified <majorIndex> ('$COMPX', '$DJI', '$SPX.X'), a given <direction> ('up', 'down'), and the type of <change> ('value', 'percent'), e.g. "get \\$DJI up percent" (notice the escape character). Optionally takes an apikey for an unathenticated request.`,
                 {},
                 async (argv: Arguments) => {

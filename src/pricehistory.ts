@@ -9,10 +9,10 @@ import {ICandle} from "./sharedTypes";
  */
 export enum EPeriodType {
     /** DEFAULT */
-    DAY = 'day',
-    MONTH = 'month',
-    YEAR = 'year',
-    YTD = 'ytd',
+    DAY = "day",
+    MONTH = "month",
+    YEAR = "year",
+    YTD = "ytd",
 }
 
 export enum EPeriod {
@@ -175,10 +175,10 @@ export async function getPriceHistory(config: IPriceHistoryConfig): Promise<IPri
         `&frequencyType=${config.frequencyType}` +
         `&frequency=${config.frequency}` +
         `&needExtendedHoursData=${config.getExtendedHours}` +
-        (config.period ? `&period=${config.period}` : '') +
-        (config.startDate ? `&startDate=${config.startDate}` : '') +
-        (config.endDate ? `&endDate=${config.endDate}` : '') +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+        (config.period ? `&period=${config.period}` : "") +
+        (config.startDate ? `&startDate=${config.startDate}` : "") +
+        (config.endDate ? `&endDate=${config.endDate}` : "") +
+        (config.apikey ? `&apikey=${config.apikey}` : "");
 
     return await apiGet(config);
 }

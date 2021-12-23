@@ -4,12 +4,12 @@ import {Arguments} from "yargs";
 import {getTransaction, getTransactions, TRANSACTION_TYPE} from "../transactions";
 
 export default {
-    command: 'trans <command>',
-    desc: 'Retrieve transaction history',
+    command: "trans <command>",
+    desc: "Retrieve transaction history",
     builder: (yargs: any) => {
         return yargs
-            .command('get <transactionId> <accountId>',
-                'Get a specific transaction by <transactionId> for a specific <accountId>',
+            .command("get <transactionId> <accountId>",
+                "Get a specific transaction by <transactionId> for a specific <accountId>",
                 {},
                 async (argv: Arguments) => {
                     if (argv.verbose) {
@@ -21,24 +21,24 @@ export default {
                         verbose: argv.verbose || false
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
-            .command('getall <accountId>',
-                'Get all transactions for a specific <accountId> and with the set options, such as type, from, to, symbol',
+            .command("getall <accountId>",
+                "Get all transactions for a specific <accountId> and with the set options, such as type, from, to, symbol",
                 {
                     type: {
-                        type: 'string',
+                        type: "string",
                         choices: Object.keys(TRANSACTION_TYPE)
                     },
                     from: {
-                        type: 'string',
-                        desc: 'date, e.g. 2020-11-22'
+                        type: "string",
+                        desc: "date, e.g. 2020-11-22"
                     },
                     to: {
-                        type: 'string',
-                        desc: 'date, e.g. 2020-11-29'
+                        type: "string",
+                        desc: "date, e.g. 2020-11-29"
                     },
                     symbol: {
-                        type: 'string',
-                        desc: 'ticker symbol, e.g. TSLA'
+                        type: "string",
+                        desc: "ticker symbol, e.g. TSLA"
                     }
                 },
                 async (argv: Arguments) => {

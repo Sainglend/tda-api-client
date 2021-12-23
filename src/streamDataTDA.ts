@@ -1,119 +1,98 @@
 import {IAuthConfig} from "./tdapiinterface";
-import WebSocket from 'ws';
-import moment from 'moment';
-import {StreamingResponseData,} from './streamingdatatypes';
+import WebSocket from "ws";
+import moment from "moment";
+import {StreamingResponseData,} from "./streamingdatatypes";
 import StreamingUtils from "./streamingutils";
-import EventEmitter from 'events';
+import EventEmitter from "events";
 import {EUserPrincipalFields, getStreamerSubKeys, getUserPrincipals} from "./userinfo";
 import {getAccounts} from "./accounts";
 
-export enum SERVICES {
+export enum EServices {
 
-    ADMIN = 'ADMIN',
-    ACCT_ACTIVITY='ACCT_ACTIVITY',
+    ADMIN = "ADMIN",
+    ACCT_ACTIVITY="ACCT_ACTIVITY",
 
-    ACTIVES_NASDAQ='ACTIVES_NASDAQ',
-    ACTIVES_NYSE='ACTIVES_NYSE',
-    ACTIVES_OTCBB='ACTIVES_OTCBB',
-    ACTIVES_OPTIONS='ACTIVES_OPTIONS',
+    ACTIVES_NASDAQ="ACTIVES_NASDAQ",
+    ACTIVES_NYSE="ACTIVES_NYSE",
+    ACTIVES_OTCBB="ACTIVES_OTCBB",
+    ACTIVES_OPTIONS="ACTIVES_OPTIONS",
 
-    FOREX_BOOK='FOREX_BOOK',
-    FUTURES_BOOK='FUTURES_BOOK',
-    LISTED_BOOK='LISTED_BOOK',
-    NASDAQ_BOOK='NASDAQ_BOOK',
-    OPTIONS_BOOK='OPTIONS_BOOK',
-    FUTURES_OPTIONS_BOOK='FUTURES_OPTIONS_BOOK',
+    FOREX_BOOK="FOREX_BOOK",
+    FUTURES_BOOK="FUTURES_BOOK",
+    LISTED_BOOK="LISTED_BOOK",
+    NASDAQ_BOOK="NASDAQ_BOOK",
+    OPTIONS_BOOK="OPTIONS_BOOK",
+    FUTURES_OPTIONS_BOOK="FUTURES_OPTIONS_BOOK",
 
-    CHART_EQUITY='CHART_EQUITY',
+    CHART_EQUITY="CHART_EQUITY",
 
     CHART_FUTURES = "CHART_FUTURES",
-    CHART_HISTORY_FUTURES = 'CHART_HISTORY_FUTURES',
-    QUOTE='QUOTE',
+    CHART_HISTORY_FUTURES = "CHART_HISTORY_FUTURES",
+    QUOTE="QUOTE",
     LEVELONE_FUTURES = "LEVELONE_FUTURES",
-    LEVELONE_FOREX = 'LEVELONE_FOREX',
-    LEVELONE_FUTURES_OPTIONS='LEVELONE_FUTURES_OPTIONS',
-    OPTION='OPTION',
-    LEVELTWO_FUTURES='LEVELTWO_FUTURES',
+    LEVELONE_FOREX = "LEVELONE_FOREX",
+    LEVELONE_FUTURES_OPTIONS="LEVELONE_FUTURES_OPTIONS",
+    OPTION="OPTION",
+    LEVELTWO_FUTURES="LEVELTWO_FUTURES",
 
-    NEWS_HEADLINE='NEWS_HEADLINE',
-    NEWS_STORY='NEWS_STORY',
-    NEWS_HEADLINE_LIST='NEWS_HEADLINE_LIST',
+    NEWS_HEADLINE="NEWS_HEADLINE",
+    NEWS_STORY="NEWS_STORY",
+    NEWS_HEADLINE_LIST="NEWS_HEADLINE_LIST",
 
-    STREAMER_SERVER='STREAMER_SERVER',
+    STREAMER_SERVER="STREAMER_SERVER",
 
-    TIMESALE_EQUITY='TIMESALE_EQUITY',
-    TIMESALE_FUTURES='TIMESALE_FUTURES',
-    TIMESALE_FOREX='TIMESALE_FOREX',
-    TIMESALE_OPTIONS='TIMESALE_OPTIONS',
+    TIMESALE_EQUITY="TIMESALE_EQUITY",
+    TIMESALE_FUTURES="TIMESALE_FUTURES",
+    TIMESALE_FOREX="TIMESALE_FOREX",
+    TIMESALE_OPTIONS="TIMESALE_OPTIONS",
 }
 
-export enum CHART_HISTORY_FUTURES_FREQUENCY {
-    MINUTE_ONE='m1',
-    MINUTE_FIVE='m5',
-    MINUTE_TEN='m10',
-    MINUTE_THIRTY='m30',
-    HOUR_ONE='h1',
-    DAY_ONE='d1',
-    WEEK_ONE='w1',
-    MONTH_ONE='n1',
+export enum EChartHistoryFuturesFrequency {
+    MINUTE_ONE="m1",
+    MINUTE_FIVE="m5",
+    MINUTE_TEN="m10",
+    MINUTE_THIRTY="m30",
+    HOUR_ONE="h1",
+    DAY_ONE="d1",
+    WEEK_ONE="w1",
+    MONTH_ONE="n1",
 }
 
-export enum RESPONSE_CODES {
-    ACCT_ACTIVITY='ACCT_ACTIVITY',
-    ADMIN='ADMIN',
-    ACTIVES_NASDAQ='ACTIVES_NASDAQ',
-    ACTIVES_NYSE='ACTIVES_NYSE',
-    ACTIVES_OTCBB='ACTIVES_OTCBB',
-    ACTIVES_OPTIONS='ACTIVES_OPTIONS',
+export enum EResponseCodes {
+    ACCT_ACTIVITY="ACCT_ACTIVITY",
+    ADMIN="ADMIN",
+    ACTIVES_NASDAQ="ACTIVES_NASDAQ",
+    ACTIVES_NYSE="ACTIVES_NYSE",
+    ACTIVES_OTCBB="ACTIVES_OTCBB",
+    ACTIVES_OPTIONS="ACTIVES_OPTIONS",
 }
 
-export enum COMMANDS {
+export enum ECommands {
     QOS="QOS",
-    LOGIN='LOGIN',
-    LOGOUT='LOGOUT',
-    SUBS='SUBS',
-    GET='GET',
-    UNSUBS='UNSUBS',
-    ADD='ADD',
-    VIEW='VIEW',
-    STREAM='STREAM',
+    LOGIN="LOGIN",
+    LOGOUT="LOGOUT",
+    SUBS="SUBS",
+    GET="GET",
+    UNSUBS="UNSUBS",
+    ADD="ADD",
+    VIEW="VIEW",
+    STREAM="STREAM",
 }
 
-export enum QOS_LEVELS {
+export enum EQosLevels {
     L0_EXPRESS_500MS = 0,
     L1_REALTIME_750MS = 1,
     L2_FAST_1000MS = 2,
     L3_MODERATE_1500MS = 3,
     L4_SLOW_3000MS = 4,
     L5_DELAYED_5000MS = 5,
-
-}
-
-export interface IStreamData {
-    service: string,
-    timestamp: number,
-    command: string,
-    content: any[]
-}
-
-export interface IStreamResponseContent {
-    code: number,
-    msg: string,
-}
-
-export interface IStreamResponse {
-    service: string,
-    requestid: string,
-    command: string, // e.g. 'LOGIN', 'SUBS'
-    timestamp: number,
-    content: IStreamResponseContent,
 }
 
 export interface IStreamNotify {
     heartbeat: string, // timestamp as string
 }
 
-export interface IStreamConfig {
+export interface IStreamDataTDAConfig {
     authConfig?: IAuthConfig,
 
     emitDataRaw?: boolean,
@@ -122,8 +101,7 @@ export interface IStreamConfig {
     emitDataBySubAndTickerRaw?: boolean,
     emitDataBySubAndTickerTyped?: boolean,
 
-    retryAttempts?: number,
-    retryIntervalSeconds?: number,
+    reconnectRetryIntervalSeconds?: number,
 
     verbose?: boolean,
 }
@@ -131,46 +109,49 @@ export interface IStreamConfig {
 export interface IStreamParams {
     fields?: string,
     keys?: string,
-    qoslevel?: QOS_LEVELS,
+    qoslevel?: EQosLevels,
 }
 
-export interface GenericStreamConfig {
-    service: SERVICES,
-    command: COMMANDS,
+export interface IGenericStreamConfig {
+    service: EServices,
+    command: ECommands,
     requestSeqNum?: number,
     account?: string,
     source?: string,
     parameters?: IStreamParams,
 }
 
-enum QueueState {
+enum EQueueState {
     INITIALIZED,
     AVAILABLE,
     BUSY,
 }
 
-export default class TDADataStream extends EventEmitter {
+export class StreamDataTDA extends EventEmitter {
     private dataStreamSocket: any;
     private userKilled: boolean;
     private userPrincipalsResponse: any;
     private requestId: number;
     // @ts-ignore
     private streamLastAlive: number;
+    private streamStartupTime: number;
+    private heartbeats: number[];
+    private heartbeatCheckerInterval: any;
+    private streamRestartsCount: number;
 
     readonly defaultFields: Map<string, string>;
 
     // internal state
     private subParams: {[index: string]: IStreamParams};
     // @ts-ignore
-    private currentQosLevel: QOS_LEVELS;
-    private retryAttemptTimeouts: any[];
+    private currentQosLevel: EQosLevels;
+    private connectionRetryAttemptTimeouts: any[];
 
     // internal queue
-    private queueState: QueueState;
+    private queueState: EQueueState;
     private queueArr:  any[];
 
     // configurable
-    private retryAttempts: number;
     private retryIntervalSeconds: number;
     private emitDataRaw: boolean;
     private emitDataBySubRaw: boolean;
@@ -180,24 +161,27 @@ export default class TDADataStream extends EventEmitter {
     private verbose: boolean;
     private authConfig: IAuthConfig;
 
-    constructor(streamConfig: IStreamConfig) {
+    constructor(streamConfig: IStreamDataTDAConfig) {
         super();
         this.dataStreamSocket = {};
         this.userKilled = false;
         this.userPrincipalsResponse = {};
         this.requestId = 0;
         this.streamLastAlive = 0;
+        this.streamStartupTime = 0;
+        this.heartbeats = [];
+        this.heartbeatCheckerInterval = 0;
+        this.streamRestartsCount = 0;
 
-        this.defaultFields = TDADataStream.setDefaultFields();
+        this.defaultFields = StreamDataTDA.setDefaultFields();
 
         // internal state in case of restart
         this.subParams = {};
-        this.currentQosLevel = QOS_LEVELS.L2_FAST_1000MS;
-        this.retryAttemptTimeouts = [];
+        this.currentQosLevel = EQosLevels.L2_FAST_1000MS;
+        this.connectionRetryAttemptTimeouts = [];
 
         // configurable
-        this.retryAttempts = streamConfig.retryAttempts || 3;
-        this.retryIntervalSeconds = streamConfig.retryIntervalSeconds || 60;
+        this.retryIntervalSeconds = streamConfig.reconnectRetryIntervalSeconds || 60;
         this.emitDataRaw = streamConfig.emitDataRaw || false;
         this.emitDataBySubRaw = streamConfig.emitDataBySubRaw || false;
         this.emitDataBySubTyped = streamConfig.emitDataBySubTyped || false;
@@ -206,85 +190,91 @@ export default class TDADataStream extends EventEmitter {
         this.verbose = streamConfig.verbose || false;
         if (streamConfig.authConfig != undefined)
             this.authConfig = streamConfig.authConfig;
-        else throw 'You must provide authConfig as part of the config object in the constructor call.';
+        else throw "You must provide authConfig as part of the config object in the constructor call.";
 
-        this.queueState = QueueState.INITIALIZED;
+        this.queueState = EQueueState.INITIALIZED;
         this.queueArr = [];
-
-        this.qpush(this.genericStreamRequest.bind(this,{
-            service: SERVICES.NEWS_HEADLINE,
-            command: COMMANDS.SUBS,
-            parameters: {
-                keys: 'TSLA',
-            }
-        }));
     }
 
     private static setDefaultFields() : Map<string, string> {
         const defaultFields = new Map();
-        defaultFields.set(SERVICES.CHART_FUTURES, StreamingUtils.buildNumberArray(0, 6));
-        defaultFields.set(SERVICES.CHART_EQUITY, StreamingUtils.buildNumberArray(0, 8));
-        defaultFields.set(SERVICES.CHART_HISTORY_FUTURES, StreamingUtils.buildNumberArray(0, 3));
+        defaultFields.set(EServices.CHART_FUTURES, StreamingUtils.buildNumberArray(0, 6));
+        defaultFields.set(EServices.CHART_EQUITY, StreamingUtils.buildNumberArray(0, 8));
+        defaultFields.set(EServices.CHART_HISTORY_FUTURES, StreamingUtils.buildNumberArray(0, 3));
 
-        defaultFields.set(SERVICES.LEVELONE_FOREX, StreamingUtils.buildNumberArray(0, 29));
-        defaultFields.set(SERVICES.LEVELONE_FUTURES, StreamingUtils.buildNumberArray(0, 35));
-        defaultFields.set(SERVICES.LEVELONE_FUTURES_OPTIONS, StreamingUtils.buildNumberArray(0, 35));
-        defaultFields.set(SERVICES.OPTION, StreamingUtils.buildNumberArray(0, 41));
-        defaultFields.set(SERVICES.QUOTE, StreamingUtils.buildNumberArray(0, 52));
+        defaultFields.set(EServices.LEVELONE_FOREX, StreamingUtils.buildNumberArray(0, 29));
+        defaultFields.set(EServices.LEVELONE_FUTURES, StreamingUtils.buildNumberArray(0, 35));
+        defaultFields.set(EServices.LEVELONE_FUTURES_OPTIONS, StreamingUtils.buildNumberArray(0, 35));
+        defaultFields.set(EServices.OPTION, StreamingUtils.buildNumberArray(0, 41));
+        defaultFields.set(EServices.QUOTE, StreamingUtils.buildNumberArray(0, 52));
 
-        defaultFields.set(SERVICES.TIMESALE_EQUITY, StreamingUtils.buildNumberArray(0, 4));
-        defaultFields.set(SERVICES.TIMESALE_OPTIONS, StreamingUtils.buildNumberArray(0, 4));
-        defaultFields.set(SERVICES.TIMESALE_FUTURES, StreamingUtils.buildNumberArray(0, 4));
-        defaultFields.set(SERVICES.TIMESALE_FOREX, StreamingUtils.buildNumberArray(0, 4));
+        defaultFields.set(EServices.TIMESALE_EQUITY, StreamingUtils.buildNumberArray(0, 4));
+        defaultFields.set(EServices.TIMESALE_OPTIONS, StreamingUtils.buildNumberArray(0, 4));
+        defaultFields.set(EServices.TIMESALE_FUTURES, StreamingUtils.buildNumberArray(0, 4));
+        defaultFields.set(EServices.TIMESALE_FOREX, StreamingUtils.buildNumberArray(0, 4));
 
-        defaultFields.set(SERVICES.NEWS_HEADLINE, StreamingUtils.buildNumberArray(0, 10));
-        defaultFields.set(SERVICES.NEWS_HEADLINE_LIST, StreamingUtils.buildNumberArray(0, 10));
-        defaultFields.set(SERVICES.NEWS_STORY, StreamingUtils.buildNumberArray(0, 10));
+        defaultFields.set(EServices.NEWS_HEADLINE, StreamingUtils.buildNumberArray(0, 10));
+        defaultFields.set(EServices.NEWS_HEADLINE_LIST, StreamingUtils.buildNumberArray(0, 10));
+        defaultFields.set(EServices.NEWS_STORY, StreamingUtils.buildNumberArray(0, 10));
 
-        defaultFields.set(SERVICES.ACCT_ACTIVITY, StreamingUtils.buildNumberArray(0, 3));
+        defaultFields.set(EServices.ACCT_ACTIVITY, StreamingUtils.buildNumberArray(0, 3));
 
-        defaultFields.set(SERVICES.FUTURES_BOOK, StreamingUtils.buildNumberArray(0, 50));
-        defaultFields.set(SERVICES.FOREX_BOOK, StreamingUtils.buildNumberArray(0, 50));
-        defaultFields.set(SERVICES.FUTURES_OPTIONS_BOOK, StreamingUtils.buildNumberArray(0, 50));
-        defaultFields.set(SERVICES.LISTED_BOOK, StreamingUtils.buildNumberArray(0, 50));
-        defaultFields.set(SERVICES.NASDAQ_BOOK, StreamingUtils.buildNumberArray(0, 50));
-        defaultFields.set(SERVICES.OPTIONS_BOOK, StreamingUtils.buildNumberArray(0, 50));
+        defaultFields.set(EServices.FUTURES_BOOK, StreamingUtils.buildNumberArray(0, 50));
+        defaultFields.set(EServices.FOREX_BOOK, StreamingUtils.buildNumberArray(0, 50));
+        defaultFields.set(EServices.FUTURES_OPTIONS_BOOK, StreamingUtils.buildNumberArray(0, 50));
+        defaultFields.set(EServices.LISTED_BOOK, StreamingUtils.buildNumberArray(0, 50));
+        defaultFields.set(EServices.NASDAQ_BOOK, StreamingUtils.buildNumberArray(0, 50));
+        defaultFields.set(EServices.OPTIONS_BOOK, StreamingUtils.buildNumberArray(0, 50));
 
         return defaultFields;
-
     }
 
-    setConfig(config: IStreamConfig) : void {
+    private startHeartbeatChecker(): any {
+        // check every 1 minute
+        return setInterval(async () => {
+            if (this.verbose) console.log(new Date().toISOString() + " hb checker");
+            // if the latest heartbeat was more than a minute ago
+            // OR there have been no heartbeats since the stream started over a minute ago
+            if (this.streamStartupTime > 0
+                && (this.heartbeats[this.heartbeats.length - 1] < Date.now() - 60_000
+                    || (Date.now() - this.streamStartupTime > 60_000 && this.heartbeats.length < 1))
+            ) {
+                this.doDataStreamLogin();
+                this.streamRestartsCount++;
+            }
+            if (this.heartbeats.length > 100) this.heartbeats = this.heartbeats.slice(-50);
+        }, this.retryIntervalSeconds*1000);
+    }
+
+    setConfig(config: IStreamDataTDAConfig): void {
         this.emitDataRaw = config.emitDataRaw != undefined ? config.emitDataRaw : this.emitDataRaw;
         this.emitDataBySubRaw = config.emitDataBySubRaw != undefined ? config.emitDataBySubRaw : this.emitDataBySubRaw;
         this.emitDataBySubTyped = config.emitDataBySubTyped != undefined ? config.emitDataBySubTyped : this.emitDataBySubTyped;
         this.emitDataBySubAndTickerRaw = config.emitDataBySubAndTickerRaw != undefined ? config.emitDataBySubAndTickerRaw : this.emitDataBySubAndTickerRaw;
         this.emitDataBySubAndTickerTyped = config.emitDataBySubAndTickerTyped != undefined ? config.emitDataBySubAndTickerTyped : this.emitDataBySubAndTickerTyped;
-        this.retryAttempts = config.retryAttempts !| this.retryAttempts;
-        this.retryIntervalSeconds = config.retryIntervalSeconds || this.retryIntervalSeconds;
+        this.retryIntervalSeconds = config.reconnectRetryIntervalSeconds || this.retryIntervalSeconds;
         this.verbose = config.verbose || false;
     }
 
-    getConfig() : IStreamConfig {
+    getConfig(): IStreamDataTDAConfig {
         return {
             emitDataRaw: this.emitDataRaw,
             emitDataBySubRaw: this.emitDataBySubRaw,
             emitDataBySubTyped: this.emitDataBySubTyped,
             emitDataBySubAndTickerRaw: this.emitDataBySubAndTickerRaw,
             emitDataBySubAndTickerTyped: this.emitDataBySubAndTickerTyped,
-            retryAttempts: this.retryAttempts,
-            retryIntervalSeconds: this.retryIntervalSeconds,
-        }
+            reconnectRetryIntervalSeconds: this.retryIntervalSeconds,
+        };
     }
 
-    private getDefaultFields(service: SERVICES): string {
+    private getDefaultFields(service: EServices): string {
         if (this.defaultFields.has(service)) {
             // @ts-ignore
             return this.defaultFields.get(service);
-        } else return '';
+        } else return "";
     }
 
-    private handleIncomingData(element: StreamingResponseData, emitEventBase: string, mappingFunction: any) {
+    private handleIncomingData(element: StreamingResponseData, emitEventBase: string, mappingFunction: any): void {
         if (this.verbose) console.log(`handle incoming data, ${emitEventBase}; subraw:${this.emitDataBySubRaw}, subtickerraw:${this.emitDataBySubAndTickerRaw}, subtyped:${this.emitDataBySubTyped}, subtickertyped:${this.emitDataBySubAndTickerTyped}`);
         if (this.emitDataBySubRaw) {
             this.emit(`${emitEventBase}_RAW`, element.content);
@@ -296,7 +286,7 @@ export default class TDADataStream extends EventEmitter {
         }
 
         if (this.emitDataBySubAndTickerTyped || this.emitDataBySubTyped) {
-            if (this.verbose) console.log('typed');
+            if (this.verbose) console.log("typed");
             const typedResponses: any[] = element.content.map((item: any) => mappingFunction(item, element.timestamp));
             if (this.emitDataBySubTyped) {
                 this.emit(`${emitEventBase}_TYPED`, typedResponses);
@@ -307,73 +297,80 @@ export default class TDADataStream extends EventEmitter {
         }
     }
 
-    private async handleIncoming(resp: string, resolve: any) {
+    /**
+     * Called each time there is incoming data from the stream. This calls handleIncomingData with formatted data.
+     * @param responseString
+     * @param resolve
+     * @private
+     */
+    private async handleIncoming(responseString: string, resolve: any): Promise<void> {
         // console.log('handle incoming');
         this.streamLastAlive = moment.utc().valueOf();
-        let respObj = null;
+        let responseObject = null;
         try {
-            respObj = JSON.parse(resp);
+            responseObject = JSON.parse(responseString);
         } catch (e) {
-            if (this.verbose) console.log("An exception occurred while trying to parse stream data: ", resp);
+            if (this.verbose) console.log("An exception occurred while trying to parse stream data: ", responseString);
         }
-        if (!respObj) return;
+        if (!responseObject) return;
 
         if (this.verbose) {
-            console.log('handle incoming: ' + Object.keys(respObj).join(','));
-            console.log(JSON.stringify(respObj, null, 2));
+            console.log("handle incoming: " + Object.keys(responseObject).join(","));
+            console.log(JSON.stringify(responseObject, null, 2));
         }
 
-        if (respObj.notify) {
-            if (this.verbose) console.log(respObj.notify);
-            this.emit('heartbeat', respObj.notify as IStreamNotify[]);
+        if (responseObject.notify) {
+            if (this.verbose) console.log(responseObject.notify);
+            this.emit("heartbeat", responseObject.notify as IStreamNotify[]);
         }
 
         // such as in the case of acknowledging connection or new subscription or qos change
-        if (respObj.response) {
-            if (this.queueState === QueueState.INITIALIZED) {
+        if (responseObject.response) {
+            if (!this.heartbeatCheckerInterval) this.heartbeatCheckerInterval = this.startHeartbeatChecker();
+            if (this.queueState === EQueueState.INITIALIZED) {
                 await this.qstart();
             } else {
-                this.queueState = QueueState.AVAILABLE;
+                this.queueState = EQueueState.AVAILABLE;
                 await this.dequeueAndProcess();
             }
-            if (this.verbose) console.log(respObj.response);
-            this.emit('response', respObj.response);
+            if (this.verbose) console.log(responseObject.response);
+            this.emit("response", responseObject.response);
 
             // case 5.7 service === 'ADMIN' && command === 'QOS'
             // case 5.5 service === 'ADMIN' && command === 'LOGOUT'
             // case 5.3 service === 'ADMIN' && command === 'LOGIN'
         }
 
-        if (respObj.data) {
+        if (responseObject.data) {
             if (this.emitDataRaw) {
-                this.emit('data', respObj.data);
+                this.emit("data", responseObject.data);
             }
-            respObj.data.forEach((element: StreamingResponseData) => {
+            responseObject.data.forEach((element: StreamingResponseData) => {
                 let fn = null;
                 switch (element.service) {
-                    case SERVICES.LEVELONE_FUTURES: fn = StreamingUtils.transformL1FuturesResponse; break;
-                    case SERVICES.LEVELONE_FUTURES_OPTIONS: fn = StreamingUtils.transformL1FuturesOptionsResponse; break;
-                    case SERVICES.LEVELONE_FOREX: fn = StreamingUtils.transformL1ForexResponse; break;
-                    case SERVICES.QUOTE: fn = StreamingUtils.transformL1EquitiesResponse; break;
-                    case SERVICES.OPTION: fn = StreamingUtils.transformL1OptionsResponse; break;
-                    case SERVICES.CHART_EQUITY: fn = StreamingUtils.transformEquityChartResponse; break;
-                    case SERVICES.CHART_FUTURES: fn = StreamingUtils.transformFuturesChartResponse; break;
-                    case SERVICES.CHART_HISTORY_FUTURES: fn = StreamingUtils.transformChartHistoryFuturesResponse; break;
-                    case SERVICES.NEWS_HEADLINE: fn = StreamingUtils.transformNewsHeadlineResponse; break;
-                    case SERVICES.ACCT_ACTIVITY: fn = StreamingUtils.transformAcctActivityResponse; break;
-                    case SERVICES.TIMESALE_FOREX:
-                    case SERVICES.TIMESALE_FUTURES:
-                    case SERVICES.TIMESALE_OPTIONS:
-                    case SERVICES.TIMESALE_EQUITY: fn = StreamingUtils.transformTimeSaleResponse; break;
-                    case SERVICES.NEWS_STORY:
-                    case SERVICES.NEWS_HEADLINE_LIST:
-                    case SERVICES.FUTURES_BOOK:
-                    case SERVICES.OPTIONS_BOOK:
-                    case SERVICES.NASDAQ_BOOK:
-                    case SERVICES.FOREX_BOOK:
-                    case SERVICES.FUTURES_OPTIONS_BOOK:
-                    case SERVICES.LISTED_BOOK: fn = StreamingUtils.identityFunction; break;
-                    default: break;
+                case EServices.LEVELONE_FUTURES: fn = StreamingUtils.transformL1FuturesResponse; break;
+                case EServices.LEVELONE_FUTURES_OPTIONS: fn = StreamingUtils.transformL1FuturesOptionsResponse; break;
+                case EServices.LEVELONE_FOREX: fn = StreamingUtils.transformL1ForexResponse; break;
+                case EServices.QUOTE: fn = StreamingUtils.transformL1EquitiesResponse; break;
+                case EServices.OPTION: fn = StreamingUtils.transformL1OptionsResponse; break;
+                case EServices.CHART_EQUITY: fn = StreamingUtils.transformEquityChartResponse; break;
+                case EServices.CHART_FUTURES: fn = StreamingUtils.transformFuturesChartResponse; break;
+                case EServices.CHART_HISTORY_FUTURES: fn = StreamingUtils.transformChartHistoryFuturesResponse; break;
+                case EServices.NEWS_HEADLINE: fn = StreamingUtils.transformNewsHeadlineResponse; break;
+                case EServices.ACCT_ACTIVITY: fn = StreamingUtils.transformAcctActivityResponse; break;
+                case EServices.TIMESALE_FOREX:
+                case EServices.TIMESALE_FUTURES:
+                case EServices.TIMESALE_OPTIONS:
+                case EServices.TIMESALE_EQUITY: fn = StreamingUtils.transformTimeSaleResponse; break;
+                case EServices.NEWS_STORY:
+                case EServices.NEWS_HEADLINE_LIST:
+                case EServices.FUTURES_BOOK:
+                case EServices.OPTIONS_BOOK:
+                case EServices.NASDAQ_BOOK:
+                case EServices.FOREX_BOOK:
+                case EServices.FUTURES_OPTIONS_BOOK:
+                case EServices.LISTED_BOOK: fn = StreamingUtils.identityFunction; break;
+                default: break;
                 }
                 if (fn != null) {
                     this.handleIncomingData(element, element.service, fn);
@@ -381,20 +378,19 @@ export default class TDADataStream extends EventEmitter {
             });
         }
 
-        if (respObj.snapshot) {
-            this.queueState = QueueState.AVAILABLE;
+        if (responseObject.snapshot) {
+            this.queueState = EQueueState.AVAILABLE;
             await this.dequeueAndProcess();
 
             if (this.emitDataRaw) {
-                this.emit('snapshot', respObj.snapshot);
+                this.emit("snapshot", responseObject.snapshot);
             }
-            respObj.snapshot.forEach((element: StreamingResponseData) => {
-                if (this.verbose) console.log(`service is ${element.service} and is that CHF? ${element.service === SERVICES.CHART_HISTORY_FUTURES}`);
-                // this.handleIncomingData(element, element.service, StreamingUtils.transformChartHistoryFuturesResponse);
+            responseObject.snapshot.forEach((element: StreamingResponseData) => {
+                if (this.verbose) console.log(`service is ${element.service} and is that CHF? ${element.service === EServices.CHART_HISTORY_FUTURES}`);
                 let fn = null;
                 switch (element.service) {
-                    case SERVICES.CHART_HISTORY_FUTURES: fn = StreamingUtils.transformChartHistoryFuturesResponse; break;
-                    default: fn = () => {}; break;
+                case EServices.CHART_HISTORY_FUTURES: fn = StreamingUtils.transformChartHistoryFuturesResponse; break;
+                default: fn = () => {}; break;
                 }
                 if (fn != null) {
                     this.handleIncomingData(element, element.service, fn);
@@ -403,49 +399,49 @@ export default class TDADataStream extends EventEmitter {
         }
     }
 
-    private handleParamStorage(config: GenericStreamConfig) {
+    private handleParamStorage(config: IGenericStreamConfig) {
         // handle param storage
-        if (!config.service || [SERVICES.ADMIN, SERVICES.CHART_HISTORY_FUTURES].includes(config.service)) return;
+        if (!config.service || [EServices.ADMIN, EServices.CHART_HISTORY_FUTURES].includes(config.service)) return;
         const currentParams = this.subParams[config.service];
-        if (config.command === COMMANDS.SUBS) {
+        if (config.command === ECommands.SUBS) {
             // overwrite
             this.subParams[config.service] = {
                 ...config.parameters
             };
-        } else if (config.command === COMMANDS.ADD) {
+        } else if (config.command === ECommands.ADD) {
             // superset
             const keys = new Set();
-            config.parameters?.keys?.split(',').forEach((k: string) => {
+            config.parameters?.keys?.split(",").forEach((k: string) => {
                 keys.add(k);
             });
-            this.subParams[config.service]?.keys?.split(',').forEach((k: string) => {
+            this.subParams[config.service]?.keys?.split(",").forEach((k: string) => {
                 keys.add(k);
             });
             const fields = new Set();
-            config.parameters?.fields?.split(',').forEach((k: string) => {
+            config.parameters?.fields?.split(",").forEach((k: string) => {
                 fields.add(k);
             });
-            this.subParams[config.service]?.fields?.split(',').forEach((k: string) => {
+            this.subParams[config.service]?.fields?.split(",").forEach((k: string) => {
                 fields.add(k);
             });
             this.subParams[config.service] = {
-                keys: Array.from(keys).join(','),
-                fields: Array.from(fields).join(',')
+                keys: Array.from(keys).join(","),
+                fields: Array.from(fields).join(",")
             };
-        } else if (config.command === COMMANDS.UNSUBS) {
+        } else if (config.command === ECommands.UNSUBS) {
             // if there are keys, that means the unsub is selective
             if (config.parameters?.keys) {
                 const keys = new Set();
-                this.subParams[config.service]?.keys?.split(',').forEach((k: string) => {
+                this.subParams[config.service]?.keys?.split(",").forEach((k: string) => {
                     keys.add(k);
                 });
-                config.parameters?.keys?.split(',').forEach((k: string) => {
+                config.parameters?.keys?.split(",").forEach((k: string) => {
                     keys.delete(k);
                 });
                 this.subParams[config.service] = {
                     ...currentParams,
-                    keys: Array.from(keys).join(',')
-                }
+                    keys: Array.from(keys).join(",")
+                };
             } else {
                 this.subParams[config.service] = {};
             }
@@ -455,8 +451,8 @@ export default class TDADataStream extends EventEmitter {
     /**
      * A method to do stuff.
      * @param {object} config
-     * @param {SERVICES} config.service - use the SERVICES enum
-     * @param {COMMANDS} config.command - use the COMMANDS enum
+     * @param {EServices} config.service - use the SERVICES enum
+     * @param {ECommands} config.command - use the COMMANDS enum
      * @param {IStreamParams} config.parameters - keys (required) and fields (optional; will default to all)
      * @param {number} [config.requestSeqNum] - (optional) supply your own request sequence number, or it will be auto generated
      * @param {string} [config.account] - (optional) supply an account id, or it will be retrieved using your credentials
@@ -480,11 +476,11 @@ export default class TDADataStream extends EventEmitter {
      * });
      * @returns {number} Returns the sequence number of the request.
      */
-    async genericStreamRequest(config: GenericStreamConfig) : Promise<number> {
-        if (!config) throw 'You must pass in a config object';
+    async genericStreamRequest(config: IGenericStreamConfig) : Promise<number> {
+        if (!config) throw "You must pass in a config object";
         let {service, command, requestSeqNum, parameters, account, source} = config;
-        if ([COMMANDS.SUBS, COMMANDS.ADD].includes(command)) {
-            if (!parameters || !parameters.keys) throw 'With commands ADD or SUBS, your config object must have parameters';
+        if ([ECommands.SUBS, ECommands.ADD].includes(command)) {
+            if (!parameters || !parameters.keys) throw "With commands ADD or SUBS, your config object must have parameters";
             if (!parameters.fields) {
                 parameters.fields = this.getDefaultFields(config.service);
             }
@@ -517,11 +513,11 @@ export default class TDADataStream extends EventEmitter {
             const params = this.subParams[service];
             const input = {
                 service: service,
-                command: COMMANDS.SUBS,
+                command: ECommands.SUBS,
                 requestSeqNum: this.requestId++,
                 parameters: params,
-            }
-            this.genericStreamRequest(input as GenericStreamConfig);
+            };
+            this.genericStreamRequest(input as IGenericStreamConfig);
         }
     }
 
@@ -531,24 +527,26 @@ export default class TDADataStream extends EventEmitter {
     }
 
     private async restartDataStream(): Promise<void> {
-        this.once('message', () => { this.clearRetryAttempts(); this.resubscribe() }); // set this to trigger on successful login
-        for (let i = 0; i < this.retryAttempts; i++) {
-            this.retryAttemptTimeouts.push(setTimeout(() => this.doDataStreamLogin(), this.retryIntervalSeconds*i*1000));
+        this.streamRestartsCount++;
+        if (this.heartbeatCheckerInterval) {
+            if (this.verbose) console.log("Clearing heartbeat checker for restart", this.streamRestartsCount, "time:", new Date().toISOString());
+            clearInterval(this.heartbeatCheckerInterval);
         }
+        this.once("message", () => { this.clearRetryAttempts(); this.resubscribe(); }); // set this to trigger on successful login
+        this.connectionRetryAttemptTimeouts.push(setTimeout(() => this.doDataStreamLogin(), this.retryIntervalSeconds*1000));
     }
 
     private clearRetryAttempts() {
-        this.retryAttemptTimeouts.forEach(t => clearTimeout(t));
+        this.connectionRetryAttemptTimeouts.forEach(t => clearTimeout(t));
     }
 
     private async handleStreamClose(): Promise<void> {
         if (this.userKilled) {
-            if (this.verbose) console.log('stream closed, killed by user');
-            this.emit('streamClosed', {attemptingReconnect: false});
-        }
-        else {
-            if (this.verbose) console.log('stream closed, not killed by user, attempting restart');
-            this.emit('streamClosed', {attemptingReconnect: true});
+            if (this.verbose) console.log("stream closed, killed by user");
+            this.emit("streamClosed", {attemptingReconnect: false});
+        } else {
+            if (this.verbose) console.log("stream closed, not killed by user, attempting restart");
+            this.emit("streamClosed", {attemptingReconnect: true});
             // attempt to reconnect
             await this.restartDataStream();
         }
@@ -558,11 +556,11 @@ export default class TDADataStream extends EventEmitter {
     async doDataStreamLogin(
         //fields: string = 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds',
         fields: EUserPrincipalFields[] = [EUserPrincipalFields.PREFERENCES, EUserPrincipalFields.SURROGATE_IDS, EUserPrincipalFields.STREAMER_SUB_KEYS, EUserPrincipalFields.STREAMER_CONNECTION_INFO],
-        qosLevel: QOS_LEVELS = QOS_LEVELS.L2_FAST_1000MS
+        qosLevel: EQosLevels = EQosLevels.L2_FAST_1000MS
     ) : Promise<any> {
         // if now is within 30 seconds of last alive, do nothing
         this.userKilled = false;
-        if (this.verbose) console.log('doDataStreamLogin');
+        if (this.verbose) console.log("doDataStreamLogin");
         this.userPrincipalsResponse = await getUserPrincipals({fields, authConfig: this.authConfig});
         // console.log(`userPrincipals: ${JSON.stringify(this.userPrincipalsResponse)}`);
 
@@ -582,13 +580,13 @@ export default class TDADataStream extends EventEmitter {
             "timestamp": tokenTimeStampAsMs,
             "appid": this.userPrincipalsResponse.streamerInfo.appId,
             "acl": this.userPrincipalsResponse.streamerInfo.acl
-        }
+        };
 
         const loginRequest = {
             "requests": [
                 {
-                    "service": SERVICES.ADMIN,
-                    "command": COMMANDS.LOGIN,
+                    "service": EServices.ADMIN,
+                    "command": ECommands.LOGIN,
                     "requestid": `${this.requestId++}`,
                     "account": this.userPrincipalsResponse.accounts[0].accountId,
                     "source": this.userPrincipalsResponse.streamerInfo.appId,
@@ -605,11 +603,11 @@ export default class TDADataStream extends EventEmitter {
         return new Promise((resolve, reject) => {
             this.dataStreamSocket = new WebSocket("wss://" + this.userPrincipalsResponse.streamerInfo.streamerSocketUrl + "/ws");
 
-            this.dataStreamSocket.on('message', (resp: string) => this.handleIncoming.call(this, resp, resolve));
+            this.dataStreamSocket.on("message", (response: string) => this.handleIncoming.call(this, response, resolve));
 
-            this.dataStreamSocket.on('close', () => this.handleStreamClose.bind(this));
+            this.dataStreamSocket.on("close", () => this.handleStreamClose.bind(this));
 
-            this.dataStreamSocket.on('open', () => this.open.call(this, loginRequest));
+            this.dataStreamSocket.on("open", () => this.open.call(this, loginRequest));
         });
     }
 
@@ -619,9 +617,9 @@ export default class TDADataStream extends EventEmitter {
     async doDataStreamLogout() {
         this.userKilled = true;
         await this.genericStreamRequest({
-            service: SERVICES.ADMIN,
+            service: EServices.ADMIN,
             requestSeqNum: this.requestId++,
-            command: COMMANDS.LOGOUT,
+            command: ECommands.LOGOUT,
             parameters: {}
         });
     }
@@ -631,23 +629,22 @@ export default class TDADataStream extends EventEmitter {
      * Each subsequent call overrides the previous, so (1) /NQ then (2) /ES will result in just /ES.
      * With the second request you'd need to pass in "/NQ,/ES"
      * Can use format /ES or a specific contract /ESM21
-     * @param {QOS_LEVELS} qosLevel - comma-separated symbols, e.g. "/NQ,/ES"
+     * @param {EQosLevels} qosLevel - comma-separated symbols, e.g. "/NQ,/ES"
      * @param requestSeqNum {number} - defaulted to an incrementing integer
      * @returns A Promise with the request sequence number, 0 if error
      * @async
      */
-    async qosRequest(qosLevel: QOS_LEVELS, requestSeqNum: number = this.requestId++) : Promise<number> {
-        if (!QOS_LEVELS[qosLevel]) return 0;
+    async qosRequest(qosLevel: EQosLevels, requestSeqNum: number = this.requestId++) : Promise<number> {
+        if (!EQosLevels[qosLevel]) return 0;
         this.currentQosLevel = qosLevel;
         return await this.genericStreamRequest({
-            service: SERVICES.ADMIN,
+            service: EServices.ADMIN,
             requestSeqNum,
-            command: COMMANDS.QOS,
+            command: ECommands.QOS,
             parameters: {
                 qoslevel: qosLevel
             }
         });
-
     }
 
 
@@ -655,7 +652,7 @@ export default class TDADataStream extends EventEmitter {
      * Get historical candles for futures. Specify period OR (startTimeMSEpoch and endTimeMSEpoch)
      *
      * @param {string} symbol - Futures symbol, such as "/ES" or "/ESM21"
-     * @param {CHART_HISTORY_FUTURES_FREQUENCY} frequency - Choose the candle size for the historical data. Choices: m1, m5, m10, m30, h1, d1, w1, n1 (m=minute, h=hour, d=day, w=week, n=month)
+     * @param {EChartHistoryFuturesFrequency} frequency - Choose the candle size for the historical data. Choices: m1, m5, m10, m30, h1, d1, w1, n1 (m=minute, h=hour, d=day, w=week, n=month)
      * @param {string} [period] - (Optional / REQURIED if no start/end time) Specify period with a string such as d5, w4, n10, y1, y10 (d=day, w=week, n=month, y=year)
      * @param {number} [startTimeMSEpoch] - (Optional / REQUIRED if no period) A number representing the time in milliseconds since epoch.
      * @param {number} [endTimeMSEpoch] - (Optional / REQUIRED if no period) A number representing the time in milliseconds since epoch.
@@ -664,20 +661,20 @@ export default class TDADataStream extends EventEmitter {
      * @async
      */
     async chartHistoryFuturesGet(symbol: string,
-                                 frequency: CHART_HISTORY_FUTURES_FREQUENCY,
-                                 period?: string,
-                                 startTimeMSEpoch?: number,
-                                 endTimeMSEpoch?: number,
-                                 requestSeqNum: number = this.requestId++
+        frequency: EChartHistoryFuturesFrequency,
+        period?: string,
+        startTimeMSEpoch?: number,
+        endTimeMSEpoch?: number,
+        requestSeqNum: number = this.requestId++
     ) : Promise<number> {
         if (!period && (!startTimeMSEpoch || !endTimeMSEpoch)) return 0;
 
         const request = {
             "requests": [
                 {
-                    "service": SERVICES.CHART_HISTORY_FUTURES,
+                    "service": EServices.CHART_HISTORY_FUTURES,
                     "requestid": `${requestSeqNum}`,
-                    "command": COMMANDS.GET,
+                    "command": ECommands.GET,
                     "account": this.userPrincipalsResponse.accounts[0].accountId,
                     "source": this.userPrincipalsResponse.streamerInfo.appId,
                     "parameters": {
@@ -704,16 +701,16 @@ export default class TDADataStream extends EventEmitter {
      * @returns A Promise with the request sequence number, 0 if error
      * @async
      */
-    async accountUpdatesSub(accountIds: string = '', fields: string = "0,1,2,3", requestSeqNum: number = this.requestId++) : Promise<number> {
-        if (accountIds === null || accountIds === '') {
+    async accountUpdatesSub(accountIds = "", fields = "0,1,2,3", requestSeqNum: number = this.requestId++) : Promise<number> {
+        if (accountIds === null || accountIds === "") {
             const allAccounts = await getAccounts({});
             accountIds = allAccounts
                 .map((acct: any) => {
-                    let acctIds = [];
+                    const acctIds = [];
                     for (const acctLabel in acct) acctIds.push(acct[acctLabel].accountId);
-                    return acctIds.join(',');
+                    return acctIds.join(",");
                 })
-                .join(',');
+                .join(",");
         }
 
         const streamKeyObj = await getStreamerSubKeys({
@@ -721,46 +718,46 @@ export default class TDADataStream extends EventEmitter {
             authConfig: this.authConfig,
         });
 
-        const config : GenericStreamConfig = {
+        const config : IGenericStreamConfig = {
             parameters: {
                 keys: streamKeyObj.keys[0].key,
                 fields: fields,
             },
-            service: SERVICES.ACCT_ACTIVITY,
-            command: COMMANDS.SUBS
-        }
+            service: EServices.ACCT_ACTIVITY,
+            command: ECommands.SUBS
+        };
 
         return await this.genericStreamRequest(config);
     }
 
     private async qstart() {
-        this.queueState = QueueState.AVAILABLE;
+        this.queueState = EQueueState.AVAILABLE;
         await this.dequeueAndProcess();
     }
 
     private async qpush(cb:any) {
         this.queueArr.push(cb);
-        if (this.queueArr.length === 1 && this.queueState === QueueState.AVAILABLE) {
+        if (this.queueArr.length === 1 && this.queueState === EQueueState.AVAILABLE) {
             await this.dequeueAndProcess();
         }
     }
 
     private async dequeueAndProcess() {
-        if (this.verbose) console.log('deq', `queuesize:${this.queueArr.length}`, `queuestate:${QueueState[this.queueState]}`);
-        if (this.queueArr.length > 0 && this.queueState === QueueState.AVAILABLE) {
-            this.queueState = QueueState.BUSY;
+        if (this.verbose) console.log("deq", `queuesize:${this.queueArr.length}`, `queuestate:${EQueueState[this.queueState]}`);
+        if (this.queueArr.length > 0 && this.queueState === EQueueState.AVAILABLE) {
+            this.queueState = EQueueState.BUSY;
             const nextInQueue = this.queueArr.pop();
             await nextInQueue();
         }
     }
 
-    async queueAccountUpdatesSub(accountIds: string = '', fields: string = "0,1,2,3", requestSeqNum?: number) : Promise<any> {
+    async queueAccountUpdatesSub(accountIds = "", fields = "0,1,2,3", requestSeqNum?: number) : Promise<any> {
         await this.qpush(this.accountUpdatesSub.bind(this, accountIds, fields, requestSeqNum));
     }
 
     async queueChartHistoryFuturesGet(
         symbol: string,
-        frequency: CHART_HISTORY_FUTURES_FREQUENCY,
+        frequency: EChartHistoryFuturesFrequency,
         period?: string,
         startTimeMSEpoch?: number,
         endTimeMSEpoch?: number,
@@ -770,10 +767,7 @@ export default class TDADataStream extends EventEmitter {
         await this.qpush(this.chartHistoryFuturesGet.bind(this, symbol, frequency, period, startTimeMSEpoch, endTimeMSEpoch, requestSeqNum));
     }
 
-    async queueGenericStreamRequest(config: GenericStreamConfig) {
+    async queueGenericStreamRequest(config: IGenericStreamConfig) {
         await this.qpush(this.genericStreamRequest.bind(this, config));
     }
-    
 }
-
-

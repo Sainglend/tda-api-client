@@ -73,24 +73,24 @@ export interface StreamingResponseData {
 
 export enum EXCHANGES {
     /** NASDAQ */
-    NASDAQ='q',
-    NYSE='n',
-    AMEX='a',
-    OTCBB='u',
-    PACIFIC='p',
-    INDICES='x',
-    AMEX_INDEX='g',
-    MUTUAL_FUND='m',
-    PINK_SHEET='9',
-    ICE='I',
-    CME='E',
-    LIFFEUS='L',
+    NASDAQ="q",
+    NYSE="n",
+    AMEX="a",
+    OTCBB="u",
+    PACIFIC="p",
+    INDICES="x",
+    AMEX_INDEX="g",
+    MUTUAL_FUND="m",
+    PINK_SHEET="9",
+    ICE="I",
+    CME="E",
+    LIFFEUS="L",
 }
 
 export enum TRADING_STATUS {
-    NORMAL='Normal',
-    HALTED='Halted',
-    CLOSED='Closed',
+    NORMAL="Normal",
+    HALTED="Halted",
+    CLOSED="Closed",
 }
 
 export interface L1FuturesOptionsQuoteRough extends StringIndexed {

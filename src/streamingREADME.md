@@ -240,7 +240,7 @@ const streamConfig = {
    emitDataRaw: true
 };
 
-const stream = new TDADataStream(streamConfig);
+const stream = new StreamDataTDA(streamConfig);
 
 stream.on('heartbeat', (args) => console.log('heartbeat', JSON.stringify(args, null, 2)));
 stream.on('response', (args) => console.log('response', JSON.stringify(args, null, 2)));
@@ -248,8 +248,8 @@ stream.on('response', (args) => console.log('response', JSON.stringify(args, nul
 stream.once('response', (args) => {
    stream.on('LEVELONE_FUTURES_TYPED__ES', (args: any) => console.log('l1fut typed es', JSON.stringify(args, null, 2)));
    stream.genericStreamRequest({
-      service: SERVICES.LEVELONE_FUTURES,
-      command: COMMANDS.SUBS,
+      service: EServices.LEVELONE_FUTURES,
+      command: ECommands.SUBS,
       parameters: {
          keys: '/NQ',
       }

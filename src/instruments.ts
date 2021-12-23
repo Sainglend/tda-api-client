@@ -78,7 +78,7 @@ export interface IGetInstrumentsConfig extends TacRequestConfig {
  */
 export async function searchInstruments(config: ISearchInstrumentsConfig): Promise<IFundamental | IBond[] |  IInstrument[]> {
     config.path = `/v1/instruments?symbol=${config.symbol}&projection=${config.projection}` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+        (config.apikey ? `&apikey=${config.apikey}` : "");
     return await apiGet(config);
 }
 
@@ -90,7 +90,7 @@ export async function searchInstruments(config: ISearchInstrumentsConfig): Promi
  */
 export async function searchInstrumentFundamentals(config: ISearchInstrumentsFundamentalsConfig): Promise<IFundamental> {
     config.path = `/v1/instruments?symbol=${config.symbol}&projection=${PROJECTION_TYPE.FUNDAMENTAL}` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+        (config.apikey ? `&apikey=${config.apikey}` : "");
     return await apiGet(config);
 }
 
@@ -101,6 +101,6 @@ export async function searchInstrumentFundamentals(config: ISearchInstrumentsFun
  */
 export async function getInstrument(config: IGetInstrumentsConfig): Promise<IInstrument | IBond> {
     config.path = `/v1/instruments/${config.cusip}` +
-        (config.apikey ? `?apikey=${config.apikey}` : '');
+        (config.apikey ? `?apikey=${config.apikey}` : "");
     return await apiGet(config);
 }

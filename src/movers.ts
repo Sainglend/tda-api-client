@@ -3,19 +3,19 @@
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
 
 export enum INDEX {
-    COMPX = '$COMPX',
-    DJI = '$DJI',
-    SPX = '$SPX.X',
+    COMPX = "$COMPX",
+    DJI = "$DJI",
+    SPX = "$SPX.X",
 }
 
 export enum DIRECTION {
-    UP = 'up',
-    DOWN = 'down',
+    UP = "up",
+    DOWN = "down",
 }
 
 export enum CHANGE {
-    PERCENT = 'percent',
-    VALUE = 'value',
+    PERCENT = "percent",
+    VALUE = "value",
 }
 
 export interface IGetMoversConfig extends TacRequestConfig {
@@ -42,6 +42,6 @@ export async function getMovers(config: IGetMoversConfig): Promise<IMover[]> {
     config.path = `/v1/marketdata/${config.index}/movers` +
         `?direction=${config.direction}` +
         `&change=${config.change}` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+        (config.apikey ? `&apikey=${config.apikey}` : "");
     return await apiGet(config);
 }

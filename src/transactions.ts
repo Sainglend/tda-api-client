@@ -8,16 +8,16 @@ import {IInstrument_Transaction} from "./sharedTypes";
  * @enum
  */
 export enum TRANSACTION_TYPE {
-    ALL = 'ALL',
-    TRADE = 'TRADE',
-    BUY_ONLY = 'BUY_ONLY',
-    SELL_ONLY = 'SELL_ONLY',
-    CASH_IN_OR_CASH_OUT = 'CASH_IN_OR_CASH_OUT',
-    CHECKING = 'CHECKING',
-    DIVIDEND = 'DIVIDEND',
-    INTEREST = 'INTEREST',
-    OTHER = 'OTHER',
-    ADVISOR_FEES = 'ADVISOR_FEES',
+    ALL = "ALL",
+    TRADE = "TRADE",
+    BUY_ONLY = "BUY_ONLY",
+    SELL_ONLY = "SELL_ONLY",
+    CASH_IN_OR_CASH_OUT = "CASH_IN_OR_CASH_OUT",
+    CHECKING = "CHECKING",
+    DIVIDEND = "DIVIDEND",
+    INTEREST = "INTEREST",
+    OTHER = "OTHER",
+    ADVISOR_FEES = "ADVISOR_FEES",
 }
 
 export enum ETransactionType {
@@ -98,10 +98,10 @@ export interface IGetTransactionConfig extends TacRequestConfig {
  */
 export async function getTransactions(config: IGetTransactionsConfig): Promise<ITransaction[]> {
     config.path = `/v1/accounts/${config.accountId}/transactions?` +
-        (config.type ? `type=${config.type}&` : '') +
-        (config.startDate ? `startDate=${config.startDate}&` : '') +
-        (config.endDate ? `endDate=${config.endDate}&` : '') +
-        (config.symbol ? `symbol=${config.symbol}` : '');
+        (config.type ? `type=${config.type}&` : "") +
+        (config.startDate ? `startDate=${config.startDate}&` : "") +
+        (config.endDate ? `endDate=${config.endDate}&` : "") +
+        (config.symbol ? `symbol=${config.symbol}` : "");
 
     return await apiGet(config);
 }

@@ -3,11 +3,11 @@
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
 
 export enum EMarkets {
-    EQUITY = 'EQUITY',
-    OPTION = 'OPTION',
-    FUTURE = 'FUTURE',
-    BOND = 'BOND',
-    FOREX = 'FOREX'
+    EQUITY = "EQUITY",
+    OPTION = "OPTION",
+    FUTURE = "FUTURE",
+    BOND = "BOND",
+    FOREX = "FOREX"
 }
 
 export interface IMarketSession {
@@ -51,7 +51,7 @@ export interface IGetMultiMarketHoursConfig extends TacRequestConfig {
  */
 export async function getSingleMarketHours(config: IGetSingleMarketHoursConfig): Promise<IMarketMarketHours> {
     config.path = `/v1/marketdata/${config.market}/hours?date=${config.date}` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+        (config.apikey ? `&apikey=${config.apikey}` : "");
     return await apiGet(config);
 }
 
@@ -66,6 +66,6 @@ export async function getSingleMarketHours(config: IGetSingleMarketHoursConfig):
 export async function getMultipleMarketHours(config: IGetMultiMarketHoursConfig): Promise<IMarketMarketHours> {
     const markets = Array.isArray(config.markets) ? config.markets.join(",") : config.markets;
     config.path = `/v1/marketdata/hours?markets=${markets}&date=${config.date}` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+        (config.apikey ? `&apikey=${config.apikey}` : "");
     return await apiGet(config);
 }
