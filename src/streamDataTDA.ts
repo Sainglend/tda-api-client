@@ -8,7 +8,6 @@ import {EUserPrincipalFields, getStreamerSubKeys, getUserPrincipals} from "./use
 import {getAccounts} from "./accounts";
 
 export enum EServices {
-
     ADMIN = "ADMIN",
     ACCT_ACTIVITY="ACCT_ACTIVITY",
 
@@ -230,7 +229,8 @@ export class StreamDataTDA extends EventEmitter {
     }
 
     private startHeartbeatChecker(): any {
-        // check every 1 minute
+        const restartDataStream = this.restartDataStream.bind(this);
+        // default check is every minute
         return setInterval(async () => {
             if (this.verbose) console.log(new Date().toISOString() + " hb checker");
             // if the latest heartbeat was more than a minute ago
@@ -239,8 +239,7 @@ export class StreamDataTDA extends EventEmitter {
                 && (this.heartbeats[this.heartbeats.length - 1] < Date.now() - 60_000
                     || (Date.now() - this.streamStartupTime > 60_000 && this.heartbeats.length < 1))
             ) {
-                this.doDataStreamLogin();
-                this.streamRestartsCount++;
+                restartDataStream();
             }
             if (this.heartbeats.length > 100) this.heartbeats = this.heartbeats.slice(-50);
         }, this.retryIntervalSeconds*1000);
@@ -306,6 +305,7 @@ export class StreamDataTDA extends EventEmitter {
     private async handleIncoming(responseString: string, resolve: any): Promise<void> {
         // console.log('handle incoming');
         this.streamLastAlive = moment.utc().valueOf();
+        this.heartbeats.push(this.streamLastAlive);
         let responseObject = null;
         try {
             responseObject = JSON.parse(responseString);
@@ -534,7 +534,7 @@ export class StreamDataTDA extends EventEmitter {
             clearInterval(this.heartbeatCheckerInterval);
         }
         this.once("message", () => { this.clearRetryAttempts(); this.resubscribe(); }); // set this to trigger on successful login
-        this.connectionRetryAttemptTimeouts.push(setTimeout(() => this.doDataStreamLogin(), this.retryIntervalSeconds*1000));
+        this.doDataStreamLogin();
     }
 
     private clearRetryAttempts() {
