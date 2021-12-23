@@ -6,7 +6,7 @@ import {
     TacBaseConfig,
 } from "./tdapiinterface";
 import path from "path";
-import querystring from "querystring";
+import qs from "qs";
 
 
 /**
@@ -21,7 +21,7 @@ export async function refreshAPIAuthorization(config?: TacBaseConfig): Promise<I
     const authConfig = config?.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     return await doAuthRequest(
         authConfig,
-        querystring.encode({
+        qs.stringify({
             "grant_type": "authorization_code",
             "refresh_token": "",
             "access_type": "offline",
@@ -44,7 +44,7 @@ export async function refreshAPIAuthentication(config?: TacBaseConfig): Promise<
     const authConfig = config?.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
     return await doAuthRequest(
         authConfig,
-        querystring.encode({
+        qs.stringify({
             "grant_type": "refresh_token",
             "refresh_token": authConfig.refresh_token,
             "access_type": "",

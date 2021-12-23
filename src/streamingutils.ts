@@ -25,6 +25,7 @@ import {
 } from "./streamingdatatypes";
 import {ICandle} from "./sharedTypes";
 import convert = require("xml-js");
+import qs from "qs";
 
 export default class StreamingUtils {
     static buildNumberArray(start: number, finish: number) : string {
@@ -43,10 +44,7 @@ export default class StreamingUtils {
     }
 
     static jsonToQueryString(json: any): string {
-        return Object.keys(json).map(function(key) {
-            return encodeURIComponent(key) + "=" +
-                encodeURIComponent(json[key]);
-        }).join("&");
+        return qs.stringify(json);
     }
 
     static transformFuturesChartResponse(resp: FuturesChartResponseRough, timestamp: number) : FuturesChartResponse {
