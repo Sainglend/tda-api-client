@@ -2,32 +2,32 @@
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
 
-export enum INDEX {
+export enum EIndex {
     COMPX = "$COMPX",
     DJI = "$DJI",
     SPX = "$SPX.X",
 }
 
-export enum DIRECTION {
+export enum EDirection {
     UP = "up",
     DOWN = "down",
 }
 
-export enum CHANGE {
+export enum EChange {
     PERCENT = "percent",
     VALUE = "value",
 }
 
 export interface IGetMoversConfig extends TacRequestConfig {
-    index: INDEX,
-    direction: DIRECTION,
-    change: CHANGE,
+    index: EIndex,
+    direction: EDirection,
+    change: EChange,
 }
 
 export interface IMover {
     change: number,
     description: string,
-    direction: DIRECTION,
+    direction: EDirection,
     last: number,
     symbol: string,
     totalVolume: number,

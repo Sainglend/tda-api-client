@@ -4,11 +4,9 @@ import {AxiosError, AxiosInstance, AxiosResponse} from "axios";
 import fs from "fs";
 import path from "path";
 import {getAPIAuthentication} from "./authentication";
-import axios = require("axios");
+import axios from "axios";
 
-const axiosDefault = axios.default;
-
-const instance: AxiosInstance = axiosDefault.create({
+const instance: AxiosInstance = axios.create({
     baseURL: "https://api.tdameritrade.com",
     headers: {
         "Accept": "*/*",
@@ -36,8 +34,15 @@ export interface TacRequestConfig extends TacBaseConfig {
     bodyJSON?: any,
 }
 
+/**
+ * Default authFileLocation is evaluated by:
+ *  path.join(process.cwd(), `/config/tdaclientauth.json`);
+ * Default fileAccess is READ_WRITE
+ */
 export interface TacBaseConfig {
     authConfig?: IAuthConfig,
+    authConfigFileLocation?: string,
+    authConfigFileAccess?: "READ_ONLY" | "READ_WRITE" | "NONE",
     verbose?: boolean,
     apikey?: string,
 }
@@ -168,10 +173,12 @@ async function performAxiosRequest(requestConfig: any, expectData: boolean): Pro
     });
 }
 
-async function writeOutAuthResultToFile(authConfig: IAuthConfig, verbose = false): Promise<IAuthConfig> {
+async function writeOutAuthResultToFile(authConfig: IAuthConfig, config?: TacBaseConfig): Promise<IAuthConfig> {
+    if (config?.authConfigFileAccess && ["READ_ONLY", "NONE"].includes(config.authConfigFileAccess)) return authConfig;
+
     return await new Promise<IAuthConfig>((resolve, reject) => {
-        const filePath = path.join(process.cwd(), `/config/tdaclientauth.json`);
-        if (verbose) {
+        const filePath = config?.authConfigFileLocation ?? path.join(process.cwd(), `/config/tdaclientauth.json`);
+        if (config?.verbose) {
             console.log(`writing new auth data to ${filePath}`);
         }
         fs.writeFile(filePath, JSON.stringify(authConfig, null, 2), (err) => {
@@ -181,7 +188,7 @@ async function writeOutAuthResultToFile(authConfig: IAuthConfig, verbose = false
     });
 }
 
-export async function doAuthRequest(authConfig: IAuthConfig, data: any, verbose = false): Promise<IAuthConfig> {
+export async function doAuthRequest(authConfig: IAuthConfig, data: any, config?: TacBaseConfig): Promise<IAuthConfig> {
     const requestConfig = {
         method: "post",
         url: "/v1/oauth2/token",
@@ -202,6 +209,6 @@ export async function doAuthRequest(authConfig: IAuthConfig, data: any, verbose 
 
     authConfig.expires_on = Date.now() + (authConfig.expires_in ? authConfig.expires_in * 1000 : 0);
     Object.assign(authConfig, result);
-    await writeOutAuthResultToFile(authConfig, verbose);
+    await writeOutAuthResultToFile(authConfig, config);
     return authConfig;
 }

@@ -10,6 +10,9 @@ export enum EAssetType {
     MUTUAL_FUND = "MUTUAL_FUND",
     OPTION = "OPTION",
     UNKNOWN = "UNKNOWN",
+    CASH_EQUIVALENT = "CASH_EQUIVALENT",
+    FIXED_INCOME = "FIXED_INCOME",
+    CURRENCY = "CURRENCY",
 }
 
 export interface IInstrument {

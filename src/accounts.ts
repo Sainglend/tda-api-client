@@ -98,6 +98,10 @@ export interface IAccountPosition {
 }
 
 export interface IAccount {
+    securitiesAccount: ISecuritiesAccount
+}
+
+export interface ISecuritiesAccount {
     type: string,
     accountId: string,
     roundTrips: number,

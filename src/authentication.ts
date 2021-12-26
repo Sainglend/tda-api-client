@@ -29,7 +29,7 @@ export async function refreshAPIAuthorization(config?: TacBaseConfig): Promise<I
             "client_id": authConfig.client_id,
             "redirect_uri": authConfig.redirect_uri,
         }),
-        config?.verbose,
+        config,
     );
 }
 
@@ -41,7 +41,18 @@ export async function refreshAPIAuthentication(config?: TacBaseConfig): Promise<
     if (config?.verbose) {
         console.log("refreshing authentication");
     }
-    const authConfig = config?.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
+    let authConfig = config?.authConfig;
+    if (!authConfig && (!config?.authConfigFileAccess || config?.authConfigFileAccess !== "NONE")) {
+        authConfig = require(config?.authConfigFileLocation ?? path.join(process.cwd(), `/config/tdaclientauth.json`));
+    }
+    if (!authConfig) {
+        throw new Error("AuthConfig was not provided or the file was not found");
+    } else if (!authConfig.refresh_token) {
+        throw new Error("AuthConfig does not contain a refresh_token");
+    } else if (!authConfig.client_id) {
+        throw new Error("AuthConfig does not contain a client_id");
+    }
+
     return await doAuthRequest(
         authConfig,
         qs.stringify({
@@ -52,7 +63,7 @@ export async function refreshAPIAuthentication(config?: TacBaseConfig): Promise<
             "client_id": authConfig.client_id,
             "redirect_uri": "",
         }),
-        config?.verbose,
+        config,
     );
 }
 
@@ -63,7 +74,18 @@ export async function refreshAPIAuthentication(config?: TacBaseConfig): Promise<
  * @async
  */
 export async function getAPIAuthentication(config?: TacBaseConfig): Promise<IAuthConfig> {
-    const authConfig: IAuthConfig = config?.authConfig || require(path.join(process.cwd(), `/config/tdaclientauth.json`));
+    let authConfig = config?.authConfig;
+    if (!authConfig && (!config?.authConfigFileAccess || config?.authConfigFileAccess !== "NONE")) {
+        authConfig = require(config?.authConfigFileLocation ?? path.join(process.cwd(), `/config/tdaclientauth.json`));
+    }
+    if (!authConfig) {
+        throw new Error("AuthConfig was not provided or the file was not found");
+    } else if (!authConfig.refresh_token) {
+        throw new Error("AuthConfig does not contain a refresh_token");
+    } else if (!authConfig.client_id) {
+        throw new Error("AuthConfig does not contain a client_id");
+    }
+
     if (!authConfig.expires_on || authConfig.expires_on < Date.now() + (10*60*1000)) {
         return await refreshAPIAuthentication({ ...config, authConfig });
     } else {

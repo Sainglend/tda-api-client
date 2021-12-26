@@ -8,7 +8,7 @@ import {IOptionDeliverable} from "./sharedTypes";
  * @default ALL
  * @enum {string}
  */
-export enum RANGE {
+export enum ERange {
     /** DEFAULT */
     ALL = "ALL",
     /** In-the-money strikes */
@@ -29,7 +29,7 @@ export enum RANGE {
  * @default SINGLE
  * @enum {string}
  */
-export enum STRATEGY {
+export enum EStrategy {
     /** DEFAULT */
     SINGLE = "SINGLE",
     /** allows use of the volatility, underlyingPrice, interestRate, and daysToExpiration params to calculate theoretical values */
@@ -50,7 +50,7 @@ export enum STRATEGY {
  * @default ALL
  * @enum {string}
  */
-export enum CONTRACT_TYPE {
+export enum EContractType {
     /** DEFAULT */
     ALL = "ALL",
     CALL = "CALL",
@@ -61,7 +61,7 @@ export enum CONTRACT_TYPE {
  * @default ALL
  * @enum {string}
  */
-export enum EXPIRATION_MONTH {
+export enum EExpirationMonth {
     /** DEFAULT */
     ALL = "ALL",
     JAN = "JAN",
@@ -82,7 +82,7 @@ export enum EXPIRATION_MONTH {
  * @default ALL
  * @enum {string}
  */
-export enum OPTION_TYPE {
+export enum EOptionType {
     /** DEFAULT */
     ALL = "ALL",
     /** Standard contracts */
@@ -95,7 +95,7 @@ export interface IOptionChain {
     symbol: string,
     status: string,
     underlying: IUnderlying,
-    strategy: STRATEGY,
+    strategy: EStrategy,
     interval: number,
     isDelayed: boolean,
     isIndex: boolean,
@@ -197,11 +197,11 @@ export interface IUnderlying {
 
 export interface IGetOptionChainConfig extends TacRequestConfig {
     symbol: string,
-    contractType?: CONTRACT_TYPE,
-    expMonth?: EXPIRATION_MONTH,
-    optionType?: OPTION_TYPE,
-    strategy?: STRATEGY,
-    range?: RANGE,
+    contractType?: EContractType,
+    expMonth?: EExpirationMonth,
+    optionType?: EOptionType,
+    strategy?: EStrategy,
+    range?: ERange,
     includeQuotes?: boolean,
     fromDate?: string,
     toDate?: string,

@@ -1,29 +1,7 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
 import {apiDelete, apiGet, apiPost, apiPut, IWriteResponse, TacBaseConfig, TacRequestConfig} from "./tdapiinterface";
-import {IInstrument} from "./sharedTypes";
-
-/**
- * Enum for order statuses, to use when retrieving account orders.
- * @enum
- */
-export enum ORDER_STATUS {
-    AWAITING_PARENT_ORDER = "AWAITING_PARENT_ORDER",
-    AWAITING_CONDITION = "AWAITING_CONDITION",
-    AWAITING_MANUAL_REVIEW = "AWAITING_MANUAL_REVIEW",
-    ACCEPTED = "ACCEPTED",
-    AWAITING_UR_OUT = "AWAITING_UR_OUT",
-    PENDING_ACTIVATION = "PENDING_ACTIVATION",
-    QUEUED = "QUEUED",
-    WORKING = "WORKING",
-    REJECTED = "REJECTED",
-    PENDING_CANCEL = "PENDING_CANCEL",
-    CANCELED = "CANCELED",
-    PENDING_REPLACE = "PENDING_REPLACE",
-    REPLACED = "REPLACED",
-    FILLED = "FILLED",
-    EXPIRED = "EXPIRED",
-}
+import {EAssetType, IInstrument} from "./sharedTypes";
 
 /**
  * Replace an existing order by a specified account using the properly formatted orderJSON
@@ -244,16 +222,6 @@ export enum EQuantityType {
     SHARES = "SHARES"
 }
 
-export enum EAssetType {
-    EQUITY,
-    OPTION,
-    INDEX,
-    MUTUAL_FUND,
-    CASH_EQUIVALENT,
-    FIXED_INCOME,
-    CURRENCY,
-}
-
 export interface IOrderLeg {
     orderLegType: EAssetType,
     legId: string, // int64
@@ -276,6 +244,10 @@ export enum EOrderStrategyType {
     TRIGGER = "TRIGGER"
 }
 
+/**
+ * Enum for order statuses, to use when retrieving account orders.
+ * @enum
+ */
 export enum EOrderStatus {
     AWAITING_PARENT_ORDER = "AWAITING_PARENT_ORDER",
     AWAITING_CONDITION = "AWAITING_CONDITION",

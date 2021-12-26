@@ -31,7 +31,7 @@ export enum EPeriod {
  * The number of periods to show. Acceptable values depend on, and are enumerated by, PERIOD_TYPE
  * @enum {number}
  */
-export const EPERIOD_BY_PERIOD_TYPE = {
+export const EPeriodByPeriodType = {
     /** Use these values if you selected PERIOD_TYPE.DAY */
     [EPeriodType.DAY]: {
         /** DEFAULT */
@@ -80,7 +80,7 @@ export enum EFrequencyType {
  * The type of frequency for the price candles. Valid FREQUENCY_TYPEs depend on, and are enumerated by, PERIOD_TYPE
  * @enum {string}
  */
-export const EFREQUENCY_TYPE_BY_PERIOD_TYPE = {
+export const EFrequencyTypeByPeriodType = {
     /** Use these values if you selected PERIOD_TYPE.DAY */
     [EPeriodType.DAY]: {
         /** DEFAULT */
@@ -119,7 +119,7 @@ export enum EFrequency {
  * How many units of the FREQUENCY_TYPE make up a candle. Valid frequencies depend on, and are enumerated by, FREQUENCY_TYPE
  * @enum {number}
  */
-export const EFREQUENCY_BY_FREQUENCY_TYPE = {
+export const EFrequencyByFrequencyType = {
     /** Use these values if you selected FREQUENCY_TYPE.MINUTE */
     [EFrequencyType.MINUTE]: {
         /** DEFAULT */

@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
 import {Arguments} from "yargs";
-import {getTransaction, getTransactions, TRANSACTION_TYPE} from "../transactions";
+import {getTransaction, getTransactions, ETransactionType} from "../transactions";
 
 export default {
     command: "trans <command>",
@@ -26,7 +26,7 @@ export default {
                 {
                     type: {
                         type: "string",
-                        choices: Object.keys(TRANSACTION_TYPE),
+                        choices: Object.keys(ETransactionType),
                     },
                     from: {
                         type: "string",

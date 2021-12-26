@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
 import {Arguments} from "yargs";
-import {cancelOrder, getOrder, getOrdersByQuery, ORDER_STATUS, placeOrder, replaceOrder} from "../orders";
+import {cancelOrder, getOrder, getOrdersByQuery, EOrderStatus, placeOrder, replaceOrder} from "../orders";
 
 export default {
     command: "orders <command>",
@@ -80,7 +80,7 @@ export default {
                     status: {
                         type: "string",
                         desc: "filter by status",
-                        choices: Object.keys(ORDER_STATUS),
+                        choices: Object.keys(EOrderStatus),
                     },
                 },
                 async (argv: Arguments) => {

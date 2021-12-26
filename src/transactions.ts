@@ -7,7 +7,7 @@ import {IInstrument} from "./sharedTypes";
  * Enum for the transaction types
  * @enum
  */
-export enum TRANSACTION_TYPE {
+export enum ETransactionType {
     ALL = "ALL",
     TRADE = "TRADE",
     BUY_ONLY = "BUY_ONLY",
@@ -18,10 +18,6 @@ export enum TRANSACTION_TYPE {
     INTEREST = "INTEREST",
     OTHER = "OTHER",
     ADVISOR_FEES = "ADVISOR_FEES",
-}
-
-export enum ETransactionType {
-    TRADE = "TRADE",
     RECEIVE_AND_DELIVER = "RECEIVE_AND_DELIVER",
     DIVIDEND_OR_INTEREST = "DIVIDEND_OR_INTEREST",
     ACH_RECEIPT = "ACH_RECEIPT",
@@ -81,7 +77,7 @@ export interface ITransaction {
 
 export interface IGetTransactionsConfig extends TacRequestConfig {
     accountId: string | number,
-    type?: TRANSACTION_TYPE,
+    type?: ETransactionType,
     symbol?: string,
     startDate?: string,
     endDate?: string,

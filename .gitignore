@@ -9,3 +9,5 @@ streamingtest.ts
 test*
 dist/*test*
 *indexnew*
+src/test_tdaclientauth.json
+coverage/

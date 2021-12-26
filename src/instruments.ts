@@ -1,9 +1,9 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
-import {IBond, IInstrument} from "./sharedTypes";
+import {EAssetType} from "./sharedTypes";
 
-export enum PROJECTION_TYPE {
+export enum EProjectionType {
     SYMBOL_SEARCH = "symbol-search",
     SYMBOL_REGEX = "symbol-regex",
     DESC_SEARCH = "desc-search",
@@ -11,7 +11,17 @@ export enum PROJECTION_TYPE {
     FUNDAMENTAL = "fundamental",
 }
 
-export interface IFundamental extends IInstrument {
+export interface ISearchInstrumentResult {
+    assetType: EAssetType,
+    cusip: string,
+    symbol: string,
+    description: string,
+    exchange: string,
+    fundamental?: IFundamental,
+    bondPrice?: number,
+}
+
+export interface IFundamental {
     high52: number, // double
     low52: number, // double
     dividendAmount: number, // double
@@ -67,8 +77,12 @@ export interface ISearchInstrumentsConfig extends ISearchInstrumentsFundamentals
     projection: string,
 }
 
-export interface IGetInstrumentsConfig extends TacRequestConfig {
+export interface IGetInstrumentConfig extends TacRequestConfig {
     cusip: string,
+}
+
+export interface ISearchInstrumentResults {
+    [key: string]: ISearchInstrumentResult,
 }
 
 /**
@@ -76,9 +90,11 @@ export interface IGetInstrumentsConfig extends TacRequestConfig {
  * projection (use ENUM) is one of: symbol-search, symbol-regex, desc-search, desc-regex, fundamental.
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
-export async function searchInstruments(config: ISearchInstrumentsConfig): Promise<IFundamental | IBond[] |  IInstrument[]> {
-    config.path = `/v1/instruments?symbol=${config.symbol}&projection=${config.projection}` +
-        (config.apikey ? `&apikey=${config.apikey}` : "");
+export async function searchInstruments(config: ISearchInstrumentsConfig): Promise<ISearchInstrumentResults> {
+    config.path = `/v1/instruments`
+        + `?symbol=${config.symbol}`
+        + `&projection=${config.projection}`
+        + (config.apikey ? `&apikey=${config.apikey}` : "");
     return await apiGet(config);
 }
 
@@ -88,9 +104,11 @@ export async function searchInstruments(config: ISearchInstrumentsConfig): Promi
  * feature seemed less obvious behind the name "searchInstruments"
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
-export async function searchInstrumentFundamentals(config: ISearchInstrumentsFundamentalsConfig): Promise<IFundamental> {
-    config.path = `/v1/instruments?symbol=${config.symbol}&projection=${PROJECTION_TYPE.FUNDAMENTAL}` +
-        (config.apikey ? `&apikey=${config.apikey}` : "");
+export async function searchInstrumentFundamentals(config: ISearchInstrumentsFundamentalsConfig): Promise<ISearchInstrumentResults> {
+    config.path = `/v1/instruments`
+        + `?symbol=${config.symbol}`
+        + `&projection=${EProjectionType.FUNDAMENTAL}`
+        + (config.apikey ? `&apikey=${config.apikey}` : "");
     return await apiGet(config);
 }
 
@@ -99,8 +117,8 @@ export async function searchInstrumentFundamentals(config: ISearchInstrumentsFun
  * List of instruments here: https://www.sec.gov/divisions/investment/13flists.htm
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
-export async function getInstrument(config: IGetInstrumentsConfig): Promise<IInstrument | IBond> {
-    config.path = `/v1/instruments/${config.cusip}` +
-        (config.apikey ? `?apikey=${config.apikey}` : "");
+export async function getInstrument(config: IGetInstrumentConfig): Promise<ISearchInstrumentResult[]> {
+    config.path = `/v1/instruments/${config.cusip}`
+        + (config.apikey ? `?apikey=${config.apikey}` : "");
     return await apiGet(config);
 }

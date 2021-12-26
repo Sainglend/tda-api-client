@@ -1,7 +1,7 @@
 // Copyright (C) 2020-1  Aaron Satterlee
 
 import {Arguments} from "yargs";
-import {CONTRACT_TYPE, EXPIRATION_MONTH, getOptionChain, OPTION_TYPE, RANGE, STRATEGY} from "../optionschain";
+import {EContractType, EExpirationMonth, getOptionChain, EOptionType, ERange, EStrategy} from "../optionschain";
 
 export default {
     command: "options <command>",
@@ -38,7 +38,7 @@ export default {
                         type: "string",
                         desc: "Type of contracts to return in the chain. Can be CALL, PUT, or ALL. Default is ALL.",
                         default: "ALL",
-                        choices: Object.keys(OPTION_TYPE),
+                        choices: Object.keys(EOptionType),
                     },
                     strikeCount: {
                         alias: "n",
@@ -50,7 +50,7 @@ export default {
                         type: "string",
                         desc: "Passing a value returns a Strategy Chain. Possible values are SINGLE, ANALYTICAL (allows use of the volatility, underlyingPrice, interestRate, and daysToExpiration params to calculate theoretical values), COVERED, VERTICAL, CALENDAR, STRANGLE, STRADDLE, BUTTERFLY, CONDOR, DIAGONAL, COLLAR, or ROLL. Default is SINGLE.",
                         default: "SINGLE",
-                        choices: Object.keys(STRATEGY),
+                        choices: Object.keys(EStrategy),
                     },
                     interval: {
                         alias: "i",
@@ -67,21 +67,21 @@ export default {
                         type: "string",
                         desc: "Returns options for the given range, e.g. ITM, OTM, NTM",
                         default: "ALL",
-                        choices: Object.keys(RANGE),
+                        choices: Object.keys(ERange),
                     },
                     expMonth: {
                         alias: "m",
                         type: "string",
                         desc: "Return only options expiring in the specified month",
                         default: "ALL",
-                        choices: Object.keys(EXPIRATION_MONTH),
+                        choices: Object.keys(EExpirationMonth),
                     },
                     optionType: {
                         alias: "type",
                         type: "string",
                         desc: "Type of contracts to return, standard, non-standard, or all",
                         default: "ALL",
-                        choices: Object.keys(OPTION_TYPE),
+                        choices: Object.keys(EOptionType),
                     },
                     volatility: {
                         alias: ["v", "vol"],
@@ -110,11 +110,11 @@ export default {
                     }
                     return getOptionChain({
                         symbol: argv.symbol as string,
-                        contractType: argv.contractType != null ? CONTRACT_TYPE[argv.contractType as keyof typeof CONTRACT_TYPE] : undefined, // has default
-                        expMonth: argv.expMonth != null ? EXPIRATION_MONTH[argv.expMonth as keyof typeof EXPIRATION_MONTH] : undefined, // has default
-                        optionType: argv.optionType != null ? OPTION_TYPE[argv.optionType as keyof typeof OPTION_TYPE] : undefined, // has default
-                        strategy: argv.strategy != null ? STRATEGY[argv.strategy as keyof typeof STRATEGY] : undefined, // has default
-                        range: argv.range != null ? RANGE[argv.range as keyof typeof RANGE] : undefined, // has default
+                        contractType: argv.contractType != null ? EContractType[argv.contractType as keyof typeof EContractType] : undefined, // has default
+                        expMonth: argv.expMonth != null ? EExpirationMonth[argv.expMonth as keyof typeof EExpirationMonth] : undefined, // has default
+                        optionType: argv.optionType != null ? EOptionType[argv.optionType as keyof typeof EOptionType] : undefined, // has default
+                        strategy: argv.strategy != null ? EStrategy[argv.strategy as keyof typeof EStrategy] : undefined, // has default
+                        range: argv.range != null ? ERange[argv.range as keyof typeof ERange] : undefined, // has default
                         includeQuotes: argv.includeQuotes != null ? String(argv.includeQuotes) === "true" : undefined, // has default
                         apikey: (argv.apikey || "") as string,
                         fromDate: (argv.from || "") as string,
