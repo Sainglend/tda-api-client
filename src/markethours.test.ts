@@ -9,7 +9,7 @@ import {
 
 import testAuthConfig from "./test_tdaclientauth.json";
 import path from "path";
-const testauthpath = path.join(".", "test_tdaclientauth.json");
+const testauthpath = path.join(__dirname, "test_tdaclientauth.json");
 
 describe("markethours", () => {
     test("get single market hours", async () => {
@@ -18,7 +18,6 @@ describe("markethours", () => {
         const config: IGetSingleMarketHoursConfig = {
             market: EMarkets.EQUITY,
             date: "2021-12-27",
-            authConfig: testAuthConfig,
             authConfigFileLocation: testauthpath,
         };
         const result: IMarketMarketHours = await getSingleMarketHours(config);
@@ -34,13 +33,10 @@ describe("markethours", () => {
     });
 
     test("get single market hours unauthenticated", async () => {
-        expect(testAuthConfig).toBeTruthy();
-
         const config: IGetSingleMarketHoursConfig = {
             market: EMarkets.EQUITY,
             date: "2021-12-27",
             apikey: testAuthConfig.client_id,
-            authConfigFileLocation: testauthpath,
         };
         const result: IMarketMarketHours = await getSingleMarketHours(config);
         expect(result).toBeTruthy();
@@ -60,7 +56,6 @@ describe("markethours", () => {
         const config: IGetMultiMarketHoursConfig = {
             markets: [EMarkets.EQUITY, EMarkets.BOND, EMarkets.FOREX, EMarkets.OPTION, EMarkets.FUTURE],
             date: "2021-12-27",
-            authConfig: testAuthConfig,
             authConfigFileLocation: testauthpath,
         };
         const result: IMarketMarketHours = await getMultipleMarketHours(config);
@@ -71,13 +66,10 @@ describe("markethours", () => {
     });
 
     test("get multiple market hours unauthenticated", async () => {
-        expect(testAuthConfig).toBeTruthy();
-
         const config: IGetMultiMarketHoursConfig = {
             markets: [EMarkets.EQUITY, EMarkets.BOND, EMarkets.FOREX, EMarkets.OPTION, EMarkets.FUTURE],
             date: "2021-12-27",
             apikey: testAuthConfig.client_id,
-            authConfigFileLocation: testauthpath,
         };
         const result: IMarketMarketHours = await getMultipleMarketHours(config);
         expect(result).toBeTruthy();

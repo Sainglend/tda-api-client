@@ -105,6 +105,41 @@ export interface IOptionChain {
     volatility: number,
     callExpDateMap: {[index:string]: IOptionStrike},
     putExpDateMap: {[index:string]: IOptionStrike},
+    intervals?: number[],
+    monthlyStrategyList?: IOptionMonthlyStrategyListItem[],
+}
+
+export interface IOptionMonthlyStrategyListItem {
+    month: string,
+    year: number,
+    day: number,
+    daysToExp: number,
+    secondaryMonth: string,
+    secondaryYear: number,
+    secondaryDay: number,
+    secondaryDaysToExp: number,
+    type: "C" | "P",
+    secondaryType: "C" | "P",
+    optionStrategyList: IOptionStrategyListItem[]
+}
+
+export interface IOptionStrategyListItem {
+    primaryLeg: IOptionStrategyOption,
+    secondaryLeg: IOptionStrategyOption,
+    strategyStrike: string,
+    strategyBid: number,
+    strategyAsk: number,
+}
+
+export interface IOptionStrategyOption {
+    symbol: string,
+    putCallInd: "C" | "P",
+    description: string,
+    bid: number,
+    ask: number,
+    range: ERange,
+    strikePrice: number,
+    totalVolume: number,
 }
 
 export interface IOptionStrike {
@@ -206,6 +241,7 @@ export interface IGetOptionChainConfig extends TacRequestConfig {
     fromDate?: string,
     toDate?: string,
     strikeCount?: number,
+    strike?: number,
     interval?: number,
     volatility?: number,
     underlyingPrice?: number,
@@ -227,19 +263,20 @@ export async function getOptionChain(config: IGetOptionChainConfig): Promise<IOp
     config.path =  `/v1/marketdata/chains?` +
         `symbol=${config.symbol}` +
         (config.contractType ? `&contractType=${config.contractType}` : "") +
-        (config.expMonth ? `&expMonth=${config.expMonth}` : "") +
-        (config.optionType ? `&optionType=${config.optionType}` : "") +
-        (config.strategy ? `&strategy=${config.strategy}` : "") +
-        (config.range ? `&range=${config.range}` : "") +
+        (config.strikeCount ? `&strikeCount=${config.strikeCount}` : "") +
         (config.includeQuotes ? `&includeQuotes=${config.includeQuotes}` : "") +
+        (config.strategy ? `&strategy=${config.strategy}` : "") +
+        (config.interval ? `&interval=${config.interval}` : "") +
+        (config.strike ? `&strike=${config.strike}` : "") +
+        (config.range ? `&range=${config.range}` : "") +
         (config.fromDate ? `&fromDate=${config.fromDate}` : "") +
         (config.toDate ? `&toDate=${config.toDate}` : "") +
-        (config.strikeCount ? `&strikeCount=${config.strikeCount}` : "") +
-        (config.interval ? `&interval=${config.interval}` : "") +
         (config.volatility ? `&volatility=${config.volatility}` : "") +
         (config.underlyingPrice ? `&underlyingPrice=${config.underlyingPrice}` : "") +
         (config.interestRate ? `&interestRate=${config.interestRate}` : "") +
         (config.daysToExpiration ? `&daysToExpiration=${config.daysToExpiration}` : "") +
+        (config.expMonth ? `&expMonth=${config.expMonth}` : "") +
+        (config.optionType ? `&optionType=${config.optionType}` : "") +
         (config.apikey ? `&apikey=${config.apikey}` : "");
     return await apiGet(config);
 }

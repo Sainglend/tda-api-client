@@ -25,14 +25,10 @@ describe("instruments", () => {
     });
 
     test("search instrument unauthenticated", async () => {
-        expect(testAuthConfig).toBeTruthy();
-
         const config: ISearchInstrumentsConfig = {
             symbol: "MSFT",
             projection: EProjectionType.SYMBOL_SEARCH,
-            authConfig: testAuthConfig,
             apikey: testAuthConfig.client_id,
-            authConfigFileLocation: testauthpath,
         };
         const result = await searchInstruments(config);
         expect(result).toBeTruthy();
@@ -46,7 +42,6 @@ describe("instruments", () => {
         const config: ISearchInstrumentsConfig = {
             symbol: "MSF.*",
             projection: EProjectionType.SYMBOL_REGEX,
-            authConfig: testAuthConfig,
             authConfigFileLocation: testauthpath,
         };
         const result = await searchInstruments(config);
@@ -58,14 +53,10 @@ describe("instruments", () => {
     });
 
     test("search instrument with regex unauthenticated", async () => {
-        expect(testAuthConfig).toBeTruthy();
-
         const config: ISearchInstrumentsConfig = {
             symbol: "MSF.*",
             projection: EProjectionType.SYMBOL_REGEX,
-            authConfig: testAuthConfig,
             apikey: testAuthConfig.client_id,
-            authConfigFileLocation: testauthpath,
         };
         const result = await searchInstruments(config);
         expect(result).toBeTruthy();
@@ -80,7 +71,6 @@ describe("instruments", () => {
 
         const config: ISearchInstrumentsFundamentalsConfig = {
             symbol: "MSFT",
-            authConfig: testAuthConfig,
             authConfigFileLocation: testauthpath,
         };
         const result = await searchInstrumentFundamentals(config);
@@ -91,13 +81,9 @@ describe("instruments", () => {
     });
 
     test("search instrument fundamentals unauthenticated", async () => {
-        expect(testAuthConfig).toBeTruthy();
-
-        const config: ISearchInstrumentsConfig = {
+        const config: ISearchInstrumentsFundamentalsConfig = {
             symbol: "MSFT",
-            authConfig: testAuthConfig,
             apikey: testAuthConfig.client_id,
-            authConfigFileLocation: testauthpath,
         };
         const result = await searchInstrumentFundamentals(config);
         expect(result).toBeTruthy();
@@ -110,7 +96,6 @@ describe("instruments", () => {
         expect(testAuthConfig).toBeTruthy();
         const config: IGetInstrumentConfig = {
             cusip: "594918104",
-            authConfig: testAuthConfig,
             authConfigFileLocation: testauthpath,
         };
         const result = await getInstrument(config);
@@ -120,20 +105,13 @@ describe("instruments", () => {
     });
 
     test("get instrument unauthenticated", async () => {
-        expect(testAuthConfig).toBeTruthy();
         const config: IGetInstrumentConfig = {
             cusip: "594918104",
-            authConfig: testAuthConfig,
-            authConfigFileLocation: testauthpath,
             apikey: testAuthConfig.client_id,
         };
         const result = await getInstrument(config);
         expect(result).toBeTruthy();
         // @ts-ignore
         expect(result[0].symbol).toBe("MSFT");
-    });
-
-    test("searchInstrumentFundamentals", async () => {
-
     });
 });

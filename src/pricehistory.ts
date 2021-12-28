@@ -77,8 +77,10 @@ export enum EFrequencyType {
 }
 
 /**
- * The type of frequency for the price candles. Valid FREQUENCY_TYPEs depend on, and are enumerated by, PERIOD_TYPE
- * @enum {string}
+ * The frquency type for the price candles. Valid {@link EFrequencyType} values
+ * for your chosen period type depend on, and are enumerated by, {@link EPeriodType}
+ * @example
+ * EFrequencyTypeByPeriodType[EPeriodType.DAY].MINUTE
  */
 export const EFrequencyTypeByPeriodType = {
     /** Use these values if you selected PERIOD_TYPE.DAY */
@@ -146,15 +148,33 @@ export const EFrequencyByFrequencyType = {
     },
 };
 
+/**
+ * startDate and endDate are ms since epoch
+ * Provide either period OR (startDate and endDate)
+ */
 export interface IPriceHistoryConfig extends TacRequestConfig {
     symbol: string,
+    // Over what period of time you would like the data. Use period or startDate/endDate to specify time span
     periodType: EPeriodType | string,
+    /**
+     * Can use {@link EFrequencyTypeByPeriodType} to get appropriate values to use
+     */
     frequencyType: EFrequencyType | string,
+    /**
+     * Can use {@link EFrequencyByFrequencyType} to get appropriate values to use
+     */
     frequency: EFrequency | number,
-    getExtendedHours: boolean,
+    // optional
+    getExtendedHours?: boolean,
+    /**
+     * Can use {@link EPeriodByPeriodType} to get appropriate values to use.
+     * Provide either this or startDate and endDate
+     */
     period?: EPeriod | number,
-    startDate?: string,
-    endDate?: string,
+    // ms since epoch. Use this and endDate OR supply period.
+    startDate?: number,
+    // ms since epoch. Use this and startDate OR supply period.
+    endDate?: number,
 }
 
 export interface IPriceHistory {
@@ -164,17 +184,17 @@ export interface IPriceHistory {
 }
 
 /**
- * Get price history info in the form of candles data for a particular symbol. Provide either start and end dates OR period
+ * Get price history info in the form of {@link ICandle} candle data for a particular symbol.
+ * Provide either startDate and endDate OR period in {@link IPriceHistoryConfig} input.
  * Can optionally use apikey for delayed data with an unauthenticated request.
- * Takes as input: symbol, PERIOD_TYPE (ENUM is PERIOD_TYPE), period (ENUM is PERIOD), FREQUENCY_TYPE (ENUM is FREQUENCY_TYPE), frequency (ENUM is FREQUENCY),
- * and optionals are: needExtendedHoursData (true [default] or false), startDate (ms since epoch), endDate (ms since epoch), apikey
+ * See also {@link IPriceHistoryConfig} for details on input.
  */
 export async function getPriceHistory(config: IPriceHistoryConfig): Promise<IPriceHistory> {
     config.path = `/v1/marketdata/${config.symbol}/pricehistory?` +
         `periodType=${config.periodType}` +
         `&frequencyType=${config.frequencyType}` +
         `&frequency=${config.frequency}` +
-        `&needExtendedHoursData=${config.getExtendedHours}` +
+        (config.getExtendedHours != null ? `&needExtendedHoursData=${config.getExtendedHours}` : "") +
         (config.period ? `&period=${config.period}` : "") +
         (config.startDate ? `&startDate=${config.startDate}` : "") +
         (config.endDate ? `&endDate=${config.endDate}` : "") +

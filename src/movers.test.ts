@@ -1,7 +1,7 @@
 import testAuthConfig from "./test_tdaclientauth.json";
 import {EChange, EDirection, EIndex, getMovers, IGetMoversConfig, IMover} from "./movers";
 import path from "path";
-const testauthpath = path.join(".", "test_tdaclientauth.json");
+const testauthpath = path.join(__dirname, "test_tdaclientauth.json");
 
 describe("movers", () => {
     test("get single market hours", async () => {
@@ -14,7 +14,6 @@ describe("movers", () => {
             index: EIndex.SPX,
             direction: EDirection.UP,
             change: EChange.PERCENT,
-            authConfig: testAuthConfig,
             authConfigFileLocation: testauthpath,
         };
         const result: IMover[] = await getMovers(config);
@@ -26,14 +25,12 @@ describe("movers", () => {
         // This test will return an empty array during market closed days
         // TODO: check for whether market is open today
         // TODO: check whether change and direction are required by TDA
-        expect(testAuthConfig).toBeTruthy();
 
         const config: IGetMoversConfig = {
             index: EIndex.SPX,
             direction: EDirection.UP,
             change: EChange.PERCENT,
             apikey: testAuthConfig.client_id,
-            authConfigFileLocation: testauthpath,
         };
         const result: IMover[] = await getMovers(config);
         expect(result).toBeTruthy();

@@ -256,7 +256,7 @@ export type IQuoteResult = Record<string, (IQuoteGeneric | IQuoteETF | IQuoteOpt
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
 export async function getQuote(config: IGetQuoteConfig): Promise<IQuoteResult> {
-    config.path = `/v1/marketdata/${config.symbol}/quotes` +
+    config.path = `/v1/marketdata/${encodeURIComponent(config.symbol)}/quotes` +
         (config.apikey ? `?apikey=${config.apikey}` : "");
 
     return await apiGet(config);
@@ -267,7 +267,7 @@ export async function getQuote(config: IGetQuoteConfig): Promise<IQuoteResult> {
  * e.g. "F,O,TSLA,/ES,EUR/USD,T_021822C25"
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
-export async function getQuotes(config: IGetQuoteConfig): Promise<IQuoteResult[]> {
+export async function getQuotes(config: IGetQuoteConfig): Promise<IQuoteResult> {
     config.path = `/v1/marketdata/quotes?symbol=${config.symbol}` +
         (config.apikey ? `&apikey=${config.apikey}` : "");
 
