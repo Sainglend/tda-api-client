@@ -17,10 +17,10 @@ export enum EAssetType {
 
 export interface IInstrument {
     assetType: EAssetType,
-    cusip: string,
+    cusip?: string,
     symbol: string,
-    description: string,
-    exchange: string,
+    description?: string,
+    exchange?: string,
 }
 
 export type IEquity = IInstrument

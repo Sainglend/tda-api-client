@@ -80,7 +80,7 @@ describe("optionschain", () => {
         });
     });
 
-    test.only("getOptionChain verticals unauthenticated", async () => {
+    test("getOptionChain verticals unauthenticated", async () => {
         expect(testAuthConfig).toBeTruthy();
 
         const config: IGetOptionChainConfig = {

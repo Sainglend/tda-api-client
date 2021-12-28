@@ -2,6 +2,7 @@
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
 import {IInstrument} from "./sharedTypes";
+import {IOrderStrategy} from "./orders";
 
 export interface IAccountBalance {
     accruedInterest: number,
@@ -108,6 +109,7 @@ export interface ISecuritiesAccount {
     isDayTrader: boolean,
     isClosingOnlyRestricted: boolean,
     positions: IAccountPosition[],
+    orderStrategies: IOrderStrategy[],
     initialBalances: IAccountBalance,
     currentBalances: ICurrentBalance,
     projectedBalances: IProjectedBalance,
@@ -115,11 +117,16 @@ export interface ISecuritiesAccount {
 
 export interface IGetAccountConfig extends TacRequestConfig {
     accountId: string | number,
-    fields?: string,
+    fields?: string | EGetAccountField[],
 }
 
 export interface IGetAccountsConfig extends TacRequestConfig {
-    fields?: string
+    fields?: string | EGetAccountField[],
+}
+
+export enum EGetAccountField {
+    POSITIONS = "positions",
+    ORDERS = "orders",
 }
 
 
@@ -128,8 +135,10 @@ export interface IGetAccountsConfig extends TacRequestConfig {
  * Possible values for fields are: positions, orders
  */
 export async function getAccount(config: IGetAccountConfig): Promise<IAccount> {
+    let fields = config.fields;
+    if (Array.isArray(config.fields)) fields = config.fields.join(",");
     config.path = `/v1/accounts/${config.accountId}` +
-        (config.fields ? `?fields=${config.fields}` : "");
+        (fields ? `?fields=${fields}` : "");
     return await apiGet(config);
 }
 
@@ -138,7 +147,9 @@ export async function getAccount(config: IGetAccountConfig): Promise<IAccount> {
  * Possible values for fields are: positions, orders
  */
 export async function getAccounts(config: IGetAccountsConfig): Promise<IAccount[]> {
+    let fields = config.fields;
+    if (Array.isArray(config.fields)) fields = config.fields.join(",");
     config.path = `/v1/accounts` +
-        (config.fields ? `?fields=${config.fields}` : "");
+        (fields ? `?fields=${fields}` : "");
     return await apiGet(config);
 }
