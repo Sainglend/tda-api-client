@@ -1,96 +1,35 @@
 // Copyright (C) 2020-1 Aaron Satterlee
 
-import {apiDelete, apiGet, apiPost, apiPut, IWriteResponse, TacBaseConfig, TacRequestConfig} from "./tdapiinterface";
+import {apiDelete, apiGet, apiPost, apiPut, IWriteResponse, TacRequestConfig} from "./tdapiinterface";
 import {EAssetType, IInstrument} from "./sharedTypes";
 
-/**
- * Replace an existing order by a specified account using the properly formatted orderJSON
- * The new order number can be parsed from the location property on the return object
- */
-export async function replaceOrder(config: any): Promise<IWriteResponse> {
-    config.bodyJSON = config.orderJSON;
-    config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
-
-    return await apiPut(config);
+export interface IReplaceOrderConfig extends IPlaceOrderConfig {
+    orderId: string | number,
 }
 
-/**
- * Place a new order for a specified account using the properly formatted orderJSON.
- * The order number can be parsed from the url returned in the location property.
- */
-export async function placeOrder(config: IPlaceOrderConfig): Promise<IWriteResponse> {
-    return await apiPost({
-        ...config,
-        bodyJSON: config.orderJSON,
-        path: `/v1/accounts/${config.accountId}/orders`,
-    });
-}
-
-export interface IPlaceOrderConfig extends TacBaseConfig {
+export interface IPlaceOrderConfig extends TacRequestConfig {
     accountId: string | number,
     orderJSON: any,
 }
 
-/**
- * Get all orders for a specified account, possibly filtered by time and order status
- * Takes accountId, and optionally: maxResults, fromEnteredTime, toEnteredTime
- * (times must either both be included or omitted), status (ENUM is ORDER_STATUS)
- */
-export async function getOrdersByAccount(config: any): Promise<IOrderGet[]> {
-    config.path = `/v1/accounts/${config.accountId}/orders?` +
-        (config.maxResults ? `maxResults=${config.maxResults}&` : "") +
-        (config.fromEnteredTime ? `fromEnteredTime=${config.fromEnteredTime}&` : "") +
-        (config.toEnteredTime ? `toEnteredTime=${config.toEnteredTime}&` : "") +
-        (config.status ? `status=${config.status}` : "");
-
-    return await apiGet(config);
+export interface IOrdersByAccountConfig extends IOrderSearchConfig {
+    accountId: string | number,
 }
 
-/**
- * Get all orders for all linked accounts, or just a specified account if config.accountId is provided, possibly filtered by time and order status
- * @param {Object} config - takes optional arguments: accountId, maxResults,
- * fromEnteredTime, toEnteredTime (times must either both be included or omitted), status (ENUM is ORDER_STATUS)
- * @returns {Promise<Object>} api GET result
- * @async
- */
-export async function getOrdersByQuery(config: any): Promise<IOrderGet[]> {
-    config.path = `/v1/orders?` +
-        (config.accountId ? `accountId=${config.accountId}&` : "") +
-        (config.maxResults ? `maxResults=${config.maxResults}&` : "") +
-        (config.fromEnteredTime ? `fromEnteredTime=${config.fromEnteredTime}&` : "") +
-        (config.toEnteredTime ? `toEnteredTime=${config.toEnteredTime}&` : "") +
-        (config.status ? `status=${config.status}` : "");
-
-    return await apiGet(config);
+export interface IOrdersByQueryConfig extends IOrderSearchConfig {
+    accountId?: string | number,
 }
 
-/**
- * Get a specific order for a sepecific account
- * @param {Object} config - takes accountId, orderId
- * @returns {Promise<Object>} api GET result
- * @async
- */
-export async function getOrder(config: IGetOrderConfig): Promise<IOrderGet> {
-    config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
-
-    return await apiGet(config);
+interface IOrderSearchConfig extends TacRequestConfig {
+    maxResults?: number,
+    fromEnteredTime?: string, // yyyy-MM-dd
+    toEnteredTime?: string, // yyyy-MM-dd
+    status?: EOrderStatus,
 }
 
-export interface IGetOrderConfig extends TacRequestConfig {
+export interface IGenericOrderConfig extends TacRequestConfig {
     accountId: string | number,
     orderId: string | number
-}
-
-/**
- * Cancel an order that was placed by the specified account
- * @param {Object} config - takes accountId, orderId
- * @returns {Promise<Object>} api DELETE result
- * @async
- */
-export async function cancelOrder(config: any): Promise<any> {
-    config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
-
-    return await apiDelete(config);
 }
 
 export enum EOrderSession {
@@ -223,13 +162,13 @@ export enum EQuantityType {
 }
 
 export interface IOrderLeg {
-    orderLegType: EAssetType,
-    legId: string, // int64
+    orderLegType?: EAssetType,
+    legId?: string, // int64
     instrument: IInstrument,
     instruction: EOrderInstruction,
-    positionEffect: EPositionEffect,
+    positionEffect?: EPositionEffect,
     quantity: number, // double
-    quantityType: EQuantityType
+    quantityType?: EQuantityType
 }
 
 export enum ESpecialInstruction {
@@ -291,7 +230,7 @@ export interface IOrderActivity {
     executionLegs: IExecutionLeg[]
 }
 
-export type IExecution = IOrderActivity
+export type IExecution = IOrderActivity;
 
 export interface IOrderGet {
     session: EOrderSession,
@@ -336,37 +275,171 @@ export interface IOrderStrategy {
     session: EOrderSession,
     duration: EOrderDuration,
     orderType: EOrderType,
-    cancelTime: IOrderTime,
-    complexOrderStrategyType: EComplexOrderStrategyType,
-    quantity: number, // double,
-    filledQuantity: number, // double
-    remainingQuantity: number, // double
-    requestedDestination: EExchange,
-    destinationLinkName: string,
-    releaseTime: string // date-time
-    stopPrice: number // double
-    stopPriceLinkBasis: EPriceLinkBasis,
-    stopPriceLinkType: EPriceLinkType,
-    stopPriceOffset: number, // double
-    stopType: EStopType,
-    priceLinkBasis: EPriceLinkBasis,
-    priceLinkType: EPriceLinkType,
-    price: number, // doubleEA
-    taxLotMethod: ETaxLotMethod,
-    orderLegCollection: IOrderLeg[],
-    activationPrice: number, // double
-    specialInstruction: ESpecialInstruction,
     orderStrategyType: EOrderStrategyType,
-    orderId: number, // int64
-    cancelable: boolean, // default false
-    editable: boolean, // default false
-    status: EOrderStatus,
-    enteredTime: string, // date-time
-    closeTime: string, // date-time
-    tag: string,
-    accountId: number, // int64
-    orderActivityCollection: IOrderActivity[],
-    replacingOrderCollection: IOrderStrategy[],
-    childOrderStrategies: IOrderStrategy[],
-    statusDescription: string
+    cancelTime?: IOrderTime,
+    complexOrderStrategyType?: EComplexOrderStrategyType,
+    quantity?: number, // double,
+    filledQuantity?: number, // double
+    remainingQuantity?: number, // double
+    requestedDestination?: EExchange,
+    destinationLinkName?: string,
+    releaseTime?: string // date-time
+    stopPrice?: number // double
+    stopPriceLinkBasis?: EPriceLinkBasis,
+    stopPriceLinkType?: EPriceLinkType,
+    stopPriceOffset?: number, // double
+    stopType?: EStopType,
+    priceLinkBasis?: EPriceLinkBasis,
+    priceLinkType?: EPriceLinkType,
+    price?: number, // doubleEA
+    taxLotMethod?: ETaxLotMethod,
+    orderLegCollection?: IOrderLeg[],
+    activationPrice?: number, // double
+    specialInstruction?: ESpecialInstruction,
+    orderId?: number, // int64
+    cancelable?: boolean, // default false
+    editable?: boolean, // default false
+    status?: EOrderStatus,
+    enteredTime?: string, // date-time
+    closeTime?: string, // date-time
+    tag?: string,
+    accountId?: number, // int64
+    orderActivityCollection?: IOrderActivity[],
+    replacingOrderCollection?: IOrderStrategy[],
+    childOrderStrategies?: IOrderStrategy[],
+    statusDescription?: string
+}
+
+/**
+ * Replace an existing order by a specified account using the properly formatted orderJSON
+ * The new order number can be parsed from the location property on the return object
+ */
+export async function replaceOrder(config: IReplaceOrderConfig): Promise<IWriteResponse> {
+    config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
+    config.bodyJSON = config.orderJSON;
+    return await apiPut(config);
+}
+
+/**
+ * Place a new order for a specified account using the properly formatted orderJSON.
+ * The order number can be parsed from the url returned in the location property.
+ */
+export async function placeOrder(config: IPlaceOrderConfig): Promise<IWriteResponse> {
+    return await apiPost({
+        ...config,
+        bodyJSON: config.orderJSON,
+        path: `/v1/accounts/${config.accountId}/orders`,
+    });
+}
+
+/**
+ * Get all orders for a specified account, possibly filtered by time and order status
+ * Takes accountId, and optionally: maxResults, fromEnteredTime, toEnteredTime
+ * (times must either both be included or omitted), status (ENUM is ORDER_STATUS)
+ */
+export async function getOrdersByAccount(config: any): Promise<IOrderGet[]> {
+    config.path = `/v1/accounts/${config.accountId}/orders?` +
+        (config.maxResults ? `maxResults=${config.maxResults}&` : "") +
+        (config.fromEnteredTime ? `fromEnteredTime=${config.fromEnteredTime}&` : "") +
+        (config.toEnteredTime ? `toEnteredTime=${config.toEnteredTime}&` : "") +
+        (config.status ? `status=${config.status}` : "");
+
+    return await apiGet(config);
+}
+
+/**
+ * Get all orders for all linked accounts, or just a specified account if config.accountId is provided, possibly filtered by time and order status
+ * @param {Object} config - takes optional arguments: accountId, maxResults,
+ * fromEnteredTime, toEnteredTime (times must either both be included or omitted), status (ENUM is ORDER_STATUS)
+ * @returns {Promise<Object>} api GET result
+ * @async
+ */
+export async function getOrdersByQuery(config: IOrdersByQueryConfig): Promise<IOrderGet[]> {
+    config.path = `/v1/orders?` +
+        (config.accountId ? `accountId=${config.accountId}&` : "") +
+        (config.maxResults ? `maxResults=${config.maxResults}&` : "") +
+        (config.fromEnteredTime ? `fromEnteredTime=${config.fromEnteredTime}&` : "") +
+        (config.toEnteredTime ? `toEnteredTime=${config.toEnteredTime}&` : "") +
+        (config.status ? `status=${config.status}` : "");
+
+    return await apiGet(config);
+}
+
+/**
+ * Get a specific order for a sepecific account
+ * @param {Object} config - takes accountId, orderId
+ * @returns {Promise<Object>} api GET result
+ * @async
+ */
+export async function getOrder(config: IGenericOrderConfig): Promise<IOrderGet> {
+    config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
+    return await apiGet(config);
+}
+
+/**
+ * Cancel an order that was placed by the specified account
+ * @param {Object} config - takes accountId, orderId
+ * @returns {Promise<Object>} api DELETE result
+ * @async
+ */
+export async function cancelOrder(config: IGenericOrderConfig): Promise<any> {
+    config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
+    return await apiDelete(config);
+}
+
+export function generateBuyLimitEquityOrder(
+    {
+        symbol,
+        price,
+        quantity,
+    } : {
+        symbol: string,
+        price: number,
+        quantity: number
+    }): IOrderStrategy
+{
+    return {
+        orderType: EOrderType.LIMIT,
+        price,
+        session: EOrderSession.NORMAL,
+        duration: EOrderDuration.DAY,
+        orderStrategyType: EOrderStrategyType.SINGLE,
+        orderLegCollection: [
+            {
+                instruction: EOrderInstruction.BUY,
+                quantity,
+                instrument: {
+                    symbol,
+                    assetType: EAssetType.EQUITY,
+                },
+            },
+        ],
+    };
+}
+
+export function generateBuyMarketEquityOrder(
+    {
+        symbol,
+        quantity,
+    } : {
+        symbol: string,
+        quantity: number
+    }): IOrderStrategy
+{
+    return {
+        orderType: EOrderType.MARKET,
+        session: EOrderSession.NORMAL,
+        duration: EOrderDuration.DAY,
+        orderStrategyType: EOrderStrategyType.SINGLE,
+        orderLegCollection: [
+            {
+                instruction: EOrderInstruction.BUY,
+                quantity,
+                instrument: {
+                    symbol,
+                    assetType: EAssetType.EQUITY,
+                },
+            },
+        ],
+    };
 }

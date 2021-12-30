@@ -4,7 +4,7 @@ import {AxiosError, AxiosInstance, AxiosResponse} from "axios";
 import fs from "fs";
 import path from "path";
 import {getAPIAuthentication} from "./authentication";
-import axios from "axios";
+import axios, {AxiosRequestConfig, Method} from "axios";
 
 const instance: AxiosInstance = axios.create({
     baseURL: "https://api.tdameritrade.com",
@@ -103,10 +103,10 @@ export async function apiPost(config: TacRequestConfig): Promise<IWriteResponse>
     return await apiWriteResource(config, "post", false);
 }
 
-async function apiNoWriteResource(config: TacRequestConfig, method: string, skipAuth: boolean): Promise<any> {
-    const requestConfig = {
-        method: method,
-        url: config.path,
+async function apiNoWriteResource(config: TacRequestConfig, method: Method, skipAuth: boolean): Promise<any> {
+    const requestConfig: AxiosRequestConfig = {
+        method,
+        url: config.path ?? "",
         headers: {},
     };
 
@@ -120,7 +120,7 @@ async function apiNoWriteResource(config: TacRequestConfig, method: string, skip
     return await performAxiosRequest(requestConfig, true);
 }
 
-async function apiWriteResource(config: any, method: string, skipAuth: boolean): Promise<IWriteResponse> {
+async function apiWriteResource(config: TacRequestConfig, method: Method, skipAuth: boolean): Promise<IWriteResponse> {
     const requestConfig = {
         method: method,
         url: config.path,
@@ -140,7 +140,7 @@ async function apiWriteResource(config: any, method: string, skipAuth: boolean):
     return await performAxiosRequest(requestConfig, false);
 }
 
-async function performAxiosRequest(requestConfig: any, expectData: boolean): Promise<IWriteResponse> {
+async function performAxiosRequest(requestConfig: AxiosRequestConfig, expectData: boolean): Promise<IWriteResponse> {
     return await new Promise<IWriteResponse>((res, rej) => {
         instance.request(requestConfig)
             .then(function (response: AxiosResponse) {
@@ -158,7 +158,7 @@ async function performAxiosRequest(requestConfig: any, expectData: boolean): Pro
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    rej(`ERROR [${error.response.status}]: ${JSON.stringify(error.response.data)}`);
+                    rej(`ERROR [${error.response.status}] [${requestConfig.method} ${requestConfig.url}]: ${JSON.stringify(error.response.data)}`);
                 } else if (error.request) {
                     // The request was made but no response was received
                     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
@@ -189,7 +189,7 @@ async function writeOutAuthResultToFile(authConfig: IAuthConfig, config?: TacBas
 }
 
 export async function doAuthRequest(authConfig: IAuthConfig, data: any, config?: TacBaseConfig): Promise<IAuthConfig> {
-    const requestConfig = {
+    const requestConfig: AxiosRequestConfig = {
         method: "post",
         url: "/v1/oauth2/token",
         data,
