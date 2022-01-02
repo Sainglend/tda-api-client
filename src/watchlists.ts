@@ -47,18 +47,18 @@ export interface IWatchlist {
 
 export interface IWatchlistReplacement {
     name: string,
-    watchlistId: string,
+    watchlistId?: string,
     watchlistItems: IWatchlistReplacementItem[],
 }
 
 export interface IWatchlistUpdate {
     name: string,
-    watchlistId: string,
+    watchlistId?: string,
     watchlistItems: ICreateWatchlistItem[],
 }
 
-export interface IWatchlistReplacementItem extends  ICreateWatchlistItem {
-    sequenceId: number,
+export interface IWatchlistReplacementItem extends ICreateWatchlistItem {
+    sequenceId?: number,
 }
 
 export interface ICreateWatchlistConfig extends TacRequestConfig {
@@ -86,7 +86,7 @@ export interface IWatchlistReplaceConfig extends TacRequestConfig {
     watchlistId: string,
 }
 
-export interface IWatchlistPatchConfig extends TacRequestConfig {
+export interface IWatchlistUpdateConfig extends TacRequestConfig {
     watchlistJSON: IWatchlistUpdate,
     accountId: string | number,
     watchlistId: string,
@@ -160,9 +160,17 @@ export async function replaceWatchlist(config: IWatchlistReplaceConfig): Promise
  * Append/update in place a watchlist having watchlistId for a specified accountId using watchlistJSON
  * The location will be returned in the return object but the watchlist id is unchanged
  */
-export async function updateWatchlist(config: IWatchlistPatchConfig): Promise<IWriteResponse> {
+export async function updateWatchlist(config: IWatchlistUpdateConfig): Promise<IWriteResponse> {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
     return await apiPatch(config);
+}
+
+export function createBasicWatchlistItem(symbol: string): ICreateWatchlistItem {
+    return {
+        instrument: {
+            symbol,
+        },
+    };
 }

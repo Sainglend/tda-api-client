@@ -150,7 +150,7 @@ async function performAxiosRequest(requestConfig: AxiosRequestConfig, expectData
                     res({
                         data: response.data,
                         statusCode: response.status,
-                        location: response.headers.location,
+                        location: response.headers.location || response.headers["content-location"],
                     });
                 }
             })

@@ -66,15 +66,13 @@ export enum EPrefAuthTokenTimeout {
     EIGHT_HOURS = "EIGHT_HOURS",
 }
 
-export interface Preferences extends PreferencesUpdate {
+export interface IPreferences extends IPreferencesUpdate {
     directOptionsRouting: boolean,
     directEquityRouting: boolean,
 }
 
-export interface PreferencesUpdate {
+export interface IPreferencesUpdate {
     expressTrading: boolean,
-    directOptionsRouting: boolean,
-    directEquityRouting: boolean,
     defaultEquityOrderLegInstruction: EPrefOrderLegInstruction,
     defaultEquityOrderType: EPrefOrderType,
     defaultEquityOrderPriceLinkType: EPrefPriceLinkType,
@@ -96,12 +94,12 @@ export interface IGetStreamerKeysConfig extends TacRequestConfig {
     accountIds?: string,
 }
 
-export interface SubKey {
+export interface ISubKey {
     key: string,
 }
 
-export interface StreamerSubKeys {
-    keys: SubKey[],
+export interface IStreamerSubKeys {
+    keys: ISubKey[],
 }
 
 export interface IStreamerInfo {
@@ -139,7 +137,7 @@ export interface IUserAccountSummmary {
     company: string,
     segment: string,
     surrogateIds: {[index:string]: string},
-    preferences: Preferences,
+    preferences: IPreferences,
     acl: string,
     authorizations: IAccountAuthorizations,
 }
@@ -164,7 +162,7 @@ export enum EOptionsTradingLevel {
     FULL = "FULL",
 }
 
-export interface UserPrincipal {
+export interface IUserPrincipal {
     authToken: string,
     userId: string,
     userCdDomainId: string,
@@ -177,7 +175,7 @@ export interface UserPrincipal {
     streamerInfo: IStreamerInfo,
     professionalStatus: EProfessionalStatus,
     quotes: IQuotesTiming,
-    streamerSubscriptionKeys: StreamerSubKeys,
+    streamerSubscriptionKeys: IStreamerSubKeys,
     accounts: IUserAccountSummmary[],
 }
 
@@ -193,14 +191,14 @@ export enum EUserPrincipalFields {
 }
 
 export interface IUpdateUserPrefConfig extends TacRequestConfig {
-    preferences: PreferencesUpdate,
+    preferences: IPreferencesUpdate,
     accountId: string | number,
 }
 
 /**
  * Get user preferences for a given accountId
  */
-export async function getUserPreferences(config: IGetUserPreferencesConfig): Promise<Preferences> {
+export async function getUserPreferences(config: IGetUserPreferencesConfig): Promise<IPreferences> {
     config.path = `/v1/accounts/${config.accountId}/preferences`;
 
     return await apiGet(config);
@@ -209,7 +207,7 @@ export async function getUserPreferences(config: IGetUserPreferencesConfig): Pro
 /**
  * Get streamer subscription keys for given accountIds as a comma-separated list: 123,345
  */
-export async function getStreamerSubKeys(config: IGetStreamerKeysConfig): Promise<StreamerSubKeys> {
+export async function getStreamerSubKeys(config: IGetStreamerKeysConfig): Promise<IStreamerSubKeys> {
     config.path = `/v1/userprincipals/streamersubscriptionkeys?accountIds=${(config.accountIds ?? "")}`;
 
     return await apiGet(config);
@@ -229,7 +227,7 @@ export async function updateUserPreferences(config: IUpdateUserPrefConfig): Prom
  * Get user info. Return additional fields with the config.fields param, a comma-separated string of up to 4 fields:
  * streamerSubscriptionKeys, streamerConnectionInfo, preferences, surrogateIds
  */
-export async function getUserPrincipals(config: IGetUserPrincipalsConfig): Promise<UserPrincipal> {
+export async function getUserPrincipals(config: IGetUserPrincipalsConfig): Promise<IUserPrincipal> {
     const fields = Array.isArray(config.fields) ? config.fields.join(",") : config.fields;
     config.path = `/v1/userprincipals?fields=${(fields ?? "")}`;
 
