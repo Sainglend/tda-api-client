@@ -694,3 +694,113 @@ export interface AcctActivity extends StringIndexed {
     key: string, // subscription key
     sequence: number, // sequence number
 }
+
+export enum EServices {
+    ADMIN = "ADMIN",
+    ACCT_ACTIVITY="ACCT_ACTIVITY",
+
+    ACTIVES_NASDAQ="ACTIVES_NASDAQ",
+    ACTIVES_NYSE="ACTIVES_NYSE",
+    ACTIVES_OTCBB="ACTIVES_OTCBB",
+    ACTIVES_OPTIONS="ACTIVES_OPTIONS",
+
+    FOREX_BOOK="FOREX_BOOK",
+    FUTURES_BOOK="FUTURES_BOOK",
+    LISTED_BOOK="LISTED_BOOK",
+    NASDAQ_BOOK="NASDAQ_BOOK",
+    OPTIONS_BOOK="OPTIONS_BOOK",
+    FUTURES_OPTIONS_BOOK="FUTURES_OPTIONS_BOOK",
+
+    CHART_EQUITY="CHART_EQUITY",
+
+    CHART_FUTURES = "CHART_FUTURES",
+    CHART_HISTORY_FUTURES = "CHART_HISTORY_FUTURES",
+    QUOTE="QUOTE",
+    LEVELONE_FUTURES = "LEVELONE_FUTURES",
+    LEVELONE_FOREX = "LEVELONE_FOREX",
+    LEVELONE_FUTURES_OPTIONS="LEVELONE_FUTURES_OPTIONS",
+    OPTION="OPTION",
+    LEVELTWO_FUTURES="LEVELTWO_FUTURES",
+
+    NEWS_HEADLINE="NEWS_HEADLINE",
+    NEWS_STORY="NEWS_STORY",
+    NEWS_HEADLINE_LIST="NEWS_HEADLINE_LIST",
+
+    STREAMER_SERVER="STREAMER_SERVER",
+
+    TIMESALE_EQUITY="TIMESALE_EQUITY",
+    TIMESALE_FUTURES="TIMESALE_FUTURES",
+    TIMESALE_FOREX="TIMESALE_FOREX",
+    TIMESALE_OPTIONS="TIMESALE_OPTIONS",
+}
+
+export enum EChartHistoryFuturesFrequency {
+    MINUTE_ONE="m1",
+    MINUTE_FIVE="m5",
+    MINUTE_TEN="m10",
+    MINUTE_THIRTY="m30",
+    HOUR_ONE="h1",
+    DAY_ONE="d1",
+    WEEK_ONE="w1",
+    MONTH_ONE="n1",
+}
+
+export enum EResponseCodes {
+    ACCT_ACTIVITY="ACCT_ACTIVITY",
+    ADMIN="ADMIN",
+    ACTIVES_NASDAQ="ACTIVES_NASDAQ",
+    ACTIVES_NYSE="ACTIVES_NYSE",
+    ACTIVES_OTCBB="ACTIVES_OTCBB",
+    ACTIVES_OPTIONS="ACTIVES_OPTIONS",
+}
+
+export enum ECommands {
+    QOS="QOS",
+    LOGIN="LOGIN",
+    LOGOUT="LOGOUT",
+    SUBS="SUBS",
+    GET="GET",
+    UNSUBS="UNSUBS",
+    ADD="ADD",
+    VIEW="VIEW",
+    STREAM="STREAM",
+}
+
+export enum EQosLevels {
+    L0_EXPRESS_500MS = 0,
+    L1_REALTIME_750MS = 1,
+    L2_FAST_1000MS = 2,
+    L3_MODERATE_1500MS = 3,
+    L4_SLOW_3000MS = 4,
+    L5_DELAYED_5000MS = 5,
+}
+
+export interface IStreamNotify {
+    heartbeat: string, // timestamp as string
+}
+
+export interface IStreamResponse {
+    command: ECommands,
+    content: any,
+    requestId: string,
+    service: EServices,
+    timestamp: number,
+}
+
+export interface ILoginLogoutResponse {
+    code: EAdminResponseCode,
+    // streamer server id, or "SUCCESS" for logout
+    msg: string,
+}
+
+export enum EAdminResponseCode {
+    SUCCESS = 0,
+    LOGIN_DENIED = 3,
+}
+
+export interface IResponseObject {
+    response?: IStreamResponse[],
+    notify?: IStreamNotify[],
+    data?: any[],
+    snapshot?: any[],
+}

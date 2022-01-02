@@ -17,7 +17,7 @@ describe("markethours", () => {
 
         const config: IGetSingleMarketHoursConfig = {
             market: EMarkets.EQUITY,
-            date: "2021-12-27",
+            date: new Date().toISOString().substring(0, 10),
             authConfigFileLocation: testauthpath,
         };
         const result: IMarketMarketHours = await getSingleMarketHours(config);
@@ -35,7 +35,7 @@ describe("markethours", () => {
     test("get single market hours unauthenticated", async () => {
         const config: IGetSingleMarketHoursConfig = {
             market: EMarkets.EQUITY,
-            date: "2021-12-27",
+            date: new Date().toISOString().substring(0, 10),
             apikey: testAuthConfig.client_id,
         };
         const result: IMarketMarketHours = await getSingleMarketHours(config);
@@ -55,7 +55,7 @@ describe("markethours", () => {
 
         const config: IGetMultiMarketHoursConfig = {
             markets: [EMarkets.EQUITY, EMarkets.BOND, EMarkets.FOREX, EMarkets.OPTION, EMarkets.FUTURE],
-            date: "2021-12-27",
+            date: new Date().toISOString().substring(0, 10),
             authConfigFileLocation: testauthpath,
         };
         const result: IMarketMarketHours = await getMultipleMarketHours(config);
@@ -68,7 +68,7 @@ describe("markethours", () => {
     test("get multiple market hours unauthenticated", async () => {
         const config: IGetMultiMarketHoursConfig = {
             markets: [EMarkets.EQUITY, EMarkets.BOND, EMarkets.FOREX, EMarkets.OPTION, EMarkets.FUTURE],
-            date: "2021-12-27",
+            date: new Date().toISOString().substring(0, 10),
             apikey: testAuthConfig.client_id,
         };
         const result: IMarketMarketHours = await getMultipleMarketHours(config);

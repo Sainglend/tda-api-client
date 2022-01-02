@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "prepublish": "tsc",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand --bail --forceExit",
     "lint": "eslint src --ext .ts,.js",
     "lint:fix": "eslint --fix src --ext .ts,.js"
   },

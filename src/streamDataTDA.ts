@@ -1,95 +1,17 @@
 import {IAuthConfig} from "./tdapiinterface";
 import WebSocket from "ws";
 import moment from "moment";
-import {StreamingResponseData} from "./streamingdatatypes";
+import {
+    EChartHistoryFuturesFrequency,
+    ECommands,
+    EQosLevels,
+    EServices, IStreamNotify,
+    StreamingResponseData,
+} from "./streamingdatatypes";
 import StreamingUtils from "./streamingutils";
 import EventEmitter from "events";
 import {EUserPrincipalFields, getStreamerSubKeys, getUserPrincipals} from "./userinfo";
 import {getAccounts} from "./accounts";
-
-export enum EServices {
-    ADMIN = "ADMIN",
-    ACCT_ACTIVITY="ACCT_ACTIVITY",
-
-    ACTIVES_NASDAQ="ACTIVES_NASDAQ",
-    ACTIVES_NYSE="ACTIVES_NYSE",
-    ACTIVES_OTCBB="ACTIVES_OTCBB",
-    ACTIVES_OPTIONS="ACTIVES_OPTIONS",
-
-    FOREX_BOOK="FOREX_BOOK",
-    FUTURES_BOOK="FUTURES_BOOK",
-    LISTED_BOOK="LISTED_BOOK",
-    NASDAQ_BOOK="NASDAQ_BOOK",
-    OPTIONS_BOOK="OPTIONS_BOOK",
-    FUTURES_OPTIONS_BOOK="FUTURES_OPTIONS_BOOK",
-
-    CHART_EQUITY="CHART_EQUITY",
-
-    CHART_FUTURES = "CHART_FUTURES",
-    CHART_HISTORY_FUTURES = "CHART_HISTORY_FUTURES",
-    QUOTE="QUOTE",
-    LEVELONE_FUTURES = "LEVELONE_FUTURES",
-    LEVELONE_FOREX = "LEVELONE_FOREX",
-    LEVELONE_FUTURES_OPTIONS="LEVELONE_FUTURES_OPTIONS",
-    OPTION="OPTION",
-    LEVELTWO_FUTURES="LEVELTWO_FUTURES",
-
-    NEWS_HEADLINE="NEWS_HEADLINE",
-    NEWS_STORY="NEWS_STORY",
-    NEWS_HEADLINE_LIST="NEWS_HEADLINE_LIST",
-
-    STREAMER_SERVER="STREAMER_SERVER",
-
-    TIMESALE_EQUITY="TIMESALE_EQUITY",
-    TIMESALE_FUTURES="TIMESALE_FUTURES",
-    TIMESALE_FOREX="TIMESALE_FOREX",
-    TIMESALE_OPTIONS="TIMESALE_OPTIONS",
-}
-
-export enum EChartHistoryFuturesFrequency {
-    MINUTE_ONE="m1",
-    MINUTE_FIVE="m5",
-    MINUTE_TEN="m10",
-    MINUTE_THIRTY="m30",
-    HOUR_ONE="h1",
-    DAY_ONE="d1",
-    WEEK_ONE="w1",
-    MONTH_ONE="n1",
-}
-
-export enum EResponseCodes {
-    ACCT_ACTIVITY="ACCT_ACTIVITY",
-    ADMIN="ADMIN",
-    ACTIVES_NASDAQ="ACTIVES_NASDAQ",
-    ACTIVES_NYSE="ACTIVES_NYSE",
-    ACTIVES_OTCBB="ACTIVES_OTCBB",
-    ACTIVES_OPTIONS="ACTIVES_OPTIONS",
-}
-
-export enum ECommands {
-    QOS="QOS",
-    LOGIN="LOGIN",
-    LOGOUT="LOGOUT",
-    SUBS="SUBS",
-    GET="GET",
-    UNSUBS="UNSUBS",
-    ADD="ADD",
-    VIEW="VIEW",
-    STREAM="STREAM",
-}
-
-export enum EQosLevels {
-    L0_EXPRESS_500MS = 0,
-    L1_REALTIME_750MS = 1,
-    L2_FAST_1000MS = 2,
-    L3_MODERATE_1500MS = 3,
-    L4_SLOW_3000MS = 4,
-    L5_DELAYED_5000MS = 5,
-}
-
-export interface IStreamNotify {
-    heartbeat: string, // timestamp as string
-}
 
 export interface IStreamDataTDAConfig {
     authConfig?: IAuthConfig,
@@ -126,6 +48,23 @@ enum EQueueState {
     BUSY,
 }
 
+export interface IChartHistoryFuturesGetConfig {
+    symbol: string,
+    frequency: EChartHistoryFuturesFrequency,
+    period?: string,
+    startTimeMSEpoch?: number,
+    endTimeMSEpoch?: number,
+    requestSeqNum?: number,
+}
+
+/**
+ * Events emitted:
+ *  heartbeat - for stream heartbeats
+ *  response - for stream events pertaining to QOS, LOGOUT, LOGIN;
+ *  streamClosed - when the stream is closed;
+ *  data - only emitted when config.emitDataRaw is true; covers all realtime data;
+ *  snapshot - only emitted when config.emitDataRaw is true; applicable for CHART_FUTURES_HISTORY;
+ */
 export class StreamDataTDA extends EventEmitter {
     private dataStreamSocket: any;
     private userKilled: boolean;
@@ -245,27 +184,6 @@ export class StreamDataTDA extends EventEmitter {
         }, this.retryIntervalSeconds*1000);
     }
 
-    setConfig(config: IStreamDataTDAConfig): void {
-        this.emitDataRaw = config.emitDataRaw != undefined ? config.emitDataRaw : this.emitDataRaw;
-        this.emitDataBySubRaw = config.emitDataBySubRaw != undefined ? config.emitDataBySubRaw : this.emitDataBySubRaw;
-        this.emitDataBySubTyped = config.emitDataBySubTyped != undefined ? config.emitDataBySubTyped : this.emitDataBySubTyped;
-        this.emitDataBySubAndTickerRaw = config.emitDataBySubAndTickerRaw != undefined ? config.emitDataBySubAndTickerRaw : this.emitDataBySubAndTickerRaw;
-        this.emitDataBySubAndTickerTyped = config.emitDataBySubAndTickerTyped != undefined ? config.emitDataBySubAndTickerTyped : this.emitDataBySubAndTickerTyped;
-        this.retryIntervalSeconds = config.reconnectRetryIntervalSeconds || this.retryIntervalSeconds;
-        this.verbose = config.verbose || false;
-    }
-
-    getConfig(): IStreamDataTDAConfig {
-        return {
-            emitDataRaw: this.emitDataRaw,
-            emitDataBySubRaw: this.emitDataBySubRaw,
-            emitDataBySubTyped: this.emitDataBySubTyped,
-            emitDataBySubAndTickerRaw: this.emitDataBySubAndTickerRaw,
-            emitDataBySubAndTickerTyped: this.emitDataBySubAndTickerTyped,
-            reconnectRetryIntervalSeconds: this.retryIntervalSeconds,
-        };
-    }
-
     private getDefaultFields(service: EServices): string {
         if (this.defaultFields.has(service)) {
             // @ts-ignore
@@ -326,6 +244,9 @@ export class StreamDataTDA extends EventEmitter {
 
         // such as in the case of acknowledging connection or new subscription or qos change
         if (responseObject.response) {
+            // case 5.7 service === 'ADMIN' && command === 'QOS'
+            // case 5.5 service === 'ADMIN' && command === 'LOGOUT'
+            // case 5.3 service === 'ADMIN' && command === 'LOGIN'
             if (!this.heartbeatCheckerInterval) this.heartbeatCheckerInterval = this.startHeartbeatChecker();
             if (this.queueState === EQueueState.INITIALIZED) {
                 await this.qstart();
@@ -335,10 +256,6 @@ export class StreamDataTDA extends EventEmitter {
             }
             if (this.verbose) console.log(responseObject.response);
             this.emit("response", responseObject.response);
-
-            // case 5.7 service === 'ADMIN' && command === 'QOS'
-            // case 5.5 service === 'ADMIN' && command === 'LOGOUT'
-            // case 5.3 service === 'ADMIN' && command === 'LOGIN'
         }
 
         if (responseObject.data) {
@@ -448,6 +365,94 @@ export class StreamDataTDA extends EventEmitter {
         }
     }
 
+    private resubscribe() {
+        for (const service in this.subParams) {
+            const params = this.subParams[service];
+            const input = {
+                service: service,
+                command: ECommands.SUBS,
+                requestSeqNum: this.requestId++,
+                parameters: params,
+            };
+            this.genericStreamRequest(input as IGenericStreamConfig);
+        }
+    }
+
+    // called after connect success, and OPEN event received; do login, then something to keep stream alive
+    private async open(loginRequest: any): Promise<void> {
+        this.dataStreamSocket.send(JSON.stringify(loginRequest));
+    }
+
+    private async restartDataStream(): Promise<void> {
+        this.streamRestartsCount++;
+        if (this.heartbeatCheckerInterval) {
+            if (this.verbose) console.log("Clearing heartbeat checker for restart", this.streamRestartsCount, "time:", new Date().toISOString());
+            clearInterval(this.heartbeatCheckerInterval);
+        }
+        this.once("message", () => { this.clearRetryAttempts(); this.resubscribe(); }); // set this to trigger on successful login
+        this.doDataStreamLogin();
+    }
+
+    private clearRetryAttempts() {
+        this.connectionRetryAttemptTimeouts.forEach(t => clearTimeout(t));
+    }
+
+    private async handleStreamClose(): Promise<void> {
+        console.log("handleStreamClose called");
+        if (this.userKilled) {
+            if (this.verbose) console.log("stream closed, killed by user");
+            this.emit("streamClosed", {attemptingReconnect: false});
+        } else {
+            if (this.verbose) console.log("stream closed, not killed by user, attempting restart");
+            this.emit("streamClosed", {attemptingReconnect: true});
+            // attempt to reconnect
+            await this.restartDataStream();
+        }
+        return;
+    }
+
+    private async qstart() {
+        this.queueState = EQueueState.AVAILABLE;
+        await this.dequeueAndProcess();
+    }
+
+    private async qpush(cb:any) {
+        this.queueArr.push(cb);
+        if (this.queueArr.length === 1 && this.queueState === EQueueState.AVAILABLE) {
+            await this.dequeueAndProcess();
+        }
+    }
+
+    private async dequeueAndProcess() {
+        if (this.verbose) console.log("deq", `queuesize:${this.queueArr.length}`, `queuestate:${EQueueState[this.queueState]}`);
+        if (this.queueArr.length > 0 && this.queueState === EQueueState.AVAILABLE) {
+            this.queueState = EQueueState.BUSY;
+            const nextInQueue = this.queueArr.pop();
+            await nextInQueue();
+        }
+    }
+
+    setConfig(config: IStreamDataTDAConfig): void {
+        this.emitDataRaw = config.emitDataRaw != undefined ? config.emitDataRaw : this.emitDataRaw;
+        this.emitDataBySubRaw = config.emitDataBySubRaw != undefined ? config.emitDataBySubRaw : this.emitDataBySubRaw;
+        this.emitDataBySubTyped = config.emitDataBySubTyped != undefined ? config.emitDataBySubTyped : this.emitDataBySubTyped;
+        this.emitDataBySubAndTickerRaw = config.emitDataBySubAndTickerRaw != undefined ? config.emitDataBySubAndTickerRaw : this.emitDataBySubAndTickerRaw;
+        this.emitDataBySubAndTickerTyped = config.emitDataBySubAndTickerTyped != undefined ? config.emitDataBySubAndTickerTyped : this.emitDataBySubAndTickerTyped;
+        this.retryIntervalSeconds = config.reconnectRetryIntervalSeconds || this.retryIntervalSeconds;
+        this.verbose = config.verbose || false;
+    }
+
+    getConfig(): IStreamDataTDAConfig {
+        return {
+            emitDataRaw: this.emitDataRaw,
+            emitDataBySubRaw: this.emitDataBySubRaw,
+            emitDataBySubTyped: this.emitDataBySubTyped,
+            emitDataBySubAndTickerRaw: this.emitDataBySubAndTickerRaw,
+            emitDataBySubAndTickerTyped: this.emitDataBySubAndTickerTyped,
+            reconnectRetryIntervalSeconds: this.retryIntervalSeconds,
+        };
+    }
+
     /**
      * A method to do stuff.
      * @param {object} config
@@ -509,51 +514,6 @@ export class StreamDataTDA extends EventEmitter {
         return requestSeqNum;
     }
 
-    private resubscribe() {
-        for (const service in this.subParams) {
-            const params = this.subParams[service];
-            const input = {
-                service: service,
-                command: ECommands.SUBS,
-                requestSeqNum: this.requestId++,
-                parameters: params,
-            };
-            this.genericStreamRequest(input as IGenericStreamConfig);
-        }
-    }
-
-    // called after connect success, and OPEN event received; do login, then something to keep stream alive
-    private async open(loginRequest: any): Promise<void> {
-        this.dataStreamSocket.send(JSON.stringify(loginRequest));
-    }
-
-    private async restartDataStream(): Promise<void> {
-        this.streamRestartsCount++;
-        if (this.heartbeatCheckerInterval) {
-            if (this.verbose) console.log("Clearing heartbeat checker for restart", this.streamRestartsCount, "time:", new Date().toISOString());
-            clearInterval(this.heartbeatCheckerInterval);
-        }
-        this.once("message", () => { this.clearRetryAttempts(); this.resubscribe(); }); // set this to trigger on successful login
-        this.doDataStreamLogin();
-    }
-
-    private clearRetryAttempts() {
-        this.connectionRetryAttemptTimeouts.forEach(t => clearTimeout(t));
-    }
-
-    private async handleStreamClose(): Promise<void> {
-        if (this.userKilled) {
-            if (this.verbose) console.log("stream closed, killed by user");
-            this.emit("streamClosed", {attemptingReconnect: false});
-        } else {
-            if (this.verbose) console.log("stream closed, not killed by user, attempting restart");
-            this.emit("streamClosed", {attemptingReconnect: true});
-            // attempt to reconnect
-            await this.restartDataStream();
-        }
-        return;
-    }
-
     async doDataStreamLogin(
         //fields: string = 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds',
         fields: EUserPrincipalFields[] = [EUserPrincipalFields.PREFERENCES, EUserPrincipalFields.SURROGATE_IDS, EUserPrincipalFields.STREAMER_SUB_KEYS, EUserPrincipalFields.STREAMER_CONNECTION_INFO],
@@ -606,7 +566,7 @@ export class StreamDataTDA extends EventEmitter {
 
             this.dataStreamSocket.on("message", (response: string) => this.handleIncoming.call(this, response, resolve));
 
-            this.dataStreamSocket.on("close", () => this.handleStreamClose.bind(this));
+            this.dataStreamSocket.on("close", () => this.handleStreamClose.call(this));
 
             this.dataStreamSocket.on("open", () => this.open.call(this, loginRequest));
         });
@@ -623,6 +583,7 @@ export class StreamDataTDA extends EventEmitter {
             command: ECommands.LOGOUT,
             parameters: {},
         });
+        // this.dataStreamSocket.close();
     }
 
     /**
@@ -648,7 +609,6 @@ export class StreamDataTDA extends EventEmitter {
         });
     }
 
-
     /**
      * Get historical candles for futures. Specify period OR (startTimeMSEpoch and endTimeMSEpoch)
      *
@@ -661,14 +621,10 @@ export class StreamDataTDA extends EventEmitter {
      * @returns A Promise with the request sequence number, 0 if error
      * @async
      */
-    async chartHistoryFuturesGet(symbol: string,
-        frequency: EChartHistoryFuturesFrequency,
-        period?: string,
-        startTimeMSEpoch?: number,
-        endTimeMSEpoch?: number,
-        requestSeqNum: number = this.requestId++,
-    ) : Promise<number> {
-        if (!period && (!startTimeMSEpoch || !endTimeMSEpoch)) return 0;
+    async chartHistoryFuturesGet(config: IChartHistoryFuturesGetConfig) : Promise<number> {
+        if (!config.period && (!config.startTimeMSEpoch || !config.endTimeMSEpoch)) throw new Error("either specify a period or provide a start and end time");
+
+        const requestSeqNum = config.requestSeqNum ?? ++this.requestId;
 
         const request = {
             "requests": [
@@ -679,11 +635,11 @@ export class StreamDataTDA extends EventEmitter {
                     "account": this.userPrincipalsResponse.accounts[0].accountId,
                     "source": this.userPrincipalsResponse.streamerInfo.appId,
                     "parameters": {
-                        "symbol": symbol,
-                        "frequency": frequency,
-                        "period": period,
-                        "START_TIME": startTimeMSEpoch,
-                        "END_TIME": endTimeMSEpoch,
+                        "symbol": config.symbol,
+                        "frequency": config.frequency,
+                        "period": config.period,
+                        "START_TIME": config.startTimeMSEpoch,
+                        "END_TIME": config.endTimeMSEpoch,
                     },
                 },
             ],
@@ -729,27 +685,6 @@ export class StreamDataTDA extends EventEmitter {
         };
 
         return await this.genericStreamRequest(config);
-    }
-
-    private async qstart() {
-        this.queueState = EQueueState.AVAILABLE;
-        await this.dequeueAndProcess();
-    }
-
-    private async qpush(cb:any) {
-        this.queueArr.push(cb);
-        if (this.queueArr.length === 1 && this.queueState === EQueueState.AVAILABLE) {
-            await this.dequeueAndProcess();
-        }
-    }
-
-    private async dequeueAndProcess() {
-        if (this.verbose) console.log("deq", `queuesize:${this.queueArr.length}`, `queuestate:${EQueueState[this.queueState]}`);
-        if (this.queueArr.length > 0 && this.queueState === EQueueState.AVAILABLE) {
-            this.queueState = EQueueState.BUSY;
-            const nextInQueue = this.queueArr.pop();
-            await nextInQueue();
-        }
     }
 
     async queueAccountUpdatesSub(accountIds = "", fields = "0,1,2,3", requestSeqNum?: number) : Promise<any> {

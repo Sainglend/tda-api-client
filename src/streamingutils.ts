@@ -24,7 +24,7 @@ import {
     AcctActivity,
 } from "./streamingdatatypes";
 import {ICandle} from "./sharedTypes";
-import convert = require("xml-js");
+import convert from "xml-js";
 import qs from "qs";
 
 export default class StreamingUtils {
