@@ -25,6 +25,7 @@ export interface IStreamDataTDAConfig {
     reconnectRetryIntervalSeconds?: number,
 
     verbose?: boolean,
+    debug?: boolean,
 }
 
 export interface IStreamParams {
@@ -97,6 +98,7 @@ export class StreamDataTDA extends EventEmitter {
     private emitDataBySubAndTickerRaw: boolean;
     private emitDataBySubAndTickerTyped: boolean;
     private verbose: boolean;
+    private debug: boolean;
     private authConfig: IAuthConfig;
 
     constructor(streamConfig: IStreamDataTDAConfig) {
@@ -126,6 +128,7 @@ export class StreamDataTDA extends EventEmitter {
         this.emitDataBySubAndTickerRaw = streamConfig.emitDataBySubAndTickerRaw || false;
         this.emitDataBySubAndTickerTyped = streamConfig.emitDataBySubAndTickerTyped ?? true;
         this.verbose = streamConfig.verbose || false;
+        this.debug = streamConfig.debug || false;
         if (streamConfig.authConfig != undefined)
             this.authConfig = streamConfig.authConfig;
         else throw "You must provide authConfig as part of the config object in the constructor call.";
@@ -194,10 +197,12 @@ export class StreamDataTDA extends EventEmitter {
     private handleIncomingData(element: StreamingResponseData, emitEventBase: string, mappingFunction: any): void {
         if (this.verbose) console.log(`handle incoming data, ${emitEventBase}; subraw:${this.emitDataBySubRaw}, subtickerraw:${this.emitDataBySubAndTickerRaw}, subtyped:${this.emitDataBySubTyped}, subtickertyped:${this.emitDataBySubAndTickerTyped}`);
         if (this.emitDataBySubRaw) {
+            if (this.debug) console.debug(`${emitEventBase}_RAW`, JSON.stringify(element.content, null, 2));
             this.emit(`${emitEventBase}_RAW`, element.content);
         }
         if (this.emitDataBySubAndTickerRaw) {
             element.content.forEach((item: any) => {
+                if (this.debug) console.debug(`${emitEventBase}_RAW_${StreamingUtils.normalizeSymbol(item.key)}`, JSON.stringify(item, null, 2));
                 this.emit(`${emitEventBase}_RAW_${StreamingUtils.normalizeSymbol(item.key)}`, item);
             });
         }
@@ -206,10 +211,14 @@ export class StreamDataTDA extends EventEmitter {
             if (this.verbose) console.log("typed");
             const typedResponses: any[] = element.content.map((item: any) => mappingFunction(item, element.timestamp));
             if (this.emitDataBySubTyped) {
+                if (this.debug) console.debug(`${emitEventBase}_TYPED`, JSON.stringify(typedResponses, null, 2));
                 this.emit(`${emitEventBase}_TYPED`, typedResponses);
             }
             if (this.emitDataBySubAndTickerTyped && typedResponses) {
-                typedResponses.forEach(item => this.emit(`${emitEventBase}_TYPED_${StreamingUtils.normalizeSymbol(item.key)}`, item));
+                typedResponses.forEach(item => {
+                    if (this.debug) console.debug(`${emitEventBase}_TYPED_${StreamingUtils.normalizeSymbol(item.key)}`, JSON.stringify(item, null, 2));
+                    this.emit(`${emitEventBase}_TYPED_${StreamingUtils.normalizeSymbol(item.key)}`, item);
+                });
             }
         }
     }
@@ -238,7 +247,7 @@ export class StreamDataTDA extends EventEmitter {
         }
 
         if (responseObject.notify) {
-            if (this.verbose) console.log(responseObject.notify);
+            if (this.verbose) console.log(JSON.stringify(responseObject.notify, null, 2));
             this.emit("heartbeat", responseObject.notify as IStreamNotify[]);
         }
 
@@ -254,7 +263,7 @@ export class StreamDataTDA extends EventEmitter {
                 this.queueState = EQueueState.AVAILABLE;
                 await this.dequeueAndProcess();
             }
-            if (this.verbose) console.log(responseObject.response);
+            if (this.verbose) console.log(JSON.stringify(responseObject.response, null, 2));
             this.emit("response", responseObject.response);
         }
 
@@ -272,7 +281,6 @@ export class StreamDataTDA extends EventEmitter {
                 case EServices.OPTION: fn = StreamingUtils.transformL1OptionsResponse; break;
                 case EServices.CHART_EQUITY: fn = StreamingUtils.transformEquityChartResponse; break;
                 case EServices.CHART_FUTURES: fn = StreamingUtils.transformFuturesChartResponse; break;
-                case EServices.CHART_HISTORY_FUTURES: fn = StreamingUtils.transformChartHistoryFuturesResponse; break;
                 case EServices.NEWS_HEADLINE: fn = StreamingUtils.transformNewsHeadlineResponse; break;
                 case EServices.ACCT_ACTIVITY: fn = StreamingUtils.transformAcctActivityResponse; break;
                 case EServices.TIMESALE_FOREX:
@@ -303,7 +311,7 @@ export class StreamDataTDA extends EventEmitter {
                 this.emit("snapshot", responseObject.snapshot);
             }
             responseObject.snapshot.forEach((element: StreamingResponseData) => {
-                if (this.verbose) console.log(`service is ${element.service} and is that CHF? ${element.service === EServices.CHART_HISTORY_FUTURES}`);
+                if (this.verbose) console.log(`service is ${element.service}`);
                 let fn = null;
                 switch (element.service) {
                 case EServices.CHART_HISTORY_FUTURES: fn = StreamingUtils.transformChartHistoryFuturesResponse; break;
@@ -440,6 +448,7 @@ export class StreamDataTDA extends EventEmitter {
         this.emitDataBySubAndTickerTyped = config.emitDataBySubAndTickerTyped != undefined ? config.emitDataBySubAndTickerTyped : this.emitDataBySubAndTickerTyped;
         this.retryIntervalSeconds = config.reconnectRetryIntervalSeconds || this.retryIntervalSeconds;
         this.verbose = config.verbose || false;
+        this.debug = config.debug || false;
     }
 
     getConfig(): IStreamDataTDAConfig {
@@ -450,6 +459,8 @@ export class StreamDataTDA extends EventEmitter {
             emitDataBySubAndTickerRaw: this.emitDataBySubAndTickerRaw,
             emitDataBySubAndTickerTyped: this.emitDataBySubAndTickerTyped,
             reconnectRetryIntervalSeconds: this.retryIntervalSeconds,
+            verbose: this.verbose,
+            debug: this.debug,
         };
     }
 
@@ -655,12 +666,20 @@ export class StreamDataTDA extends EventEmitter {
      * @param {string} [accountIds] - (Optional) comma-separated list of TDA account numbers, default is all account ids that can be retrieved with your credentials
      * @param {string} [fields] - (Optional) comma-separated field numbers, default all 0-3
      * @param {number} [requestSeqNum] - (Optional) defaulted to an incrementing integer
+     * @param tacBaseConfig
      * @returns A Promise with the request sequence number, 0 if error
      * @async
      */
-    async accountUpdatesSub(accountIds = "", fields = "0,1,2,3", requestSeqNum: number = this.requestId++) : Promise<number> {
+    async accountActivitySub(
+        accountIds = "",
+        fields = "0,1,2,3",
+        requestSeqNum: number = this.requestId++,
+    ) : Promise<number> {
         if (accountIds === null || accountIds === "") {
-            const allAccounts = await getAccounts({});
+            const allAccounts = await getAccounts({
+                authConfig: this.authConfig,
+                authConfigFileAccess: "NONE",
+            });
             accountIds = allAccounts
                 .map((acct: any) => {
                     const acctIds = [];
@@ -673,6 +692,7 @@ export class StreamDataTDA extends EventEmitter {
         const streamKeyObj = await getStreamerSubKeys({
             accountIds: accountIds,
             authConfig: this.authConfig,
+            authConfigFileAccess: "NONE",
         });
 
         const config : IGenericStreamConfig = {
@@ -687,8 +707,21 @@ export class StreamDataTDA extends EventEmitter {
         return await this.genericStreamRequest(config);
     }
 
-    async queueAccountUpdatesSub(accountIds = "", fields = "0,1,2,3", requestSeqNum?: number) : Promise<any> {
-        await this.qpush(this.accountUpdatesSub.bind(this, accountIds, fields, requestSeqNum));
+    async accountActivityUnsub() : Promise<number> {
+        const config : IGenericStreamConfig = {
+            service: EServices.ACCT_ACTIVITY,
+            command: ECommands.UNSUBS,
+        };
+
+        return await this.genericStreamRequest(config);
+    }
+
+    async queueAccountActivitySub(accountIds = "", fields = "0,1,2,3", requestSeqNum?: number) : Promise<any> {
+        await this.qpush(this.accountActivitySub.bind(this, accountIds, fields, requestSeqNum));
+    }
+
+    async queueAccountActivityUnsub() : Promise<any> {
+        await this.qpush(this.accountActivityUnsub.bind(this));
     }
 
     async queueChartHistoryFuturesGet(

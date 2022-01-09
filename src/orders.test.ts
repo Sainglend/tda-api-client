@@ -65,7 +65,7 @@ describe("orders", () => {
         // @ts-ignore
         expect(order?.orderLegCollection[0].instrument.symbol).toBe("F");
 
-        // next place an order
+        // next replace an order
         const configReplace: IReplaceOrderConfig = {
             orderId,
             accountId: accountId,

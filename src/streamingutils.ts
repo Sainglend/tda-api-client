@@ -51,6 +51,7 @@ export default class StreamingUtils {
         return {
             timestamp: timestamp,
             key: resp.key,
+            symbol: resp.key,
             seq: resp.seq,
             datetime: resp["1"],
             open: resp["2"],
@@ -64,6 +65,7 @@ export default class StreamingUtils {
     static transformEquityChartResponse(resp: EquityChartResponseRough) : EquityChartResponse {
         return {
             key: resp.key,
+            symbol: resp.key,
             seq: resp.seq,
             datetime: resp["7"],
             open: resp["1"],
@@ -106,11 +108,13 @@ export default class StreamingUtils {
         };
     }
 
-    static transformL1FuturesResponse(l1FuturesQuoteRough: L1FuturesQuoteRough, timestamp?: number) : L1FuturesQuote {
+    static transformL1FuturesResponse(l1FuturesQuoteRough: L1FuturesQuoteRough, timestamp: number) : L1FuturesQuote {
         return {
             // symbol and about info
             timestamp: timestamp, // from outer object
             key: l1FuturesQuoteRough["key"],
+            delayed: l1FuturesQuoteRough.delayed,
+            assetMainType: l1FuturesQuoteRough.assetMainType,
             symbol: l1FuturesQuoteRough["key"],
             description: l1FuturesQuoteRough["16"],
             tradingStatus: l1FuturesQuoteRough["22"],
@@ -178,20 +182,21 @@ export default class StreamingUtils {
             timeLastTrade: l1FuturesQuoteRough["11"],
             // "10"?: number, // lastQuoteTime ms since epoch
             // "11"?: number, // lastTradeTime ms since epoch
-
-            // metadata
-            delayed: l1FuturesQuoteRough.delayed,
-
         };
     }
 
     static transformL1FuturesOptionsResponse(l1FutOptRough: L1FuturesOptionsQuoteRough, timestamp: number) : L1FuturesOptionsQuote {
         return {
-            timestamp: timestamp,
-            key: l1FutOptRough["0"],
-            symbol: l1FutOptRough["0"], // "0": string, // symbol
+            key: l1FutOptRough.key, // "key": string, // symbol
+            symbol: l1FutOptRough.key,
+            delayed: l1FutOptRough.delayed, // "delayed": boolean,
+
+            // contract/product info
             description: l1FutOptRough["16"], // "16": string, // description
-            tradingStatus: l1FutOptRough["22"], // "22": TRADING_STATUS, // security trading status: Normal, Halted, Closed
+            multiplier: l1FutOptRough["22"], // "22": number, // multiplier
+            underlyingSymbol: l1FutOptRough["24"], // "24": string, // underlying symbol
+            strike: l1FutOptRough["25"], // "25": number, // strike
+            expirationDateMSEpoch: l1FutOptRough["26"], // "26": number, // expiration date of this contract, ms since epoch
 
             // price
             bid: l1FutOptRough["1"], // "1": number, // bid price
@@ -199,58 +204,39 @@ export default class StreamingUtils {
             last: l1FutOptRough["3"], // "3": number, // last trade price
             dailyHigh: l1FutOptRough["12"], // "12": number, // daily high
             dailyLow: l1FutOptRough["13"], // "13": number, // daily low
-            dailyOpen: l1FutOptRough["18"], // "18": number, // daily open
             previousDayClose: l1FutOptRough["14"], // "14": number, // prev day close
-            mark: l1FutOptRough["24"], // "24": number, // mark
-            // --
-            settlementPrice: l1FutOptRough["33"], //"33": number, // closing / settlement price
-
-            // derived from price
-            netChange: l1FutOptRough["19"], // "19": number, // net change, current last - prev close
-            // --
-            percentChange: l1FutOptRough["20"], // "20": number, // percent change
+            dailyOpen: l1FutOptRough["17"], // "17": number, // daily open
+            unknown19: l1FutOptRough["19"], // "19": number, // ?
+            unknown23: l1FutOptRough["23"], // "23": number, // ?
 
             // volume
             bidSize: l1FutOptRough["4"], // "4": number, // bid size
             askSize: l1FutOptRough["5"], // "5": number, // ask size
             dailyVolume: l1FutOptRough["8"], // "8": number, // total volume
             lastSize: l1FutOptRough["9"], // "9": number, // last size
-            // --
-            openInterest: l1FutOptRough["23"], // "23": number, // open interest
+            openInterest: l1FutOptRough["18"], // "18": number, // open interest
 
             // exchange
-            // --
             exchangeBestAsk: l1FutOptRough["6"], // "6": EXCHANGES, // exchange with best ask
             exchangeBestBid: l1FutOptRough["7"], // "7": EXCHANGES, // exchange with best bid
             exchangeOfPrimaryListing: l1FutOptRough["15"], // "15": EXCHANGES, // primary listing exchange
-            exchangeLastTrade: l1FutOptRough["17"], // "17": EXCHANGES, // last trade exchange
-            exchangeName: l1FutOptRough["21"], // "21": string, // name of exchange
 
             // time
-            timeLastQuote: l1FutOptRough["10"], // "10": number, // quote time ms epoch
+            timeLasatQuote: l1FutOptRough["10"], // "10": number, // quote time ms epoch
             timeLastTrade: l1FutOptRough["11"], // "11": number, // trade time ms epoch
-
-
-            // contract/product info
-            // --
-            tickSize: l1FutOptRough["25"], // "25": number, // tick, min price movement
-            tickAmount: l1FutOptRough["26"], // "26": number, // tick amt, min amt of change (tick * multiplier)
-            futuresProduct: l1FutOptRough["27"], // "27": string, // product (futures product)
-            priceFormat: l1FutOptRough["28"], // "28": string, // price format (fraction or decimal)
-            tradingHours: l1FutOptRough["29"], // "29": string, // trading hours
-            isTradable: l1FutOptRough["30"], // "30": boolean, // is tradeable
-            multiplier: l1FutOptRough["31"], // "31": number, // point value / multiplier
-            isContractActive: l1FutOptRough["32"], // "32": boolean, // is contract active
-            activeContractSymbol: l1FutOptRough["34"], // "34": string, // symbol of active contract
-            contractExpirationMSEpoch: l1FutOptRough["35"], // "35": number, // expiration date of this contract, ms since epoch
         };
     }
 
     static transformL1OptionsResponse(l1OptionsRough: L1OptionsQuoteRough, timestamp: number) : L1OptionsQuote {
+        const todayYYYY_MM_DD = new Date().toISOString().substring(0, 10);
         return {
             timestamp: timestamp,
-            key: l1OptionsRough["0"],
-            symbol: l1OptionsRough["0"], // "0": string, // symbol
+
+            key: l1OptionsRough["key"],
+            cusip: l1OptionsRough.cusip,
+            assetMainType: l1OptionsRough.assetMainType,
+            delayed: l1OptionsRough.delayed,
+            symbol: l1OptionsRough["key"], // "0": string, // symbol
             description: l1OptionsRough["1"], // "1": string, // description, company, index, fund name
             tradingStatus: l1OptionsRough["37"], // "37": TRADING_STATUS, // trading status
             // --
@@ -298,8 +284,8 @@ export default class StreamingUtils {
             openInterest: l1OptionsRough["9"], // "9": number, // open interest
 
             // time
-            timeLastQuote: null, // TODO: use moment to flesh out?
-            timeLastTrade: null, // TODO: use moment to flesh out?
+            timeLastQuote: l1OptionsRough["11"] ?? new Date(`${todayYYYY_MM_DD}T00:00:00.000Z`).getTime() + (1000 * l1OptionsRough["11"]),
+            timeLastTrade: l1OptionsRough["12"] ?? new Date(`${todayYYYY_MM_DD}T00:00:00.000Z`).getTime() + (1000 * l1OptionsRough["12"]),
             timeLastQuoteSecsFromMidnight: l1OptionsRough["11"],
             timeLastTradeSecsFromMidnight: l1OptionsRough["12"],
             // "11": number, // quote time since, sec since midnight
@@ -326,6 +312,9 @@ export default class StreamingUtils {
     static transformL1EquitiesResponse(l1EquityRough: L1EquityQuoteRough, timestamp: number) : L1EquityQuote {
         return {
             timestamp: timestamp,
+            delayed: l1EquityRough.delayed,
+            assetMainType: l1EquityRough.assetMainType,
+            cusip: l1EquityRough.cusip,
             // symbol and about info
             key: l1EquityRough.key,
             symbol: l1EquityRough.key,
@@ -423,8 +412,10 @@ export default class StreamingUtils {
     static transformL1ForexResponse(l1ForexRough: L1ForexQuoteRough, timestamp: number) : L1ForexQuote {
         return {
             timestamp: timestamp,
-            key: l1ForexRough["0"],
-            symbol: l1ForexRough["0"],
+            key: l1ForexRough["key"],
+            assetMainType: l1ForexRough.assetMainType,
+            delayed: l1ForexRough.delayed,
+            symbol: l1ForexRough["key"],
             description: l1ForexRough["14"],
             tradingStatus: l1ForexRough["20"],
             // "0": string, // ticker symbol in upper case
@@ -491,7 +482,7 @@ export default class StreamingUtils {
     static transformNewsHeadlineResponse(newsHeadlineRough: NewsHeadlineRough, timestamp: number) : NewsHeadline {
         return {
             timestamp: timestamp,
-            sequence: newsHeadlineRough.seq,
+            seq: newsHeadlineRough.seq,
             key: newsHeadlineRough.key,
             symbol: newsHeadlineRough.key,
             errorCode: newsHeadlineRough["1"],

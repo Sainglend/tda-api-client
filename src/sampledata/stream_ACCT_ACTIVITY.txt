@@ -1,0 +1,165 @@
+// order entry raw
+[
+  {
+    "1": "498103373",
+    "2": "OrderEntryRequest",
+    "3": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><OrderEntryRequestMessage xmlns=\"urn:xmlns:beb.ameritrade.com\"><OrderGroupID><Firm/><Branch>123</Branch><ClientKey>12345678</ClientKey><AccountKey>12345678</AccountKey><Segment>tos</Segment><SubAccountType>Cash</SubAccountType><CDDomainID/></OrderGroupID><ActivityTimestamp>2022-01-09T00:41:57.476-06:00</ActivityTimestamp><Order xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"EquityOrderT\"><OrderKey>000123456</OrderKey><Security><CUSIP>345370860</CUSIP><Symbol>F</Symbol><SecurityType>Common Stock</SecurityType></Security><OrderPricing xsi:type=\"LimitT\"><Limit>2.5</Limit></OrderPricing><OrderType>Limit</OrderType><OrderDuration>Day</OrderDuration><OrderEnteredDateTime>2022-01-09T00:41:57.476-06:00</OrderEnteredDateTime><OrderInstructions>Buy</OrderInstructions><OriginalQuantity>1</OriginalQuantity><AmountIndicator>Shares</AmountIndicator><Discretionary>false</Discretionary><OrderSource>Web</OrderSource><Solicited>false</Solicited><MarketCode>Normal</MarketCode><DeliveryInstructions>Ship In Customer Name</DeliveryInstructions><Capacity>Agency</Capacity><NetShortQty>0</NetShortQty><Taxlot>null or blank</Taxlot><EnteringDevice>other</EnteringDevice></Order><ToSecurity><CUSIP>345370860</CUSIP><Symbol>F</Symbol><SecurityType>Common Stock</SecurityType></ToSecurity></OrderEntryRequestMessage>",
+    "seq": 1,
+    "key": "streamersubkey"
+  }
+]
+
+
+// order entry typed
+[
+  {
+    "timestamp": 1641710517551,
+    "accountNumber": "12345678",
+    "messageType": "OrderEntryRequest",
+    "messageData": {
+      "_declaration": {
+        "_attributes": {
+          "version": "1.0",
+          "encoding": "UTF-8"
+        }
+      },
+      "OrderEntryRequestMessage": {
+        "_attributes": {
+          "xmlns": "urn:xmlns:beb.ameritrade.com"
+        },
+        "OrderGroupID": {
+          "Firm": {},
+          "Branch": "123",
+          "ClientKey": "12345678",
+          "AccountKey": "12345678",
+          "Segment": "tos",
+          "SubAccountType": "Cash",
+          "CDDomainID": {}
+        },
+        "ActivityTimestamp": "2022-01-09T00:41:57.476-06:00",
+        "Order": {
+          "_attributes": {
+            "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+            "xsi:type": "EquityOrderT"
+          },
+          "OrderKey": "000123456",
+          "Security": {
+            "CUSIP": "345370860",
+            "Symbol": "F",
+            "SecurityType": "Common Stock"
+          },
+          "OrderPricing": {
+            "_attributes": {
+              "xsi:type": "LimitT"
+            },
+            "Limit": "2.5"
+          },
+          "OrderType": "Limit",
+          "OrderDuration": "Day",
+          "OrderEnteredDateTime": "2022-01-09T00:41:57.476-06:00",
+          "OrderInstructions": "Buy",
+          "OriginalQuantity": "1",
+          "AmountIndicator": "Shares",
+          "Discretionary": "false",
+          "OrderSource": "Web",
+          "Solicited": "false",
+          "MarketCode": "Normal",
+          "DeliveryInstructions": "Ship In Customer Name",
+          "Capacity": "Agency",
+          "NetShortQty": "0",
+          "Taxlot": "null or blank",
+          "EnteringDevice": "other"
+        },
+        "ToSecurity": {
+          "CUSIP": "345370860",
+          "Symbol": "F",
+          "SecurityType": "Common Stock"
+        }
+      }
+    },
+    "key": "streamersubkey",
+    "sequence": 1
+  }
+]
+
+
+// order cancel raw
+[
+  {
+    "1": "12345678",
+    "2": "UROUT",
+    "3": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><UROUTMessage xmlns=\"urn:xmlns:beb.ameritrade.com\"><OrderGroupID><Firm/><Branch>123</Branch><ClientKey>12345678</ClientKey><AccountKey>12345678</AccountKey><Segment>tos</Segment><SubAccountType>Cash</SubAccountType><CDDomainID/></OrderGroupID><ActivityTimestamp>2022-01-09T00:41:57.936-06:00</ActivityTimestamp><Order xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"EquityOrderT\"><OrderKey>000123456</OrderKey><Security><CUSIP>345370860</CUSIP><Symbol>F</Symbol><SecurityType>Common Stock</SecurityType></Security><OrderPricing xsi:type=\"LimitT\"><Limit>2.5</Limit></OrderPricing><OrderType>Limit</OrderType><OrderDuration>Day</OrderDuration><OrderEnteredDateTime>2022-01-09T00:41:57.476-06:00</OrderEnteredDateTime><OrderInstructions>Buy</OrderInstructions><OriginalQuantity>1</OriginalQuantity><AmountIndicator>Shares</AmountIndicator><Discretionary>false</Discretionary><OrderSource>Web</OrderSource><Solicited>false</Solicited><MarketCode>Normal</MarketCode><DeliveryInstructions>Ship In Customer Name</DeliveryInstructions><Capacity>Agency</Capacity><NetShortQty>0</NetShortQty><Taxlot>null or blank</Taxlot><EnteringDevice>other</EnteringDevice></Order><OrderDestination>BEST</OrderDestination><InternalExternalRouteInd>False</InternalExternalRouteInd><CancelledQuantity>1</CancelledQuantity></UROUTMessage>",
+    "seq": 2,
+    "key": "streamersubkey"
+  }
+]
+
+// order cancel typed
+[
+  {
+    "timestamp": 1641710518151,
+    "accountNumber": "12345678",
+    "messageType": "UROUT",
+    "messageData": {
+      "_declaration": {
+        "_attributes": {
+          "version": "1.0",
+          "encoding": "UTF-8"
+        }
+      },
+      "UROUTMessage": {
+        "_attributes": {
+          "xmlns": "urn:xmlns:beb.ameritrade.com"
+        },
+        "OrderGroupID": {
+          "Firm": {},
+          "Branch": "123",
+          "ClientKey": "12345678",
+          "AccountKey": "123456789",
+          "Segment": "tos",
+          "SubAccountType": "Cash",
+          "CDDomainID": {}
+        },
+        "ActivityTimestamp": "2022-01-09T00:41:57.936-06:00",
+        "Order": {
+          "_attributes": {
+            "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+            "xsi:type": "EquityOrderT"
+          },
+          "OrderKey": "000123456",
+          "Security": {
+            "CUSIP": "345370860",
+            "Symbol": "F",
+            "SecurityType": "Common Stock"
+          },
+          "OrderPricing": {
+            "_attributes": {
+              "xsi:type": "LimitT"
+            },
+            "Limit": "2.5"
+          },
+          "OrderType": "Limit",
+          "OrderDuration": "Day",
+          "OrderEnteredDateTime": "2022-01-09T00:41:57.476-06:00",
+          "OrderInstructions": "Buy",
+          "OriginalQuantity": "1",
+          "AmountIndicator": "Shares",
+          "Discretionary": "false",
+          "OrderSource": "Web",
+          "Solicited": "false",
+          "MarketCode": "Normal",
+          "DeliveryInstructions": "Ship In Customer Name",
+          "Capacity": "Agency",
+          "NetShortQty": "0",
+          "Taxlot": "null or blank",
+          "EnteringDevice": "other"
+        },
+        "OrderDestination": "BEST",
+        "InternalExternalRouteInd": "False",
+        "CancelledQuantity": "1"
+      }
+    },
+    "key": "streamersubkey",
+    "sequence": 2
+  }
+]

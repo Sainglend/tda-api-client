@@ -1,4 +1,4 @@
-import {ICandle} from "./sharedTypes";
+import {EAssetType, ICandle} from "./sharedTypes";
 
 export interface FuturesChartResponseRough extends StringIndexed {
     key: string,
@@ -14,7 +14,8 @@ export interface FuturesChartResponseRough extends StringIndexed {
 
 export interface FuturesChartResponse extends StringIndexed, ICandle {
     key: string,
-    seq: number
+    symbol: string,
+    seq: number,
 }
 
 export interface EquityChartResponseRough extends StringIndexed {
@@ -33,7 +34,8 @@ export interface EquityChartResponseRough extends StringIndexed {
 
 export interface EquityChartResponse extends StringIndexed, ICandle {
     key: string,
-    seq: number
+    symbol: string,
+    seq: number,
 }
 
 export interface ChartHistoryFuturesCandleRough extends StringIndexed {
@@ -42,7 +44,7 @@ export interface ChartHistoryFuturesCandleRough extends StringIndexed {
     "2": number, // high
     "3": number, // low
     "4": number, // close
-    "5": number // volume
+    "5": number, // volume
 }
 
 export interface ChartHistoryFuturesRough extends StringIndexed {
@@ -50,7 +52,7 @@ export interface ChartHistoryFuturesRough extends StringIndexed {
     "0": string, // request id?
     "1": number, // no idea
     "2": number, // candle array length?
-    "3": ChartHistoryFuturesCandleRough[]
+    "3": ChartHistoryFuturesCandleRough[],
 }
 
 export interface ChartHistoryFutures extends StringIndexed {
@@ -58,7 +60,7 @@ export interface ChartHistoryFutures extends StringIndexed {
     requestId: string,
     prop1: number,
     count: number,
-    candles: ICandle[]
+    candles: ICandle[],
 }
 
 export interface StringIndexed {
@@ -94,7 +96,8 @@ export enum TRADING_STATUS {
 }
 
 export interface L1FuturesOptionsQuoteRough extends StringIndexed {
-    "0": string, // symbol
+    "key": string, // symbol
+    "delayed": boolean,
     "1": number, // bid price
     "2": number, // ask price
     "3": number, // last trade price
@@ -102,7 +105,7 @@ export interface L1FuturesOptionsQuoteRough extends StringIndexed {
     "5": number, // ask size
     "6": EXCHANGES, // exchange with best ask
     "7": EXCHANGES, // exchange with best bid
-    "8": number, // total volume
+    "8": number, // daily volume
     "9": number, // last size
     "10": number, // quote time ms epoch
     "11": number, // trade time ms epoch
@@ -111,29 +114,23 @@ export interface L1FuturesOptionsQuoteRough extends StringIndexed {
     "14": number, // prev day close
     "15": EXCHANGES, // primary listing exchange
     "16": string, // description
-    "17": EXCHANGES, // last trade exchange
-    "18": number, // daily open
-    "19": number, // net change, current last - prev close
-    "20": number, // percent change
-    "21": string, // name of exchange
-    "22": TRADING_STATUS, // security trading status: Normal, Halted, Closed
-    "23": number, // open interest
-    "24": number, // mark
-    "25": number, // tick, min price movement
-    "26": number, // tick amt, min amt of change (tick * multiplier)
-    "27": string, // product (futures product)
-    "28": string, // price format (fraction or decimal)
-    "29": string, // trading hours
-    "30": boolean, // is tradeable
-    "31": number, // point value / multiplier
-    "32": boolean, // is contract active
-    "33": number, // closing / settlement price
-    "34": string, // symbol of active contract
-    "35": number, // expiration date of this contract, ms since epoch
+    "17": number, // daily open
+    "18": number, // open interest
+    "19": number, // ? unknown
+    // 20 unused?
+    // 21 unused?
+    "22": number, // multiplier
+    "23": number, // ? unknown
+    "24": string, // underlying symbol
+    "25": number, // strike
+    "26": number, // expiration date of this contract, ms since epoch
 }
 
 export interface L1OptionsQuoteRough extends StringIndexed {
-    "0": string, // symbol
+    "key": string,
+    "cusip": string,
+    "assetMainType": EAssetType,
+    "delayed": boolean,
     "1": string, // description, company, index, fund name
     "2": number, // bid
     "3": number, // ask
@@ -178,9 +175,12 @@ export interface L1OptionsQuoteRough extends StringIndexed {
 }
 
 export interface L1EquityQuoteRough extends StringIndexed {
-    "0": string, // symbol
+    "key": string, // symbol
+    "cusip": string,
+    "assetMainType": EAssetType,
+    "delayed": boolean,
     "1": number, // bid price
-    "2": string, // ask price
+    "2": number, // ask price
     "3": number, // last price
     "4": number, // bid size
     "5": number, // ask size
@@ -235,7 +235,6 @@ export interface L1EquityQuoteRough extends StringIndexed {
 
 export interface L1FuturesQuoteRough {
     "key": string, //symbol
-    "0": string, //symbol
     "1": number, //bid
     "2": number, //ask
     "3": number, //last
@@ -271,11 +270,11 @@ export interface L1FuturesQuoteRough {
     "33": number, // settlementPrice
     "34": string, // activeContractSymbol
     "35": number, // contractExpirationDate ms since epoch
-    "delayed": boolean
+    "delayed": boolean,
+    "assetMainType": EAssetType,
 }
 
 export interface L1ForexQuoteRough extends StringIndexed {
-    "0": string, // ticker symbol in upper case
     "1": number, // current best bid price
     "2": number, // current ask
     "3": number, // last trade
@@ -305,80 +304,77 @@ export interface L1ForexQuoteRough extends StringIndexed {
     "27": number, // 52wk high
     "28": number, // 52wk low
     "29": number, // mark
+    "key": string,
+    "assetMainType": EAssetType,
+    "delayed": boolean,
 }
 
 // TODO: verify 23/24 in forex since there are two 23s in the docs. is it trading hours string or product string?
 
-export interface L1FuturesOptionsQuote extends L1QuoteCommon {
-    // "0": string, // symbol
-    // "16": string, // description
-    // "22": TRADING_STATUS, // security trading status: Normal, Halted, Closed
-
-    // price
-    // "1": number, // bid price
-    // "2": number, // ask price
-    // "3": number, // last trade price
-    // "12": number, // daily high
-    // "13": number, // daily low
-    // "18": number, // daily open
-    // "14": number, // prev day close
-    // "24": number, // mark
-    settlementPrice: number, // "33": number, // closing / settlement price
-
-    // derived from price
-    // "19": number, // net change, current last - prev close
-    percentChange: number, // "20": number, // percent change
-
-    // volume
-    // "4": number, // bid size
-    // "5": number, // ask size
-    // "8": number, // total volume
-    // "9": number, // last size
-    openInterest: number, // "23": number, // open interest
-
-    // exchange
-    exchangeBestAsk: EXCHANGES, // "6": EXCHANGES, // exchange with best ask
-    exchangeBestBid: EXCHANGES, // "7": EXCHANGES, // exchange with best bid
-    exchangeOfPrimaryListing: EXCHANGES, // "15": EXCHANGES, // primary listing exchange
-    exchangeLastTrade: EXCHANGES, // "17": EXCHANGES, // last trade exchange
-    exchangeName: string, // "21": string, // name of exchange
-
-    // time
-    // "10": number, // quote time ms epoch
-    // "11": number, // trade time ms epoch
-
+export interface L1FuturesOptionsQuote extends StringIndexed {
+    key: string, // "key": string, // symbol
+    symbol: string,
+    delayed: boolean, // "delayed": boolean,
 
     // contract/product info
-    tickSize: number, // "25": number, // tick, min price movement
-    tickAmount: number, // "26": number, // tick amt, min amt of change (tick * multiplier)
-    futuresProduct: string, // "27": string, // product (futures product)
-    priceFormat: string, // "28": string, // price format (fraction or decimal)
-    tradingHours: string, // "29": string, // trading hours
-    isTradable: boolean, // "30": boolean, // is tradeable
-    multiplier: number, // "31": number, // point value / multiplier
-    isContractActive: boolean, // "32": boolean, // is contract active
-    activeContractSymbol: string, // "34": string, // symbol of active contract
-    contractExpirationMSEpoch: number, // "35": number, // expiration date of this contract, ms since epoch
+    description: string, // "16": string, // description
+    multiplier: number, // "22": number, // multiplier
+    underlyingSymbol: string, // "24": string, // underlying symbol
+    strike: number, // "25": number, // strike
+    expirationDateMSEpoch: number, // "26": number, // expiration date of this contract, ms since epoch
+
+    // price
+    bid: number, // "1": number, // bid price
+    ask: number, // "2": number, // ask price
+    last: number, // "3": number, // last trade price
+    dailyHigh: number, // "12": number, // daily high
+    dailyLow: number, // "13": number, // daily low
+    previousDayClose: number, // "14": number, // prev day close
+    dailyOpen: number, // "17": number, // daily open
+    unknown19: number, // "19": number, // ?
+    unknown23: number, // "23": number, // ?
+
+    // volume
+    bidSize: number, // "4": number, // bid size
+    askSize: number, // "5": number, // ask size
+    dailyVolume: number, // "8": number, // total volume
+    lastSize: number, // "9": number, // last size
+    openInterest: number, // "18": number, // open interest
+
+    // exchange
+    exchangeBestAsk: EXCHANGES | string, // "6": EXCHANGES, // exchange with best ask
+    exchangeBestBid: EXCHANGES | string, // "7": EXCHANGES, // exchange with best bid
+    exchangeOfPrimaryListing: EXCHANGES, // "15": EXCHANGES, // primary listing exchange
+
+    // time
+    timeLasatQuote: number, // "10": number, // quote time ms epoch
+    timeLastTrade: number, // "11": number, // trade time ms epoch
 }
 
 export interface L1OptionsQuote extends StringIndexed {
-    // "0": string, // symbol
-    // "1": string, // description, company, index, fund name
-    // "37": TRADING_STATUS, // trading status
+    timestamp: number, // imposed by transform function
+
+    key: string,
+    cusip: string,
+    assetMainType: EAssetType,
+    delayed: boolean,
+    symbol: string, // "0": string, // symbol
+    description: string, // "1": string, // description, company, index, fund name
+    tradingStatus: TRADING_STATUS, // "37": TRADING_STATUS, // trading status
     underlyingPrice: number, // "39": number, // underlying price
 
     // price
-    // "2": number, // bid
-    // "3": number, // ask
-    // "4": number, // last
-    // "5": number, // daily high
-    // "6": number, // daily low
-    // "7": number, // prev day close
-    // "19": number, // daily open
-    // "41": number, // mark
+    bid: number, // "2": number, // bid
+    ask: number, // "3": number, // ask
+    last: number, // "4": number, // last
+    dailyHigh: number, // "5": number, // daily high
+    dailyLow: number, // "6": number, // daily low
+    previousDayClose: number, // "7": number, // prev day close
+    dailyOpen: number, // "19": number, // daily open
+    mark: number, // "41": number, // mark
 
     // derived from price
-    // "23": number, // net change, last - prev close
+    netChange: number, // "23": number, // net change, last - prev close
     intrinsicValues: number, // "13": number, // intrinsic value
     volatility: number, // "10": number, // volatility
     timeValue: number, // "29": number, // time value
@@ -390,20 +386,19 @@ export interface L1OptionsQuote extends StringIndexed {
     theoreticalOptionValue: number, // "38": number, // theoretical option value
 
     // volume
-    // "8": number, // total volume
-    // "20": number, // bid size
-    // "21": number, // ask size
-    // "22": number, // last size
+    dailyVolume: number, // "8": number, // total volume
+    bidSize: number, // "20": number, // bid size
+    askSize: number, // "21": number, // ask size
+    lastSize: number, // "22": number, // last size
     openInterest: number, // "9": number, // open interest
 
     // time
-    // "11": number, // quote time since, sec since midnight
-    // "12": number, // trade time, sec since midnight
+    timeLastQuote: number, // ms since epoch
+    timeLastTrade: number, // ms since epoch
     quoteDay: number, // "14": number, // quote day (day of month?)
     tradeDay: number, // "15": number, // trade day (day of month?)
-    timeLastQuoteSecsFromMidnight: number,
-    timeLastTradeSecsFromMidnight: number,
-
+    timeLastQuoteSecsFromMidnight: number, // "11": number, // quote time since, sec since midnight
+    timeLastTradeSecsFromMidnight: number, // "12": number, // trade time, sec since midnight
 
     // contract info
     multiplier: number, // "17": number, // contract multiplier
@@ -420,40 +415,44 @@ export interface L1OptionsQuote extends StringIndexed {
 }
 
 export interface L1ForexQuote extends StringIndexed {
-    // "0": string, // ticker symbol in upper case
-    // "14": string, // description
-    // "20": TRADING_STATUS, // trading status
+    timestamp: number, // imposed by transform function
+    key: string,
+    assetMainType: EAssetType,
+    delayed: boolean,
+    symbol: string, // "0": string, // ticker symbol in upper case
+    description: string, // "14": string, // description
+    tradingStatus: TRADING_STATUS, // "20": TRADING_STATUS, // trading status
     productName: string, // "23": string, // product name
     tradingHours: string, // "24": string, // trading hours
     isTradable: boolean, // "25": boolean, // is tradable
     marketMaker: string, // "26": string, // market maker
 
     // price
-    // "1": number, // current best bid price
-    // "2": number, // current ask
-    // "3": number, // last trade
-    // "10": number, // high price
-    // "11": number, // low price
-    // "12": number, // prev day close
-    // "15": number, // day's open price
-    // "29": number, // mark
+    bid: number, // "1": number, // current best bid price
+    ask: number, // "2": number, // current ask
+    last: number, // "3": number, // last trade
+    dailyHigh: number, // "10": number, // high price
+    dailyLow: number, // "11": number, // low price
+    previousDayClose: number, // "12": number, // prev day close
+    dailyOpen: number, // "15": number, // day's open price
+    mark: number, // "29": number, // mark
     fiftyTwoWeekHigh: number, // "27": number, // 52wk high
     fiftyTwoWeekLow: number, // "28": number, // 52wk low
 
 
     // derived from price
-    // "16": number, // net change last - prev close
+    netChange: number, // "16": number, // net change last - prev close
     percentChange: number, // "17": number, // percent change
 
     // volume
-    // "4": number, // bid size
-    // "5": number, // ask size
-    // "6": number, // volume
-    // "7": number, // last size
+    bidSize: number, // "4": number, // bid size
+    askSize: number, // "5": number, // ask size
+    dailyVolume: number, // "6": number, // volume
+    lastSize: number, // "7": number, // last size
 
     // time
-    // "8": number, // quote time ms epoch
-    // "9": number, // trade time ms epoch
+    timeLastQuote: number, // "8": number, // quote time ms epoch
+    timeLastTrade: number, // "9": number, // trade time ms epoch
 
     // exchange
     exchangeOfPrimaryListing: EXCHANGES, // "13": EXCHANGES, // primary listing exchange
@@ -466,31 +465,37 @@ export interface L1ForexQuote extends StringIndexed {
 }
 
 export interface L1EquityQuote extends StringIndexed {
+    timestamp: number, // will be imposed by transform function
+
+    key: string,
+    assetMainType: EAssetType,
+    cusip: string,
+    delayed: boolean,
     // symbol and about info
-    // "0": string, // symbol
-    // "25": string, // description: company, index, or fund name
-    // "48": TRADING_STATUS, // security status: Normal, Halted, Closed
+    symbol: string, // "0": string, // symbol
+    description: string, // "25": string, // description: company, index, or fund name
+    tradingStatus: TRADING_STATUS, // "48": TRADING_STATUS, // security status: Normal, Halted, Closed
     peRatio: number, // "32": number, // PE ratio
     dividendAmount: number, // "33": number, // dividend amount
     dividendYield: number, // "34": number, // dividend yield
     dividendDate: string, // "40": string, // dividend date
 
     // price info
-    // "1": number, // bid price
-    // "2": number, // ask price
-    // "3": number, // last price
-    // "12": number, // daily high price
-    // "13": number, // daily low price
-    // "28": number, // day open price
-    // "15": number, // prev day's close
-    // "49": number, // mark
+    bid: number, // "1": number, // bid price
+    ask: number, // "2": number, // ask price
+    last: number, // "3": number, // last price
+    dailyHigh: number, // "12": number, // daily high price
+    dailyLow: number, // "13": number, // daily low price
+    dailyOpen: number, // "28": number, // day open price
+    previousDayClose: number, // "15": number, // prev day's close
+    mark: number, // "49": number, // mark
     fiftyTwoWeekHigh: number, // "30": number, // 52wk high
     fiftyTwoWeekLow: number, // "31": number, // 52wk low
     fundPrice: number, // "38": number, // fund price
     regularMarketLastPrice: number, // "43": number, // regular market last price
 
     // info derived from price
-    // "29": number, // net change, last-prev close
+    netChange: number, // "29": number, // net change, last-prev close
     volatility: number, // "24": number, // volatility
     NAV: number, // "37": number, // NAV - mutual fund net asset value
     bidTickDirection: string, // "14": string, // bid tick, up or down
@@ -498,10 +503,10 @@ export interface L1EquityQuote extends StringIndexed {
     regularMarketNetchange: number, // "47": number, // reg market net change
 
     // volume info
-    // "4": number, // bid size
-    // "5": number, // ask size
-    // "8": number, // volume
-    // "9": number, // last size, in 100s
+    bidSize: number, // "4": number, // bid size
+    askSize: number, // "5": number, // ask size
+    dailyVolume: number,  // "8": number, // volume
+    lastSize: number, // "9": number, // last size, in 100s
     regularMarketLastSize: number, // "44": number, // reg last size
 
     // exchanges
@@ -521,8 +526,8 @@ export interface L1EquityQuote extends StringIndexed {
 
 
     // time info
-    // "50": number, // quote time ms since epoch
-    // "51": number, // trade time ms since epoch
+    timeLastQuote: number, // "50": number, // quote time ms since epoch
+    timeLastTrade: number, // "51": number, // trade time ms since epoch
     lastRegularMarketTradeTimeMSEpoch: number, // "52": number, // reg mkt trade time ms epoch
     quoteDay: number, // "22": number, // quote day (day of the month?)
     tradeDay: number, // "23": number, // trade day
@@ -541,35 +546,37 @@ export interface L1EquityQuote extends StringIndexed {
 }
 
 export interface L1FuturesQuote extends StringIndexed {
+    timestamp: number, // will be imposed by transform function
     // symbol and about info
-    // "key": string, //symbol
-    // "0"?: string, //symbol
-    // "16"?: string, // description of product
-    // "22"?: TRADING_STATUS, // symbolStatus
+    key: string, // "key": string, //symbol
+    assetMainType: EAssetType,
+    symbol: string, // "0"?: string, //symbol
+    description: string, // "16"?: string, // description of product
+    tradingStatus: TRADING_STATUS, // "22"?: TRADING_STATUS, // symbolStatus
     futuresProduct: string, // "27"?: string, // futuresProduct
     tradingHours: string, // "29"?: string, // tradingHours
     isTradable: boolean, // "30"?: boolean, // isTradable
 
     // price info
-    // "1"?: number, //bid
-    // "2"?: number, //ask
-    // "3"?: number, //last
-    // "12"?: number, // dailyHigh
-    // "13"?: number, // dailyLow
-    // "14"?: number, // prevDayClose
-    // "18"?: number, // dailyOpen
-    // "24"?: number, // mark
+    bid: number, // "1"?: number, //bid
+    ask: number, // "2"?: number, //ask
+    last: number, // "3"?: number, //last
+    dailyHigh: number, // "12"?: number, // dailyHigh
+    dailyLow: number, // "13"?: number, // dailyLow
+    previousDayClose: number, // "14"?: number, // prevDayClose
+    dailyOpen: number, // "18"?: number, // dailyOpen
+    mark: number, // "24"?: number, // mark
     settlementPrice: number, // "33"?: number, // settlementPrice
 
     // info derived from price
-    // "19"?: number, // netChange
+    netChange: number, // "19"?: number, // netChange
     percentChange: number, // "20"?: number, // pctChange
 
     // volume info
-    // "4"?: number, //bidSize
-    // "5"?: number, //askSize
-    // "8"?: number, // dailyVolume
-    // "9"?: number, // lastSize
+    bidSize: number, // "4"?: number, //bidSize
+    askSize: number, // "5"?: number, //askSize
+    dailyVolume: number, // "8"?: number, // dailyVolume
+    lastSize: number, // "9"?: number, // lastSize
     openInterest: number, // "23"?: number, // openInterest
 
     // contract info
@@ -589,8 +596,8 @@ export interface L1FuturesQuote extends StringIndexed {
     exchangeName: string, // "21"?: string, // exchangeName
 
     // time info
-    // "10"?: number, // lastQuoteTime ms since epoch
-    // "11"?: number, // lastTradeTime ms since epoch
+    timeLastQuote: number, // "10"?: number, // lastQuoteTime ms since epoch
+    timeLastTrade: number, // "11"?: number, // lastTradeTime ms since epoch
 
     // metadata
     delayed: boolean
@@ -664,7 +671,7 @@ export interface NewsHeadlineRough extends StringIndexed {
 
 export interface NewsHeadline extends StringIndexed {
     timestamp: number,
-    sequence: number,
+    seq: number,
     key: string,
     symbol: string,
     errorCode: number,
@@ -689,49 +696,65 @@ export interface AcctActivityRough extends StringIndexed {
 
 export interface AcctActivity extends StringIndexed {
     accountNumber: string,
-    messageType: string,
+    messageType: EAcctActivityMsgType,
     messageData: any, // xml
     key: string, // subscription key
     sequence: number, // sequence number
 }
 
+export enum EAcctActivityMsgType {
+    SUBSCRIBED = "SUBSCRIBED",
+    ERROR = "ERROR",
+    BrokenTrade = "BrokenTrade",
+    ManualExecution = "ManualExecution",
+    OrderActivation = "OrderActivation",
+    OrderCancelReplaceRequest = "OrderCancelReplaceRequest",
+    OrderCancelRequest = "OrderCancelRequest",
+    OrderEntryRequest = "OrderEntryRequest",
+    OrderFill = "OrderFill",
+    OrderPartialFill = "OrderPartialFill",
+    OrderRejection = "OrderRejection",
+    TooLateToCancel = "TooLateToCancel",
+    UROUT = "UROUT",
+}
+
 export enum EServices {
     ADMIN = "ADMIN",
-    ACCT_ACTIVITY="ACCT_ACTIVITY",
+    ACCT_ACTIVITY = "ACCT_ACTIVITY",
 
-    ACTIVES_NASDAQ="ACTIVES_NASDAQ",
-    ACTIVES_NYSE="ACTIVES_NYSE",
-    ACTIVES_OTCBB="ACTIVES_OTCBB",
-    ACTIVES_OPTIONS="ACTIVES_OPTIONS",
+    ACTIVES_NASDAQ = "ACTIVES_NASDAQ",
+    ACTIVES_NYSE = "ACTIVES_NYSE",
+    ACTIVES_OTCBB = "ACTIVES_OTCBB",
+    ACTIVES_OPTIONS = "ACTIVES_OPTIONS",
 
-    FOREX_BOOK="FOREX_BOOK",
-    FUTURES_BOOK="FUTURES_BOOK",
-    LISTED_BOOK="LISTED_BOOK",
-    NASDAQ_BOOK="NASDAQ_BOOK",
-    OPTIONS_BOOK="OPTIONS_BOOK",
-    FUTURES_OPTIONS_BOOK="FUTURES_OPTIONS_BOOK",
+    FOREX_BOOK = "FOREX_BOOK",
+    FUTURES_BOOK = "FUTURES_BOOK",
+    LISTED_BOOK = "LISTED_BOOK",
+    NASDAQ_BOOK = "NASDAQ_BOOK",
+    OPTIONS_BOOK = "OPTIONS_BOOK",
+    FUTURES_OPTIONS_BOOK = "FUTURES_OPTIONS_BOOK",
 
-    CHART_EQUITY="CHART_EQUITY",
+    CHART_EQUITY = "CHART_EQUITY",
 
     CHART_FUTURES = "CHART_FUTURES",
     CHART_HISTORY_FUTURES = "CHART_HISTORY_FUTURES",
-    QUOTE="QUOTE",
+    QUOTE = "QUOTE",
     LEVELONE_FUTURES = "LEVELONE_FUTURES",
     LEVELONE_FOREX = "LEVELONE_FOREX",
-    LEVELONE_FUTURES_OPTIONS="LEVELONE_FUTURES_OPTIONS",
-    OPTION="OPTION",
-    LEVELTWO_FUTURES="LEVELTWO_FUTURES",
+    LEVELONE_FUTURES_OPTIONS = "LEVELONE_FUTURES_OPTIONS",
+    OPTION = "OPTION",
+    LEVELTWO_FUTURES = "LEVELTWO_FUTURES",
 
-    NEWS_HEADLINE="NEWS_HEADLINE",
-    NEWS_STORY="NEWS_STORY",
-    NEWS_HEADLINE_LIST="NEWS_HEADLINE_LIST",
+    NEWS_HEADLINE = "NEWS_HEADLINE",
+    NEWS_STORY = "NEWS_STORY",
+    NEWS_HEADLINE_LIST = "NEWS_HEADLINE_LIST",
 
-    STREAMER_SERVER="STREAMER_SERVER",
+    STREAMER_SERVER = "STREAMER_SERVER",
 
-    TIMESALE_EQUITY="TIMESALE_EQUITY",
-    TIMESALE_FUTURES="TIMESALE_FUTURES",
-    TIMESALE_FOREX="TIMESALE_FOREX",
-    TIMESALE_OPTIONS="TIMESALE_OPTIONS",
+    TIMESALE_EQUITY = "TIMESALE_EQUITY",
+    TIMESALE_FUTURES = "TIMESALE_FUTURES",
+    TIMESALE_FOREX = "TIMESALE_FOREX",
+    TIMESALE_OPTIONS = "TIMESALE_OPTIONS",
 }
 
 export enum EChartHistoryFuturesFrequency {
