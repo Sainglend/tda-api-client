@@ -603,38 +603,6 @@ export interface L1FuturesQuote extends StringIndexed {
     delayed: boolean
 }
 
-interface L1QuoteCommon extends StringIndexed {
-    timestamp: number, // from outer object
-    key: string,
-    symbol: string,
-    description: string,
-    tradingStatus: TRADING_STATUS,
-
-    // price
-    bid: number,
-    ask: number,
-    last: number,
-    dailyOpen: number,
-    dailyHigh: number,
-    dailyLow: number,
-    previousDayClose: number,
-    mark: number,
-
-    // derived from price
-    netChange: number,
-
-    // volume
-    bidSize: number,
-    askSize: number,
-    lastSize: number,
-    dailyVolume: number,
-
-    // time
-    // TODO: are times for L1 options REALLY seconds since midnight instead of ms since epoch
-    timeLastQuote: number,
-    timeLastTrade: number,
-}
-
 export interface TimeSaleRough extends StringIndexed {
     "key": string, // symbol
     "seq": number, // sequence

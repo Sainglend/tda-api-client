@@ -1,4 +1,4 @@
-// Copyright (C) 2020-1 Aaron Satterlee
+// Copyright (C) 2020-2 Aaron Satterlee
 
 import {Arguments} from "yargs";
 import {getPriceHistory} from "../pricehistory";
@@ -71,8 +71,8 @@ export default {
                         period: argv.period ? Number(argv.period) : (argv.from ? undefined : (argv.PERIOD_TYPE === "day" ? 10 : 1)),
                         frequencyType: argv.FREQUENCY_TYPE ? String(argv.FREQUENCY_TYPE) : "",
                         frequency: parseInt(argv.frequency as string),
-                        startDate: argv.from ? String(argv.from) : undefined,
-                        endDate: argv.to ? String(argv.to) : undefined,
+                        startDate: argv.from ? Number(argv.from) : undefined,
+                        endDate: argv.to ? Number(argv.to) : undefined,
                         getExtendedHours: String(argv.needExtendedHoursData) === "true",
                         verbose: String(argv.verbose) === "true",
                         apikey: argv.apikey ? String(argv.apikey) : undefined,

@@ -5,14 +5,14 @@
 To use this library, you MUST have a client_id (also known as apikey) to make unauthenticated requests. To make authenticated requests, you MUST ALSO have a refresh_token. Together, they form the basic auth object::
 ```json
 {
-    "refresh_token":"REPLACEME",
-    "client_id":"EXAMPLE@AMER.OAUTHAP"
+    "refresh_token": "REPLACEME",
+    "client_id": "EXAMPLE@AMER.OAUTHAP"
 }
 ```
 
 If you don't know what those fields are, then follow the guide below through step 10. After that you won't have to think about auth again until your refresh_token expires (90 days?) and you have to do steps 3b to 10 all over again.
 
-Once you have this info, you can plug it in right in the code (see the main [README](README.md)), or you can put it in a file at ```{project_root}/config/tdaclientauth.json```.
+Once you have this info, you can plug it in right in the code (see the main [README](README.md)), or you can put it in a file, either at the default location ```{project_root}/config/tdaclientauth.json```. or elsewhere.
 ## Let's define some terms
 **Trading username and password**
 : this is what you use to log in to Thinkorswim or your trading account on https://www.tdameritrade.com.
@@ -71,32 +71,92 @@ redirect_uri: {REDIRECT URI} (e.g. https://127.0.0.1)
 
 (9) The response will show up at the bottom and you will need to copy and SAVE the refresh_token somewhere, as you need it for step 10, for the JSON file.
 
-(10) For use with this library, you must either have a file in ```{project root}/config/tdaclientauth.json``` or set the needed values in the config object with each request in your code. If the former, please copy the example file from this library's config/ folder using the below command and fill in the appropriate values:
+(10) For use with this library, there are multiple ways to perform unauthenticated or authenticated requests. This section mirrors that from the main README.
+
+Using this library, there are three ways to make requests:
+### 1. Unauthenticated requests
+For the methods that support it, ```apikey``` can be passed in as a config option.
+Example:
+```typescript
+import {
+  SearchInstrumentsFundamentalsConfig,
+  searchInstrumentFundamentals,
+} from "tda-api-client/instruments";
+
+const config: ISearchInstrumentsFundamentalsConfig = {
+  symbol: "MSFT",
+  apikey: "EXAMPLE@AMER.OAUTHAP",
+};
+
+const result = await searchInstrumentFundamentals(config);
+```
+A list of methods allowing unauthenticated requests is presented below.
+
+### 2. Authenticated requests with a config object
+The difference here is that you'd pass in your client_id and refresh_token in as ```config.authConfig``` like this:
+```typescript
+import {
+  SearchInstrumentsFundamentalsConfig,
+  searchInstrumentFundamentals,
+} from "tda-api-client/instruments";
+
+const config: ISearchInstrumentsFundamentalsConfig = {
+  symbol: "MSFT",
+  authConfig: {
+    refresh_token: "WOEFIJ23OIF2OIFJ2O3FIJ",
+    client_id: "EXAMPLE@AMER.OAUTHAP",
+  },
+};
+
+const result = await searchInstrumentFundamentals(config);
+```
+
+### 3. Authenticated requests with a config file
+To use this method, you must have a config file. The default location is ```{project root}/config/tdaclientauth.json```. Please copy the example file from this library's [config/](config/) folder using the below command:
 
 ```bash
 cp ./node_modules/tda-api-client/config/tdaclientauth.json ./config/tdaclientauth.json
 ```
 
-OR copy this json and replace the values with your own:
+OR simply copy this json into that same file location and replace the values with your own:
 ```json
 {
     "refresh_token":"REPLACEME",
     "client_id":"EXAMPLE@AMER.OAUTHAP"
 }
 ```
-Otherwise, if using this in code, this will be set as config.authConfig with each request. Example:
-```js
- const configGetMarketHrs = {
-        market: 'OPTION',
-        date: '2021-03-02',
-        authConfig: {
-            "refresh_token": "SrgS0QJK",
-            "client_id": "P66@AMER.OAUTHAP",
-        }
-    };
 
-const hrs = await tdaapiclient.markethours.getSingleMarketHours(configGetMarketHrs);
+ALTERNATIVELY, you can place your auth file anywhere you like that node has r/w access to, and use that in your requests.
+
+Example with the default file location. Note that no extra parameters are necessary:
+```typescript
+import {
+  SearchInstrumentsFundamentalsConfig,
+  searchInstrumentFundamentals,
+} from "tda-api-client/instruments";
+
+const config: ISearchInstrumentsFundamentalsConfig = {
+  symbol: "MSFT",
+};
+
+const result = await searchInstrumentFundamentals(config);
 ```
+
+Example with a custom file location, using the parameter authConfigFileLocation:
+```typescript
+import {
+  SearchInstrumentsFundamentalsConfig,
+  searchInstrumentFundamentals,
+} from "tda-api-client/instruments";
+
+const config: ISearchInstrumentsFundamentalsConfig = {
+  symbol: "MSFT",
+  authConfigFileLocation: testauthpath,
+};
+
+const result = await searchInstrumentFundamentals(config);
+```
+
 ## DONE!!!! Sort of.....
 
 From now on, you can either leverage the authentication javascript code in this library, either directly in your code, or indirectly every time you make a request, or you can revisit the page in step 7. Note: as long as you put the refresh_token in the correct place in the config/ folder, you'll never have to personally deal with an access_token (the one that expires every 30 minutes). You'll just have to get a new refresh_token every 90 days.
@@ -123,3 +183,4 @@ What is this thing for? It has to be specified with Add a New App on https://dev
 
 When you are trying to get a new refresh_token, you have to log in to your trading account, and then you get the "code" from the URL on the next blank page. Another way this could work is if you were running a daemon app that can receive traffic. If you know the ip address of your app and you have configured an endpoint on your app, then you could use that as your redirect url.
 Example: If an app is running at www.myawesomeapp.zzz, then the redirect url could be set to www.myaweseomapp.zzz/newauth and that endpoint could be configured to accept a param named "code" and boom, in business! Then, step 6 above would try to call www.myawesomeapp.zzz/newauth?code=abc123abc123
+You can import refreshAPIAuthorization() from tda-api-client/authentication to make this request.

@@ -24,8 +24,15 @@ export interface IStreamDataTDAConfig {
 
     reconnectRetryIntervalSeconds?: number,
 
+    queueConfig?: IQueueConfig,
+
     verbose?: boolean,
     debug?: boolean,
+}
+
+export interface IQueueConfig {
+    minimumSpacingMS?: number,
+    maximumSpacingMS?: number,
 }
 
 export interface IStreamParams {
@@ -44,7 +51,7 @@ export interface IGenericStreamConfig {
 }
 
 enum EQueueState {
-    INITIALIZED,
+    UN_INITIALIZED,
     AVAILABLE,
     BUSY,
 }
@@ -101,6 +108,11 @@ export class StreamDataTDA extends EventEmitter {
     private debug: boolean;
     private authConfig: IAuthConfig;
 
+    private queueMinWaitMS: number;
+    private queueMaxWaitMS: number;
+    private queueLastReqTime: number;
+    private queueIntervalObj: any;
+
     constructor(streamConfig: IStreamDataTDAConfig) {
         super();
         this.dataStreamSocket = {};
@@ -133,7 +145,12 @@ export class StreamDataTDA extends EventEmitter {
             this.authConfig = streamConfig.authConfig;
         else throw "You must provide authConfig as part of the config object in the constructor call.";
 
-        this.queueState = EQueueState.INITIALIZED;
+        // queue
+        this.queueMinWaitMS = streamConfig.queueConfig?.minimumSpacingMS || 500;
+        this.queueMaxWaitMS = streamConfig.queueConfig?.maximumSpacingMS || 1000;
+        this.queueIntervalObj = 0;
+        this.queueLastReqTime = 0;
+        this.queueState = EQueueState.UN_INITIALIZED;
         this.queueArr = [];
     }
 
@@ -257,11 +274,11 @@ export class StreamDataTDA extends EventEmitter {
             // case 5.5 service === 'ADMIN' && command === 'LOGOUT'
             // case 5.3 service === 'ADMIN' && command === 'LOGIN'
             if (!this.heartbeatCheckerInterval) this.heartbeatCheckerInterval = this.startHeartbeatChecker();
-            if (this.queueState === EQueueState.INITIALIZED) {
+            if (this.queueState === EQueueState.UN_INITIALIZED) {
                 await this.qstart();
             } else {
                 this.queueState = EQueueState.AVAILABLE;
-                await this.dequeueAndProcess();
+                this.dequeueAndProcess();
             }
             if (this.verbose) console.log(JSON.stringify(responseObject.response, null, 2));
             this.emit("response", responseObject.response);
@@ -305,7 +322,7 @@ export class StreamDataTDA extends EventEmitter {
 
         if (responseObject.snapshot) {
             this.queueState = EQueueState.AVAILABLE;
-            await this.dequeueAndProcess();
+            this.dequeueAndProcess();
 
             if (this.emitDataRaw) {
                 this.emit("snapshot", responseObject.snapshot);
@@ -395,7 +412,11 @@ export class StreamDataTDA extends EventEmitter {
         this.streamRestartsCount++;
         if (this.heartbeatCheckerInterval) {
             if (this.verbose) console.log("Clearing heartbeat checker for restart", this.streamRestartsCount, "time:", new Date().toISOString());
-            clearInterval(this.heartbeatCheckerInterval);
+            if (this.heartbeatCheckerInterval) clearInterval(this.heartbeatCheckerInterval);
+            this.heartbeatCheckerInterval = 0;
+            if (this.queueIntervalObj) clearInterval(this.queueIntervalObj);
+            this.queueIntervalObj = 0;
+            this.queueState = EQueueState.UN_INITIALIZED;
         }
         this.once("message", () => { this.clearRetryAttempts(); this.resubscribe(); }); // set this to trigger on successful login
         this.doDataStreamLogin();
@@ -407,6 +428,11 @@ export class StreamDataTDA extends EventEmitter {
 
     private async handleStreamClose(): Promise<void> {
         console.log("handleStreamClose called");
+        if (this.heartbeatCheckerInterval) clearInterval(this.heartbeatCheckerInterval);
+        this.heartbeatCheckerInterval = 0;
+        if (this.queueIntervalObj) clearInterval(this.queueIntervalObj);
+        this.queueIntervalObj = 0;
+        this.queueState = EQueueState.UN_INITIALIZED;
         if (this.userKilled) {
             if (this.verbose) console.log("stream closed, killed by user");
             this.emit("streamClosed", {attemptingReconnect: false});
@@ -420,23 +446,31 @@ export class StreamDataTDA extends EventEmitter {
     }
 
     private async qstart() {
+        if (this.debug) console.debug("starting queue");
         this.queueState = EQueueState.AVAILABLE;
-        await this.dequeueAndProcess();
+        this.dequeueAndProcess();
+        this.queueIntervalObj = setInterval(this.dequeueAndProcess.bind(this), this.queueMaxWaitMS);
     }
 
-    private async qpush(cb:any) {
-        this.queueArr.push(cb);
+    private async qpush(queueEntry: IQueueEntry) {
+        if (this.debug) console.debug("qpush", queueEntry.fnDesc, JSON.stringify(queueEntry.params, null, 2));
+        this.queueArr.push(queueEntry);
         if (this.queueArr.length === 1 && this.queueState === EQueueState.AVAILABLE) {
-            await this.dequeueAndProcess();
+            this.dequeueAndProcess();
         }
     }
 
     private async dequeueAndProcess() {
-        if (this.verbose) console.log("deq", `queuesize:${this.queueArr.length}`, `queuestate:${EQueueState[this.queueState]}`);
+        if (this.debug) console.debug("deq", `queuesize:${this.queueArr.length}`, `queuestate:${EQueueState[this.queueState]}`);
+        if (this.queueLastReqTime + this.queueMinWaitMS > Date.now()) return;
         if (this.queueArr.length > 0 && this.queueState === EQueueState.AVAILABLE) {
             this.queueState = EQueueState.BUSY;
-            const nextInQueue = this.queueArr.pop();
-            await nextInQueue();
+            const nextInQueue: IQueueEntry = this.queueArr.shift();
+            if (this.debug) console.debug(`processing queue item: ${nextInQueue.fnDesc} with params: ${JSON.stringify(nextInQueue.params, null, 2)}`);
+            if (nextInQueue.queueRequestConfig.cbPre) nextInQueue.queueRequestConfig.cbPre();
+            this.queueLastReqTime = Date.now();
+            await nextInQueue.fn();
+            if (nextInQueue.queueRequestConfig.cbPost) nextInQueue.queueRequestConfig.cbPost();
         }
     }
 
@@ -461,6 +495,10 @@ export class StreamDataTDA extends EventEmitter {
             reconnectRetryIntervalSeconds: this.retryIntervalSeconds,
             verbose: this.verbose,
             debug: this.debug,
+            queueConfig: {
+                minimumSpacingMS: this.queueMinWaitMS,
+                maximumSpacingMS: this.queueMaxWaitMS,
+            },
         };
     }
 
@@ -588,6 +626,11 @@ export class StreamDataTDA extends EventEmitter {
      */
     async doDataStreamLogout(): Promise<void> {
         this.userKilled = true;
+        if (this.heartbeatCheckerInterval) clearInterval(this.heartbeatCheckerInterval);
+        this.heartbeatCheckerInterval = 0;
+        if (this.queueIntervalObj) clearInterval(this.queueIntervalObj);
+        this.queueIntervalObj = 0;
+        this.queueState = EQueueState.UN_INITIALIZED;
         await this.genericStreamRequest({
             service: EServices.ADMIN,
             requestSeqNum: this.requestId++,
@@ -716,27 +759,69 @@ export class StreamDataTDA extends EventEmitter {
         return await this.genericStreamRequest(config);
     }
 
-    async queueAccountActivitySub(accountIds = "", fields = "0,1,2,3", requestSeqNum?: number) : Promise<any> {
-        await this.qpush(this.accountActivitySub.bind(this, accountIds, fields, requestSeqNum));
+    async queueAccountActivitySub(accountIds = "", fields = "0,1,2,3", requestSeqNum?: number, queueConfig: IQueueRequestConfig = {}) : Promise<any> {
+        await this.qpush({
+            fn: this.accountActivitySub.bind(this, accountIds, fields, requestSeqNum),
+            fnDesc: "accountActivitySub",
+            params: { accountIds, fields, requestSeqNum },
+            queueRequestConfig: queueConfig,
+        });
     }
 
-    async queueAccountActivityUnsub() : Promise<any> {
-        await this.qpush(this.accountActivityUnsub.bind(this));
+    async queueAccountActivityUnsub(queueConfig: IQueueRequestConfig = {}) : Promise<any> {
+        await this.qpush({
+            fn: this.accountActivityUnsub.bind(this),
+            fnDesc: "accountActivityUnsub",
+            params: {},
+            queueRequestConfig: queueConfig,
+        });
     }
 
     async queueChartHistoryFuturesGet(
-        symbol: string,
-        frequency: EChartHistoryFuturesFrequency,
-        period?: string,
-        startTimeMSEpoch?: number,
-        endTimeMSEpoch?: number,
-        requestSeqNum?: number,
+        config: IChartHistoryFuturesGetConfig,
+        queueConfig: IQueueRequestConfig = {},
     ) : Promise<any> {
         // @ts-ignore
-        await this.qpush(this.chartHistoryFuturesGet.bind(this, symbol, frequency, period, startTimeMSEpoch, endTimeMSEpoch, requestSeqNum));
+        await this.qpush({
+            fn: this.chartHistoryFuturesGet.bind(this, config),
+            fnDesc: "chartHistoryFuturesGet",
+            params: config,
+            queueRequestConfig: queueConfig,
+        });
     }
 
-    async queueGenericStreamRequest(config: IGenericStreamConfig): Promise<void> {
-        await this.qpush(this.genericStreamRequest.bind(this, config));
+    async queueGenericStreamRequest(config: IGenericStreamConfig, queueConfig: IQueueRequestConfig = {}): Promise<void> {
+        await this.qpush({
+            fn: this.genericStreamRequest.bind(this, config),
+            fnDesc: "genericStreamRequest",
+            params: config,
+            queueRequestConfig: queueConfig,
+        });
     }
+
+    async queueQosRequest(qosLevel: EQosLevels, requestSeqNum: number = this.requestId++, queueConfig: IQueueRequestConfig = {}): Promise<void> {
+        await this.qpush({
+            fn: this.qosRequest.bind(this, qosLevel, requestSeqNum),
+            fnDesc: "qosRequest",
+            params: { qosLevel, requestSeqNum },
+            queueRequestConfig: queueConfig,
+        });
+    }
+
+    queueClear(): void {
+        if (this.verbose) console.log("clear queue");
+        this.queueArr = [];
+    }
+}
+
+interface IQueueEntry {
+    fn: any,
+    fnDesc: string,
+    params: any,
+    queueRequestConfig: IQueueRequestConfig,
+}
+
+export interface IQueueRequestConfig {
+    cbPre?: any,
+    cbPost?: any,
 }

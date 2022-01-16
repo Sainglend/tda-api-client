@@ -1,4 +1,4 @@
-// Copyright (C) 2020-1 Aaron Satterlee
+// Copyright (C) 2020-2 Aaron Satterlee
 
 import {Arguments} from "yargs";
 import {cancelOrder, getOrder, getOrdersByQuery, EOrderStatus, placeOrder, replaceOrder} from "../orders";
@@ -29,10 +29,10 @@ export default {
                         console.log(`replacing order ${argv.orderId} for ${argv.accountId}`);
                     }
                     return replaceOrder({
-                        accountId: argv.accountId,
+                        accountId: String(argv.accountId),
                         orderJSON: (typeof (argv.orderJSON) === "string") ? JSON.parse(argv.orderJSON) : argv.orderJSON,
-                        orderId: argv.orderId,
-                        verbose: argv.verbose || false,
+                        orderId: String(argv.orderId),
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getorder <orderId> <accountId>",
@@ -56,9 +56,9 @@ export default {
                         console.log(`canceling order ${argv.orderId} for account ${argv.accountId}`);
                     }
                     return cancelOrder({
-                        accountId: argv.accountId,
-                        orderId: argv.orderId,
-                        verbose: argv.verbose || false,
+                        accountId: String(argv.accountId),
+                        orderId: String(argv.orderId),
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 })
             .command("getorders [accountId]",
@@ -88,12 +88,12 @@ export default {
                         console.log(`getting order details for multiple orders based on query params`);
                     }
                     return getOrdersByQuery({
-                        accountId: argv.accountId || "",
-                        maxResults: argv.maxResults || "",
-                        fromEnteredTime: argv.from || "",
-                        toEnteredTime: argv.to || "",
-                        status: argv.status || "",
-                        verbose: argv.verbose || false,
+                        accountId: argv.accountId ? String(argv.accountId) : "",
+                        maxResults: argv.maxResults ? Number(argv.maxResults) : 0,
+                        fromEnteredTime: argv.from ? String(argv.from) : "",
+                        toEnteredTime: argv.to ? String(argv.to) : "",
+                        status: argv.status ? argv.status as EOrderStatus : undefined,
+                        verbose: String(argv.verbose) === "true",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
                 });
     },

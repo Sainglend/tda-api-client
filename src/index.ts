@@ -1,4 +1,4 @@
-// Copyright (C) 2020-1  Aaron Satterlee
+// Copyright (C) 2020-2  Aaron Satterlee
 
 export * as accounts from "./accounts";
 export * as authentication from "./authentication";

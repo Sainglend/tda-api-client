@@ -1,4 +1,4 @@
-// Copyright (C) 2020-1 Aaron Satterlee
+// Copyright (C) 2020-2 Aaron Satterlee
 
 import {apiGet, TacRequestConfig} from "./tdapiinterface";
 import {ICandle} from "./sharedTypes";

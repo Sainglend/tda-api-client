@@ -1044,6 +1044,76 @@ describe("streaming", () => {
             });
         });
 
+        describe("queue", () => {
+            // queueAccountActivitySub
+            // queueAccountActivityUnsub
+            // queueChartHistoryFuturesGet
+            // queueGenericStreamRequest
+            // queueQosRequest
+            // queueClear
+            test.only("request queue spacing is within expected bounds", async () => {
+                const callbackTimes: number[] = [];
+                const callback = () => callbackTimes.push(Date.now());
+
+                const symbol1 = "MSFT";
+                const symbol2 = "TSLA";
+
+                const subConfig: IGenericStreamConfig = {
+                    parameters: {
+                        keys: symbol1,
+                    },
+                    service: EServices.QUOTE,
+                    command: ECommands.SUBS,
+                };
+
+                const addConfig: IGenericStreamConfig = {
+                    parameters: {
+                        keys: symbol2,
+                    },
+                    service: EServices.QUOTE,
+                    command: ECommands.ADD,
+                };
+
+                const unsubOneConfig: IGenericStreamConfig = {
+                    parameters: {
+                        keys: symbol2,
+                    },
+                    service: EServices.QUOTE,
+                    command: ECommands.UNSUBS,
+                };
+
+                const unsubAllConfig: IGenericStreamConfig = {
+                    service: EServices.QUOTE,
+                    command: ECommands.UNSUBS,
+                };
+
+                await tdaDataStream.queueGenericStreamRequest(subConfig,
+                    {
+                        cbPre: callback,
+                    });
+
+                for (let i = 0; i < 5; i++) {
+                    await tdaDataStream.queueGenericStreamRequest(addConfig, { cbPre: callback });
+                    await tdaDataStream.queueGenericStreamRequest(unsubOneConfig, { cbPre: callback });
+                }
+
+                await new Promise<void>(res => {
+                    tdaDataStream.queueGenericStreamRequest(unsubAllConfig, {
+                        cbPre: () => {
+                            callback();
+                            res();
+                        },
+                    });
+                });
+
+                expect(callbackTimes.length).toBe(12);
+                const diffs: number[] = callbackTimes.map((val, idx, arr) => idx > 0 ? val - arr[idx-1] : val).slice(1);
+                const streamConfig = tdaDataStream.getConfig();
+                expect(diffs.reduce((prev, curr) => Math.min(prev, curr))).toBeGreaterThan(streamConfig.queueConfig?.minimumSpacingMS || Number.MAX_SAFE_INTEGER);
+                expect(diffs.reduce((prev, curr) => Math.max(prev, curr))).toBeLessThan(2 * (streamConfig.queueConfig?.minimumSpacingMS || 0));
+            });
+        });
+
         async function genericDataStreamPart1(service: EServices, symbol1: string): Promise<Promise<any>[]> {
             const normalizedSymbol1 = StreamingUtils.normalizeSymbol(symbol1);
 

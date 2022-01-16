@@ -1,4 +1,4 @@
-// Copyright (C) 2020-1 Aaron Satterlee
+// Copyright (C) 2020-2 Aaron Satterlee
 
 import {apiDelete, apiGet, apiPost, apiPut, IWriteResponse, TacRequestConfig} from "./tdapiinterface";
 import {EAssetType, IInstrument} from "./sharedTypes";

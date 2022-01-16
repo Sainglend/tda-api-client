@@ -21,7 +21,7 @@ import {
     NewsHeadlineRough,
     NewsHeadline,
     AcctActivityRough,
-    AcctActivity,
+    AcctActivity, EAcctActivityMsgType,
 } from "./streamingdatatypes";
 import {ICandle} from "./sharedTypes";
 import convert from "xml-js";
@@ -502,7 +502,7 @@ export default class StreamingUtils {
         return {
             timestamp: timestamp,
             accountNumber: acctActivityRough["1"],
-            messageType: acctActivityRough["2"],
+            messageType: acctActivityRough["2"] as EAcctActivityMsgType,
             messageData: flatten(convert.xml2js(acctActivityRough["3"], {compact:true, textKey:"parsedXmlText"})), // xml
             key: acctActivityRough.key, // subscription key
             sequence: acctActivityRough.seq, // sequence number
