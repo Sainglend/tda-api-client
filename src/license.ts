@@ -1,4 +1,4 @@
-// Copyright (C) 2020  Aaron Satterlee
+// Copyright (C) 2020-2  Aaron Satterlee
 
 export default {
     command: `license`,

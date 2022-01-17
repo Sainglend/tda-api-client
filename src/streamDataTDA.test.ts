@@ -1087,19 +1087,19 @@ describe("streaming", () => {
                     command: ECommands.UNSUBS,
                 };
 
-                await tdaDataStream.queueGenericStreamRequest(subConfig,
+                await tdaDataStream.genericStreamRequest(subConfig,
                     {
-                        cbPre: callback,
+                        callbackPre: callback,
                     });
 
                 for (let i = 0; i < 5; i++) {
-                    await tdaDataStream.queueGenericStreamRequest(addConfig, { cbPre: callback });
-                    await tdaDataStream.queueGenericStreamRequest(unsubOneConfig, { cbPre: callback });
+                    await tdaDataStream.genericStreamRequest(addConfig, { callbackPre: callback });
+                    await tdaDataStream.genericStreamRequest(unsubOneConfig, { callbackPre: callback });
                 }
 
                 await new Promise<void>(res => {
-                    tdaDataStream.queueGenericStreamRequest(unsubAllConfig, {
-                        cbPre: () => {
+                    tdaDataStream.genericStreamRequest(unsubAllConfig, {
+                        callbackPre: () => {
                             callback();
                             res();
                         },

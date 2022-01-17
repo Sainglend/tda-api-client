@@ -131,8 +131,9 @@ export enum EGetAccountField {
 
 
 /**
- * Gets account info for a single account. You can request additional fields with config.fields as a comma-separated string.
- * Possible values for fields are: positions, orders
+ * Gets account info for a single account. You can request additional fields with config.fields as a comma-separated string
+ * or as an array of string or an array of EGetAccountField
+ * Possible values for fields are: positions, orders (or EGetAccountField.POSITIONS and .ORDERS)
  */
 export async function getAccount(config: IGetAccountConfig): Promise<IAccount> {
     let fields = config.fields;
@@ -143,8 +144,9 @@ export async function getAccount(config: IGetAccountConfig): Promise<IAccount> {
 }
 
 /**
- * Gets account info for all linked accounts. You can request additional fields with config.fields as a comma-separated string.
- * Possible values for fields are: positions, orders
+ * Gets account info for all accounts associated to your auth info. You can request additional fields with config.fields as a comma-separated string
+ * or as an array of string or an array of EGetAccountField
+ * Possible values for fields are: positions, orders (or EGetAccountField.POSITIONS and .ORDERS)
  */
 export async function getAccounts(config: IGetAccountsConfig): Promise<IAccount[]> {
     let fields = config.fields;

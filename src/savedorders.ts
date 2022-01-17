@@ -26,6 +26,7 @@ export interface IGetSavedOrdersConfig extends TacRequestConfig {
 /**
  * Create a saved order for a given account
  * The id is part of the uri in the location property of the return object
+ * See order examples at: https://developer.tdameritrade.com/content/place-order-samples
  */
 export async function createSavedOrder(config: ICreateSavedOrderConfig): Promise<IWriteResponse> {
     config.bodyJSON = config.orderJSON;
@@ -40,7 +41,6 @@ export async function createSavedOrder(config: ICreateSavedOrderConfig): Promise
  */
 export async function deleteSavedOrder(config: ISimpleSavedOrderConfig): Promise<any> {
     config.path = `/v1/accounts/${config.accountId}/savedorders/${config.savedOrderId}`;
-
     return await apiDelete(config);
 }
 
@@ -49,7 +49,6 @@ export async function deleteSavedOrder(config: ISimpleSavedOrderConfig): Promise
  */
 export async function getSavedOrderById(config: ISimpleSavedOrderConfig): Promise<IOrderGet> {
     config.path = `/v1/accounts/${config.accountId}/savedorders/${config.savedOrderId}`;
-
     return await apiGet(config);
 }
 
@@ -58,17 +57,16 @@ export async function getSavedOrderById(config: ISimpleSavedOrderConfig): Promis
  */
 export async function getSavedOrders(config: IGetSavedOrdersConfig): Promise<IOrderGet[]> {
     config.path = `/v1/accounts/${config.accountId}/savedorders`;
-
     return await apiGet(config);
 }
 
 /**
  * Replace an existing saved order for a specified account using the properly formatted orderJSON
  * The saved order id will be part of the location uri in the returned object
+ * See order examples at: https://developer.tdameritrade.com/content/place-order-samples
  */
 export async function replaceSavedOrder(config: IReplaceSaveOrderConfig): Promise<IWriteResponse> {
     config.bodyJSON = config.orderJSON;
     config.path = `/v1/accounts/${config.accountId}/savedorders/${config.savedOrderId}`;
-
     return await apiPut(config);
 }

@@ -34,8 +34,8 @@ export interface IMover {
 }
 
 /**
- * Get market movers for a specified major index, Nasdaq Composite, Dow, S&P (use ENUM)
- * a given direction, up or down (use ENUM), and the type of change, value or percent (use ENUM)
+ * Get market movers for a specified major index, Nasdaq Composite, Dow, S&P (use enum EIndex)
+ * a given direction, up or down (use enum EDirection), and the type of change, value or percent (use enum EChange)
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
 export async function getMovers(config: IGetMoversConfig): Promise<IMover[]> {

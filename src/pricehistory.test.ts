@@ -1,10 +1,10 @@
 import testAuthConfig from "./test_tdaclientauth.json";
 import path from "path";
 import {
-    EFrequencyByFrequencyType,
+    EFrequencyQtyByFrequencyType,
     EFrequencyType,
     EFrequencyTypeByPeriodType,
-    EPeriodByPeriodType,
+    EPeriodQtyByPeriodType,
     EPeriodType,
     getPriceHistory, IPriceHistory,
     IPriceHistoryConfig,
@@ -19,9 +19,9 @@ describe("pricehistory", () => {
         const config: IPriceHistoryConfig = {
             symbol: "MSFT",
             periodType: EPeriodType.DAY,
-            period: EPeriodByPeriodType[EPeriodType.DAY].FIVE,
+            period: EPeriodQtyByPeriodType[EPeriodType.DAY].FIVE,
             frequencyType: EFrequencyTypeByPeriodType[EPeriodType.DAY].MINUTE,
-            frequency: EFrequencyByFrequencyType[EFrequencyType.MINUTE].THIRTY,
+            frequency: EFrequencyQtyByFrequencyType[EFrequencyType.MINUTE].THIRTY,
             getExtendedHours: true,
             authConfigFileLocation: testauthpath,
         };
@@ -36,9 +36,9 @@ describe("pricehistory", () => {
         const config: IPriceHistoryConfig = {
             symbol: "MSFT",
             periodType: EPeriodType.DAY,
-            period: EPeriodByPeriodType[EPeriodType.DAY].FIVE,
+            period: EPeriodQtyByPeriodType[EPeriodType.DAY].FIVE,
             frequencyType: EFrequencyTypeByPeriodType[EPeriodType.DAY].MINUTE,
-            frequency: EFrequencyByFrequencyType[EFrequencyType.MINUTE].THIRTY,
+            frequency: EFrequencyQtyByFrequencyType[EFrequencyType.MINUTE].THIRTY,
             getExtendedHours: true,
             apikey: testAuthConfig.client_id,
         };
@@ -56,7 +56,7 @@ describe("pricehistory", () => {
             symbol: "MSFT",
             periodType: EPeriodType.DAY,
             frequencyType: EFrequencyTypeByPeriodType[EPeriodType.DAY].MINUTE,
-            frequency: EFrequencyByFrequencyType[EFrequencyType.MINUTE].THIRTY,
+            frequency: EFrequencyQtyByFrequencyType[EFrequencyType.MINUTE].THIRTY,
             startDate: Date.now() - 5*24*60*60*1000,
             endDate: Date.now(),
             authConfigFileLocation: testauthpath,

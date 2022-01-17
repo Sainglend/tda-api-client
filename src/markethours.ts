@@ -40,13 +40,13 @@ export interface IGetSingleMarketHoursConfig extends TacRequestConfig {
 }
 
 export interface IGetMultiMarketHoursConfig extends TacRequestConfig {
-    markets: EMarkets[] | string,
+    markets: EMarkets[] | string[] | string,
     date: string,
 }
 
 /**
  * Get market open hours for a specified date in ISO-8601 (yyyy-MM-dd and yyyy-MM-dd'T'HH:mm:ssz)
- * (e.g. 2020-09-18) and a specified market (use ENUM).
+ * (e.g. 2020-09-18) and a specified market (use enum EMarkets).
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
 export async function getSingleMarketHours(config: IGetSingleMarketHoursConfig): Promise<IMarketMarketHours> {
@@ -56,12 +56,10 @@ export async function getSingleMarketHours(config: IGetSingleMarketHoursConfig):
 }
 
 /**
- * Get market open hours for a specified date (e.g. 2020-09-18) and a comma-separated set of markets from
- * EQUITY, OPTION, FUTURE, BOND, or FOREX, e.g. "EQUITY,OPTION".
+ * Get market open hours for a specified date (e.g. 2020-09-18) and a set of markets.
+ * Markets can be an array of EMarkets (enum), an array of strings, or a string with comma-separated values
+ * e.g. [EMarkets.EQUITY, EMarkets.OPTION] or ["EQUITY","OPTION"] or "EQUITY,OPTION".
  * Can optionally use apikey for delayed data with an unauthenticated request.
- * @param {Object} config - takes markets, date, apikey (optional)
- * @returns {Promise<Object>} api GET result
- * @async
  */
 export async function getMultipleMarketHours(config: IGetMultiMarketHoursConfig): Promise<IMarketMarketHours> {
     const markets = Array.isArray(config.markets) ? config.markets.join(",") : config.markets;

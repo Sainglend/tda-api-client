@@ -4,10 +4,15 @@ import {apiGet, TacRequestConfig} from "./tdapiinterface";
 import {EAssetType} from "./sharedTypes";
 
 export enum EProjectionType {
+    // Retrieve instrument data of a specific symbol or cusip
     SYMBOL_SEARCH = "symbol-search",
+    // Retrieve instrument data for all symbols matching regex. Example: symbol=XYZ.* will return all symbols beginning with XYZ
     SYMBOL_REGEX = "symbol-regex",
+    // Retrieve instrument data for instruments whose description contains the word supplied. Example: symbol=FakeCompany will return all instruments with FakeCompany in the description.
     DESC_SEARCH = "desc-search",
+    // Search description with full regex support. Example: symbol=XYZ.[A-C] returns all instruments whose descriptions contain a word beginning with XYZ followed by a character A through C.
     DESC_REGEX = "desc-regex",
+    // Returns fundamental data for a single instrument specified by exact symbol.'
     FUNDAMENTAL = "fundamental",
 }
 
@@ -74,7 +79,7 @@ export interface ISearchInstrumentsFundamentalsConfig extends TacRequestConfig {
 }
 
 export interface ISearchInstrumentsConfig extends ISearchInstrumentsFundamentalsConfig {
-    projection: string,
+    projection: EProjectionType,
 }
 
 export interface IGetInstrumentConfig extends TacRequestConfig {
@@ -86,8 +91,8 @@ export interface ISearchInstrumentResults {
 }
 
 /**
- * Search for an instrument using search string or regex (config.symbol) and search type (config.projection>)
- * projection (use ENUM) is one of: symbol-search, symbol-regex, desc-search, desc-regex, fundamental.
+ * Search for an instrument using search string or regex (config.symbol) and search type (config.projection)
+ * Projection (you may use enum EProjectionType) is one of: symbol-search, symbol-regex, desc-search, desc-regex, fundamental.
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
 export async function searchInstruments(config: ISearchInstrumentsConfig): Promise<ISearchInstrumentResults> {
@@ -100,7 +105,7 @@ export async function searchInstruments(config: ISearchInstrumentsConfig): Promi
 
 /**
  * This is specifically a shortcut for getting fundamental data for a particular symbol, which can also be achieved
- * by called searchInstruments() with config.projection = PROJECTION_TYPE.FUNDAMENTAL. The availability of this
+ * by calling searchInstruments() with config.projection = EProjectionType.FUNDAMENTAL. The availability of this
  * feature seemed less obvious behind the name "searchInstruments"
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */

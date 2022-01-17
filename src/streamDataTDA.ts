@@ -14,24 +14,45 @@ import {EUserPrincipalFields, getStreamerSubKeys, getUserPrincipals} from "./use
 import {getAccounts} from "./accounts";
 
 export interface IStreamDataTDAConfig {
-    authConfig?: IAuthConfig,
+    authConfig: IAuthConfig,
 
+    // default false
+    emitDataRaw?: boolean,
+    // default false
+    emitDataBySubRaw?: boolean,
+    // default false
+    emitDataBySubTyped?: boolean,
+    // default false
+    emitDataBySubAndTickerRaw?: boolean,
+    // default true
+    emitDataBySubAndTickerTyped?: boolean,
+
+    // default 60 seconds
+    reconnectRetryIntervalSeconds?: number,
+
+    queueConfig?: IQueueConfig,
+
+    // console.log actions as they occur
+    verbose?: boolean,
+    // console.debug data as it is being parsed and more detailed descriptions
+    debug?: boolean,
+}
+
+export interface IStreamDataTDAConfigUpdate {
     emitDataRaw?: boolean,
     emitDataBySubRaw?: boolean,
     emitDataBySubTyped?: boolean,
     emitDataBySubAndTickerRaw?: boolean,
     emitDataBySubAndTickerTyped?: boolean,
-
-    reconnectRetryIntervalSeconds?: number,
-
-    queueConfig?: IQueueConfig,
-
+    retryIntervalSeconds?: number,
     verbose?: boolean,
     debug?: boolean,
 }
 
 export interface IQueueConfig {
+    // default 500ms; queue requests won't be dequeued less faster than this setting
     minimumSpacingMS?: number,
+    // default 1000ms; an interval will be set with this timing to check that the queue request was sent in this timeframe, else will send one
     maximumSpacingMS?: number,
 }
 
@@ -65,6 +86,13 @@ export interface IChartHistoryFuturesGetConfig {
     requestSeqNum?: number,
 }
 
+// You may specify an account id, but it isn't strictly necessary
+export interface IAccountUpdatesSubConfig {
+    accountIds?: string,
+    fields?: string,
+    requestSeqNum?: number,
+}
+
 /**
  * Events emitted:
  *  heartbeat - for stream heartbeats
@@ -95,7 +123,7 @@ export class StreamDataTDA extends EventEmitter {
 
     // internal queue
     private queueState: EQueueState;
-    private queueArr:  any[];
+    private queueArr:  IQueueEntry[];
 
     // configurable
     private retryIntervalSeconds: number;
@@ -454,7 +482,11 @@ export class StreamDataTDA extends EventEmitter {
 
     private async qpush(queueEntry: IQueueEntry) {
         if (this.debug) console.debug("qpush", queueEntry.fnDesc, JSON.stringify(queueEntry.params, null, 2));
-        this.queueArr.push(queueEntry);
+        if (queueEntry.queueRequestConfig.isPriority) {
+            this.queueArr.unshift(queueEntry);
+        } else {
+            this.queueArr.push(queueEntry);
+        }
         if (this.queueArr.length === 1 && this.queueState === EQueueState.AVAILABLE) {
             this.dequeueAndProcess();
         }
@@ -465,28 +497,36 @@ export class StreamDataTDA extends EventEmitter {
         if (this.queueLastReqTime + this.queueMinWaitMS > Date.now()) return;
         if (this.queueArr.length > 0 && this.queueState === EQueueState.AVAILABLE) {
             this.queueState = EQueueState.BUSY;
-            const nextInQueue: IQueueEntry = this.queueArr.shift();
+            const nextInQueue: IQueueEntry | undefined = this.queueArr.shift();
+            if (!nextInQueue) return;
             if (this.debug) console.debug(`processing queue item: ${nextInQueue.fnDesc} with params: ${JSON.stringify(nextInQueue.params, null, 2)}`);
-            if (nextInQueue.queueRequestConfig.cbPre) nextInQueue.queueRequestConfig.cbPre();
+            if (nextInQueue.queueRequestConfig.callbackPre) nextInQueue.queueRequestConfig.callbackPre();
             this.queueLastReqTime = Date.now();
             await nextInQueue.fn();
-            if (nextInQueue.queueRequestConfig.cbPost) nextInQueue.queueRequestConfig.cbPost();
+            if (nextInQueue.queueRequestConfig.callbackPost) nextInQueue.queueRequestConfig.callbackPost();
         }
     }
 
-    setConfig(config: IStreamDataTDAConfig): void {
-        this.emitDataRaw = config.emitDataRaw != undefined ? config.emitDataRaw : this.emitDataRaw;
-        this.emitDataBySubRaw = config.emitDataBySubRaw != undefined ? config.emitDataBySubRaw : this.emitDataBySubRaw;
-        this.emitDataBySubTyped = config.emitDataBySubTyped != undefined ? config.emitDataBySubTyped : this.emitDataBySubTyped;
-        this.emitDataBySubAndTickerRaw = config.emitDataBySubAndTickerRaw != undefined ? config.emitDataBySubAndTickerRaw : this.emitDataBySubAndTickerRaw;
-        this.emitDataBySubAndTickerTyped = config.emitDataBySubAndTickerTyped != undefined ? config.emitDataBySubAndTickerTyped : this.emitDataBySubAndTickerTyped;
-        this.retryIntervalSeconds = config.reconnectRetryIntervalSeconds || this.retryIntervalSeconds;
-        this.verbose = config.verbose || false;
-        this.debug = config.debug || false;
+    /**
+     * Update some aspects of the stream config.
+     */
+    setConfig(configUpdate: IStreamDataTDAConfigUpdate): void {
+        this.emitDataRaw = configUpdate.emitDataRaw != undefined ? configUpdate.emitDataRaw : this.emitDataRaw;
+        this.emitDataBySubRaw = configUpdate.emitDataBySubRaw != undefined ? configUpdate.emitDataBySubRaw : this.emitDataBySubRaw;
+        this.emitDataBySubTyped = configUpdate.emitDataBySubTyped != undefined ? configUpdate.emitDataBySubTyped : this.emitDataBySubTyped;
+        this.emitDataBySubAndTickerRaw = configUpdate.emitDataBySubAndTickerRaw != undefined ? configUpdate.emitDataBySubAndTickerRaw : this.emitDataBySubAndTickerRaw;
+        this.emitDataBySubAndTickerTyped = configUpdate.emitDataBySubAndTickerTyped != undefined ? configUpdate.emitDataBySubAndTickerTyped : this.emitDataBySubAndTickerTyped;
+        this.retryIntervalSeconds = configUpdate.retryIntervalSeconds || this.retryIntervalSeconds;
+        this.verbose = configUpdate.verbose || false;
+        this.debug = configUpdate.debug || false;
     }
 
+    /**
+     * Get the config as is currently being used
+     */
     getConfig(): IStreamDataTDAConfig {
         return {
+            authConfig: this.authConfig,
             emitDataRaw: this.emitDataRaw,
             emitDataBySubRaw: this.emitDataBySubRaw,
             emitDataBySubTyped: this.emitDataBySubTyped,
@@ -503,37 +543,77 @@ export class StreamDataTDA extends EventEmitter {
     }
 
     /**
-     * A method to do stuff.
-     * @param {object} config
-     * @param {EServices} config.service - use the SERVICES enum
-     * @param {ECommands} config.command - use the COMMANDS enum
-     * @param {IStreamParams} config.parameters - keys (required) and fields (optional; will default to all)
-     * @param {number} [config.requestSeqNum] - (optional) supply your own request sequence number, or it will be auto generated
-     * @param {string} [config.account] - (optional) supply an account id, or it will be retrieved using your credentials
-     * @param {string} [config.source] - (optional) supply a streamer app id, or it will be retrieved using your credentials
-     * @example The most bare-bones request. Note no fields in the parameters object.
-     * genericStreamRequest({
-     *     service: SERVICES.QUOTE,
-     *     command: COMMANDS.SUBS,
+     * Send a custom stream request, without using one of the helper methods. This method will not capture and store state
+     * of your in-progress streams, meaning in the case of disconnect and reconnect, the subscriptions won't be automatically
+     * resubscribed.
+     * Otherwise, use {@link genericStreamRequest}.
+     * Queueing is still possible by using the queueConfig param (type {@link IQueueRequestConfig})
+     */
+    async sendStreamRequest(requestJSON: any, queueConfig: IQueueRequestConfig = { useQueue: false }): Promise<void> {
+        this.dataStreamSocket.send(JSON.stringify(requestJSON));
+
+        if (queueConfig && queueConfig.useQueue) {
+            await this.qpush({
+                fn: this.sendStreamRequest.bind(this, requestJSON),
+                fnDesc: "sendStreamRequest",
+                params: requestJSON,
+                queueRequestConfig: queueConfig,
+            });
+        }
+    }
+
+    /**
+     * Generic wrapper method for sending a stream request. You may also take advantage of queueing to space out requests.
+     * Any requests using this method for subscriptions will have the subscription parameters stored so that in the event
+     * of stream interruption and reconnection, all streams will automatically be resubscribed as they were.
+     * Some other special case methods that wrap this are;
+     * {@link doDataStreamLogin} for logging in to the stream; use this as startup
+     * {@link doDataStreamLogout} for logging out from the stream
+     * {@link qosRequest} for upgrading or downgrading the frequency of streaming data updates
+     * {@link chartHistoryFuturesGet} for getting an array of historical candles for futures
+     * {@link accountActivitySub} for subscribing to account updates
+     * {@link accountActivityUnsub} for unsubscribing from account updates
+     *
+     *
+     * @example <caption>Subscribe to real-time stock price updates.</caption>
+     * const requestSeqNum = await genericStreamRequest({
+     *     service: EServices.QUOTE,
+     *     command: ECommands.SUBS,
      *     parameters: {
-     *         keys: 'TSLA,F,MSFT'
-     *     }
+     *         keys: 'TSLA,F,MSFT',
+     *     },
      * });
-     * @example <caption>A more typical request, sending in the specific fields to return.</caption>
-     * genericStreamRequest({
-     *     service: SERVICES.LEVELONE_FUTURES,
-     *     command: COMMANDS.SUBS,
-     *     parameters: {
-     *         keys: '/NQ,/ES',
-     *         fields: '0,1,2,3,4,5,6,7,8'
-     *     }
-     * });
+     * @example <caption>A request that sends in the specific fields to return, as well as uses the request queue.</caption>
+     * const requestSeqNum = await genericStreamRequest(
+     *      {
+     *          service: EServices.LEVELONE_FUTURES,
+     *          command: ECommands.SUBS,
+     *          parameters: {
+     *              keys: '/NQ,/ES',
+     *              fields: '0,1,2,3,4,5,6,7,8',
+     *          },
+     *      },
+     *      {
+     *          useQueue: true,
+     *      });
      * @returns {number} Returns the sequence number of the request.
      */
-    async genericStreamRequest(config: IGenericStreamConfig) : Promise<number> {
+    async genericStreamRequest(config: IGenericStreamConfig, queueConfig: IQueueRequestConfig = { useQueue: false }) : Promise<number> {
         if (!config) throw "You must pass in a config object";
-        let {requestSeqNum, parameters} = config;
-        const {service, command, account, source} = config;
+        if (!config.requestSeqNum) config.requestSeqNum = this.requestId++;
+
+        if (queueConfig && queueConfig.useQueue) {
+            await this.qpush({
+                fn: this.genericStreamRequest.bind(this, config),
+                fnDesc: "genericStreamRequest",
+                params: config,
+                queueRequestConfig: queueConfig,
+            });
+            return config.requestSeqNum;
+        }
+
+        const parameters = { ...config.parameters };
+        const {requestSeqNum, service, command, account, source} = config;
         if ([ECommands.SUBS, ECommands.ADD].includes(command)) {
             if (!parameters || !parameters.keys) throw "With commands ADD or SUBS, your config object must have parameters";
             if (!parameters.fields) {
@@ -544,9 +624,6 @@ export class StreamDataTDA extends EventEmitter {
         // store parameters so the streams can be recovered in case of websocket connection loss
         this.handleParamStorage(config);
 
-
-        if (!requestSeqNum) requestSeqNum = this.requestId++;
-        if (!parameters) parameters = {};
         const request = {
             requests: [
                 {
@@ -563,15 +640,23 @@ export class StreamDataTDA extends EventEmitter {
         return requestSeqNum;
     }
 
+    /**
+     * This method must be called to log in to the stream. If you want to have an event listener for login, set it
+     * before calling this login method.
+     * You may optionally specify a qosLevel; the default is L2, 1 second.
+     */
     async doDataStreamLogin(
-        //fields: string = 'streamerSubscriptionKeys,streamerConnectionInfo,preferences,surrogateIds',
-        fields: EUserPrincipalFields[] = [EUserPrincipalFields.PREFERENCES, EUserPrincipalFields.SURROGATE_IDS, EUserPrincipalFields.STREAMER_SUB_KEYS, EUserPrincipalFields.STREAMER_CONNECTION_INFO],
         qosLevel: EQosLevels = EQosLevels.L2_FAST_1000MS,
     ) : Promise<any> {
         // if now is within 30 seconds of last alive, do nothing
         this.userKilled = false;
         if (this.verbose) console.log("doDataStreamLogin");
-        this.userPrincipalsResponse = await getUserPrincipals({fields, authConfig: this.authConfig});
+        this.userPrincipalsResponse = await getUserPrincipals({
+            fields: [EUserPrincipalFields.PREFERENCES,
+                EUserPrincipalFields.SURROGATE_IDS,
+                EUserPrincipalFields.STREAMER_SUB_KEYS,
+                EUserPrincipalFields.STREAMER_CONNECTION_INFO],
+            authConfig: this.authConfig});
         // console.log(`userPrincipals: ${JSON.stringify(this.userPrincipalsResponse)}`);
 
         //Converts ISO-8601 response in snapshot to ms since epoch accepted by Streamer
@@ -622,7 +707,7 @@ export class StreamDataTDA extends EventEmitter {
     }
 
     /**
-     * After calling this, wait for the emitting event 'streamClosed' with {attemptingReconnect: false}
+     * After calling this, wait for the emitting event 'streamClosed' with data {attemptingReconnect: false}
      */
     async doDataStreamLogout(): Promise<void> {
         this.userKilled = true;
@@ -641,16 +726,21 @@ export class StreamDataTDA extends EventEmitter {
     }
 
     /**
-     * Subscribe to real-time data updates on specified futures symbols.
-     * Each subsequent call overrides the previous, so (1) /NQ then (2) /ES will result in just /ES.
-     * With the second request you'd need to pass in "/NQ,/ES"
-     * Can use format /ES or a specific contract /ESM21
-     * @param {EQosLevels} qosLevel - comma-separated symbols, e.g. "/NQ,/ES"
-     * @param requestSeqNum {number} - defaulted to an incrementing integer
-     * @returns A Promise with the request sequence number, 0 if error
-     * @async
+     * Change the qosLevel of your stream, meaning data streams faster or slower. Possible values are
+     * in the enum {@link EQosLevels}, ranging from 500ms to 5sec. Default is level 2, 1 second.
      */
-    async qosRequest(qosLevel: EQosLevels, requestSeqNum: number = this.requestId++) : Promise<number> {
+    async qosRequest({ qosLevel, requestSeqNum }: IQosRequestConfig, queueConfig?: IQueueRequestConfig) : Promise<number> {
+        requestSeqNum = requestSeqNum ?? this.requestId++;
+        if (queueConfig?.useQueue) {
+            await this.qpush({
+                fn: this.qosRequest.bind(this, { qosLevel, requestSeqNum }),
+                fnDesc: "qosRequest",
+                params: { qosLevel, requestSeqNum },
+                queueRequestConfig: queueConfig,
+            });
+            return requestSeqNum;
+        }
+
         if (!EQosLevels[qosLevel]) return 0;
         this.currentQosLevel = qosLevel;
         return await this.genericStreamRequest({
@@ -664,21 +754,26 @@ export class StreamDataTDA extends EventEmitter {
     }
 
     /**
-     * Get historical candles for futures. Specify period OR (startTimeMSEpoch and endTimeMSEpoch)
-     *
-     * @param {string} symbol - Futures symbol, such as "/ES" or "/ESM21"
-     * @param {EChartHistoryFuturesFrequency} frequency - Choose the candle size for the historical data. Choices: m1, m5, m10, m30, h1, d1, w1, n1 (m=minute, h=hour, d=day, w=week, n=month)
-     * @param {string} [period] - (Optional / REQURIED if no start/end time) Specify period with a string such as d5, w4, n10, y1, y10 (d=day, w=week, n=month, y=year)
-     * @param {number} [startTimeMSEpoch] - (Optional / REQUIRED if no period) A number representing the time in milliseconds since epoch.
-     * @param {number} [endTimeMSEpoch] - (Optional / REQUIRED if no period) A number representing the time in milliseconds since epoch.
-     * @param {number} [requestSeqNum] - (Optional) The sequence number for the request, default is the class counter
-     * @returns A Promise with the request sequence number, 0 if error
-     * @async
+     * Get historical candles for futures. This is a transactional request, not a stream subscription.
+     * Specify period OR (startTimeMSEpoch and endTimeMSEpoch)
+     * This request can optionally be queued.
      */
-    async chartHistoryFuturesGet(config: IChartHistoryFuturesGetConfig) : Promise<number> {
-        if (!config.period && (!config.startTimeMSEpoch || !config.endTimeMSEpoch)) throw new Error("either specify a period or provide a start and end time");
+    async chartHistoryFuturesGet(config: IChartHistoryFuturesGetConfig, queueConfig?: IQueueRequestConfig) : Promise<number> {
+        if (!config.period && (!config.startTimeMSEpoch || !config.endTimeMSEpoch)) {
+            throw new Error("either specify a period or provide a start and end time");
+        }
 
         const requestSeqNum = config.requestSeqNum ?? ++this.requestId;
+
+        if (queueConfig?.useQueue) {
+            await this.qpush({
+                fn: this.chartHistoryFuturesGet.bind(this, { ...config, requestSeqNum }),
+                fnDesc: "chartHistoryFuturesGet",
+                params: { ...config, requestSeqNum },
+                queueRequestConfig: queueConfig,
+            });
+            return requestSeqNum;
+        }
 
         const request = {
             "requests": [
@@ -705,20 +800,23 @@ export class StreamDataTDA extends EventEmitter {
 
     /**
      * Subscribe to real-time data updates on specified account ids. Each subsequent call overrides the previous one.
-     *
-     * @param {string} [accountIds] - (Optional) comma-separated list of TDA account numbers, default is all account ids that can be retrieved with your credentials
-     * @param {string} [fields] - (Optional) comma-separated field numbers, default all 0-3
-     * @param {number} [requestSeqNum] - (Optional) defaulted to an incrementing integer
-     * @param tacBaseConfig
-     * @returns A Promise with the request sequence number, 0 if error
-     * @async
+     * You may optionally queue this request.
      */
-    async accountActivitySub(
-        accountIds = "",
-        fields = "0,1,2,3",
-        requestSeqNum: number = this.requestId++,
-    ) : Promise<number> {
-        if (accountIds === null || accountIds === "") {
+    async accountActivitySub({ accountIds, fields, requestSeqNum } : IAccountUpdatesSubConfig, queueConfig?: IQueueRequestConfig): Promise<number> {
+        if (!fields) fields = "0,1,2,3";
+        if (!requestSeqNum) requestSeqNum = this.requestId++;
+
+        if (queueConfig?.useQueue) {
+            await this.qpush({
+                fn: this.accountActivitySub.bind(this, { accountIds, fields, requestSeqNum }),
+                fnDesc: "accountActivitySub",
+                params: {accountIds, fields, requestSeqNum},
+                queueRequestConfig: queueConfig,
+            });
+            return requestSeqNum;
+        }
+
+        if (!accountIds) {
             const allAccounts = await getAccounts({
                 authConfig: this.authConfig,
                 authConfigFileAccess: "NONE",
@@ -745,72 +843,53 @@ export class StreamDataTDA extends EventEmitter {
             },
             service: EServices.ACCT_ACTIVITY,
             command: ECommands.SUBS,
+            requestSeqNum,
         };
 
         return await this.genericStreamRequest(config);
     }
 
-    async accountActivityUnsub() : Promise<number> {
+    /**
+     * Use this request to unsubscribe from account updates. This request can optionally be queued.
+     */
+    async accountActivityUnsub(requestSeqNum?: number, queueConfig?: IQueueRequestConfig) : Promise<number> {
+        requestSeqNum = requestSeqNum ?? this.requestId++;
+
+        if (queueConfig?.useQueue) {
+            await this.qpush({
+                fn: this.accountActivityUnsub.bind(this, requestSeqNum),
+                fnDesc: "accountActivityUnsub",
+                params: { requestSeqNum },
+                queueRequestConfig: queueConfig,
+            });
+            return requestSeqNum;
+        }
+
         const config : IGenericStreamConfig = {
             service: EServices.ACCT_ACTIVITY,
             command: ECommands.UNSUBS,
+            requestSeqNum,
         };
 
         return await this.genericStreamRequest(config);
     }
 
-    async queueAccountActivitySub(accountIds = "", fields = "0,1,2,3", requestSeqNum?: number, queueConfig: IQueueRequestConfig = {}) : Promise<any> {
-        await this.qpush({
-            fn: this.accountActivitySub.bind(this, accountIds, fields, requestSeqNum),
-            fnDesc: "accountActivitySub",
-            params: { accountIds, fields, requestSeqNum },
-            queueRequestConfig: queueConfig,
-        });
-    }
-
-    async queueAccountActivityUnsub(queueConfig: IQueueRequestConfig = {}) : Promise<any> {
-        await this.qpush({
-            fn: this.accountActivityUnsub.bind(this),
-            fnDesc: "accountActivityUnsub",
-            params: {},
-            queueRequestConfig: queueConfig,
-        });
-    }
-
-    async queueChartHistoryFuturesGet(
-        config: IChartHistoryFuturesGetConfig,
-        queueConfig: IQueueRequestConfig = {},
-    ) : Promise<any> {
-        // @ts-ignore
-        await this.qpush({
-            fn: this.chartHistoryFuturesGet.bind(this, config),
-            fnDesc: "chartHistoryFuturesGet",
-            params: config,
-            queueRequestConfig: queueConfig,
-        });
-    }
-
-    async queueGenericStreamRequest(config: IGenericStreamConfig, queueConfig: IQueueRequestConfig = {}): Promise<void> {
-        await this.qpush({
-            fn: this.genericStreamRequest.bind(this, config),
-            fnDesc: "genericStreamRequest",
-            params: config,
-            queueRequestConfig: queueConfig,
-        });
-    }
-
-    async queueQosRequest(qosLevel: EQosLevels, requestSeqNum: number = this.requestId++, queueConfig: IQueueRequestConfig = {}): Promise<void> {
-        await this.qpush({
-            fn: this.qosRequest.bind(this, qosLevel, requestSeqNum),
-            fnDesc: "qosRequest",
-            params: { qosLevel, requestSeqNum },
-            queueRequestConfig: queueConfig,
-        });
-    }
-
+    /**
+     * Use this method to clear the pending queue.
+     */
     queueClear(): void {
         if (this.verbose) console.log("clear queue");
         this.queueArr = [];
+    }
+
+    /**
+     * Use this method to see what is pending in the queue
+     */
+    queueInfo(): IQueueInfo[] {
+        return this.queueArr.map(qe => ({
+            desc: qe.fnDesc,
+            params: qe.params,
+        }));
     }
 }
 
@@ -822,6 +901,21 @@ interface IQueueEntry {
 }
 
 export interface IQueueRequestConfig {
-    cbPre?: any,
-    cbPost?: any,
+    useQueue: boolean,
+    // if TRUE, gets added to front of the queue
+    isPriority?: boolean,
+    // this callback is called after dequeue and immediately before sending the request
+    callbackPre?: any,
+    // this callback is called after dequeue and immediately after sending the request
+    callbackPost?: any,
+}
+
+export interface IQosRequestConfig {
+    qosLevel: EQosLevels,
+    requestSeqNum?: number,
+}
+
+export interface IQueueInfo {
+    desc: string,
+    params: any,
 }

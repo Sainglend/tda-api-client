@@ -22,8 +22,10 @@ export interface IOrdersByQueryConfig extends IOrderSearchConfig {
 
 interface IOrderSearchConfig extends TacRequestConfig {
     maxResults?: number,
-    fromEnteredTime?: string, // yyyy-MM-dd
-    toEnteredTime?: string, // yyyy-MM-dd
+    // yyyy-MM-dd
+    fromEnteredTime?: string,
+    // yyyy-MM-dd
+    toEnteredTime?: string,
     status?: EOrderStatus,
 }
 
@@ -183,10 +185,6 @@ export enum EOrderStrategyType {
     TRIGGER = "TRIGGER"
 }
 
-/**
- * Enum for order statuses, to use when retrieving account orders.
- * @enum
- */
 export enum EOrderStatus {
     AWAITING_PARENT_ORDER = "AWAITING_PARENT_ORDER",
     AWAITING_CONDITION = "AWAITING_CONDITION",
@@ -229,8 +227,6 @@ export interface IOrderActivity {
     orderRemainingQuantity: number,
     executionLegs: IExecutionLeg[]
 }
-
-export type IExecution = IOrderActivity;
 
 export interface IOrderGet {
     session: EOrderSession,
@@ -313,6 +309,7 @@ export interface IOrderStrategy {
 /**
  * Replace an existing order by a specified account using the properly formatted orderJSON
  * The new order number can be parsed from the location property on the return object
+ * See order examples at: https://developer.tdameritrade.com/content/place-order-samples
  */
 export async function replaceOrder(config: IReplaceOrderConfig): Promise<IWriteResponse> {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
@@ -323,6 +320,7 @@ export async function replaceOrder(config: IReplaceOrderConfig): Promise<IWriteR
 /**
  * Place a new order for a specified account using the properly formatted orderJSON.
  * The order number can be parsed from the url returned in the location property.
+ * See order examples at: https://developer.tdameritrade.com/content/place-order-samples
  */
 export async function placeOrder(config: IPlaceOrderConfig): Promise<IWriteResponse> {
     return await apiPost({
@@ -349,10 +347,6 @@ export async function getOrdersByAccount(config: any): Promise<IOrderGet[]> {
 
 /**
  * Get all orders for all linked accounts, or just a specified account if config.accountId is provided, possibly filtered by time and order status
- * @param {Object} config - takes optional arguments: accountId, maxResults,
- * fromEnteredTime, toEnteredTime (times must either both be included or omitted), status (ENUM is ORDER_STATUS)
- * @returns {Promise<Object>} api GET result
- * @async
  */
 export async function getOrdersByQuery(config: IOrdersByQueryConfig): Promise<IOrderGet[]> {
     config.path = `/v1/orders?` +
@@ -366,10 +360,7 @@ export async function getOrdersByQuery(config: IOrdersByQueryConfig): Promise<IO
 }
 
 /**
- * Get a specific order for a sepecific account
- * @param {Object} config - takes accountId, orderId
- * @returns {Promise<Object>} api GET result
- * @async
+ * Get a specific order for a specific account
  */
 export async function getOrder(config: IGenericOrderConfig): Promise<IOrderGet> {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
@@ -378,15 +369,15 @@ export async function getOrder(config: IGenericOrderConfig): Promise<IOrderGet> 
 
 /**
  * Cancel an order that was placed by the specified account
- * @param {Object} config - takes accountId, orderId
- * @returns {Promise<Object>} api DELETE result
- * @async
  */
 export async function cancelOrder(config: IGenericOrderConfig): Promise<any> {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
     return await apiDelete(config);
 }
 
+/**
+ * Helper method for constructing order JSON for an EQUITY LIMIT BUY order with DAY time in effect.
+ */
 export function generateBuyLimitEquityOrder(
     {
         symbol,
@@ -417,6 +408,9 @@ export function generateBuyLimitEquityOrder(
     };
 }
 
+/**
+ * Helper method for constructing order JSON for an EQUITY MARKET BUY order with DAY time in effect.
+ */
 export function generateBuyMarketEquityOrder(
     {
         symbol,

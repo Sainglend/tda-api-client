@@ -6,7 +6,6 @@ import {IOptionDeliverable} from "./sharedTypes";
 /**
  * Defines what range of strikes to return as results
  * @default ALL
- * @enum {string}
  */
 export enum ERange {
     /** DEFAULT */
@@ -27,7 +26,6 @@ export enum ERange {
 
 /**
  * @default SINGLE
- * @enum {string}
  */
 export enum EStrategy {
     /** DEFAULT */
@@ -48,7 +46,6 @@ export enum EStrategy {
 
 /**
  * @default ALL
- * @enum {string}
  */
 export enum EContractType {
     /** DEFAULT */
@@ -59,7 +56,6 @@ export enum EContractType {
 
 /**
  * @default ALL
- * @enum {string}
  */
 export enum EExpirationMonth {
     /** DEFAULT */
@@ -80,7 +76,6 @@ export enum EExpirationMonth {
 
 /**
  * @default ALL
- * @enum {string}
  */
 export enum EOptionType {
     /** DEFAULT */
@@ -233,31 +228,39 @@ export interface IUnderlying {
 export interface IGetOptionChainConfig extends TacRequestConfig {
     symbol: string,
     contractType?: EContractType,
+    // Return only options expiring in the specified month
     expMonth?: EExpirationMonth,
     optionType?: EOptionType,
     strategy?: EStrategy,
     range?: ERange,
     includeQuotes?: boolean,
+    // Only return expirations after this date. For strategies, expiration refers to the nearest term expiration in the strategy. Valid ISO-8601 formats are: yyyy-MM-dd and yyyy-MM-dd'T'HH:mm:ssz.
     fromDate?: string,
+    // Only return expirations before this date. For strategies, expiration refers to the nearest term expiration in the strategy. Valid ISO-8601 formats are: yyyy-MM-dd and yyyy-MM-dd'T'HH:mm:ssz.
     toDate?: string,
+    // The number of strikes to return above and below the at-the-money price.
     strikeCount?: number,
+    // Provide a strike price to return options only at that strike price.
     strike?: number,
+    // Strike interval for spread strategy chains
     interval?: number,
+    // Volatility to use in calculations. Applies only to ANALYTICAL strategy chains
     volatility?: number,
+    // Underlying price to use in calculations. Applies only to ANALYTICAL strategy chains
     underlyingPrice?: number,
+    // Interest rate to use in calculations. Applies only to ANALYTICAL strategy chains
     interestRate?: number,
+    // Days to expiration to use in calculations. Applies only to ANALYTICAL strategy chains
     daysToExpiration?: number,
 }
 
 /**
- * Get an options chain for a given symbol. Carefully use config options.
+ * Get an options chain for a given optionable symbol. Carefully use config options.
  * Can optionally use apikey for delayed data with an unauthenticated request.
- * Config takes symbol, contractType (ENUM is CONTRACT_TYPE), expMonth (ENUM is EXPIRATION_MONTH), optionType (ENUM is OPTION_TYPE), strategy (ENUM is STRATEGY), range (ENUM is RANGE), includeQuotes, and optionals are:
- * fromDate (yyyy-MM-dd), toDate (yyyy-MM-dd), strikeCount, interval, volatility, underlyingPrice, interestRate, daysToExpiration, apikey
- * The return type is nested, looking like
+ * The return type is nested, looking like, e.g.:
  * IOptionChain { putExpDateMap: { dateDTEString: { strike: IOption }}}
  * e.g. IOptionChain { putExpDateMap: { "2021-12-10:2": { "45.0": IOption }}}
- * Note the date param is of the format date:DTE
+ * Note the date param is of the format: "YYYY-MM-DD:DTE"
  */
 export async function getOptionChain(config: IGetOptionChainConfig): Promise<IOptionChain> {
     config.path =  `/v1/marketdata/chains?` +

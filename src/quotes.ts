@@ -245,31 +245,31 @@ export interface IQuoteGeneric {
 }
 
 /**
- * Indexed with the quoted symbol
+ * The type IQuoteResult is indexed with the quoted symbol
+ * @example
+ * quoteResult["MSFT"]
  */
 export type IQuoteResult = Record<string, (IQuoteGeneric | IQuoteETF | IQuoteOption | IQuoteForex | IQuoteEquity | IQuoteFuture | IQuoteFutureOption | IQuoteIndex | IQuoteMutualFund)>;
 
 /**
  * Get quotes for a single symbol, e.g. AAPL, MSFT_021822C200
- * If you want to get quotes for symbols containing special characters, use getQuotes
- * e.g. futures and forex
+ * For symbols containing special characters, use getQuotes instead,
+ * e.g. futures (/ES), forex (EUR/USD), indexes ($SPX.X)
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
 export async function getQuote(config: IGetQuoteConfig): Promise<IQuoteResult> {
     config.path = `/v1/marketdata/${encodeURIComponent(config.symbol)}/quotes` +
         (config.apikey ? `?apikey=${config.apikey}` : "");
-
     return await apiGet(config);
 }
 
 /**
  * Get quotes for one or more symbols. Input property "symbol" should be a comma-separated string,
- * e.g. "F,O,TSLA,/ES,EUR/USD,T_021822C25"
+ * e.g. "F,O,TSLA,/ES,EUR/USD,T_021822C25,$SPX.X"
  * Can optionally use apikey for delayed data with an unauthenticated request.
  */
 export async function getQuotes(config: IGetQuoteConfig): Promise<IQuoteResult> {
     config.path = `/v1/marketdata/quotes?symbol=${config.symbol}` +
         (config.apikey ? `&apikey=${config.apikey}` : "");
-
     return await apiGet(config);
 }

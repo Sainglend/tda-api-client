@@ -18,7 +18,7 @@ npm i tda-api-client
 ## What's New
 v 2.0.0 
 - Streaming! You can now utilize the full power of TD Ameritrade's API, both the REST and the Streaming sides. Click the link to the [Streaming README](http://www.github.com/sainglend/tda-api-client/tree/master/streamingREADME.md).
-- TypeScript: care has been taken to make this very IDE friendly by using TypeScript, along with plenty of interfaces and enums.
+- TypeScript: care has been taken to make this very IDE friendly by using TypeScript, along with plenty of interfaces and enums. Note that the intent was to create interfaces that are as close to the shape of the objects from TDA as possible. In some cases, this isn't very nice looking (see the Market Hours api, e.g.). In other cases, there is an option to get the original shape or a transformed type. For example, when getting streaming data, fields returned are retruned in an object indexed with "1", "17", etc., which I've mapped to an object with human readable keys, like "ask" and "lastTradeTime", and you can choose to get the original or transformed data.
 - Project structure: What gets published to npm is the result of compiling the typescript into `dist/` and copying over a stripped down package.json and README files. View the github page at https://www.github.com/sainglend/tda-api-client for the full experience.
 - There is now sample data in the form of raw requests and responses in [the sampledata folder](http://www.github.com/sainglend/tda-api-client/tree/master/src/sampledata)
 - Unit tests: There are unit tests living side-by-side with the .ts files in src/. Run these with caution!!! See notes below, but be aware that a couple actually execute trades (send and cancel).

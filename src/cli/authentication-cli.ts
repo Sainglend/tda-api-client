@@ -1,7 +1,7 @@
 // Copyright (C) 2020-2  Aaron Satterlee
 
 import {Arguments} from "yargs";
-import {getAPIAuthentication, refreshAPIAuthentication, refreshAPIAuthorization} from "../authentication";
+import {getAPIAuthentication, refreshAPIAuthentication, refreshAPIAuthorization} from "../tdapiinterface";
 
 export default {
     command: "auth <command>",

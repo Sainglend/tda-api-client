@@ -4,8 +4,7 @@ import {apiGet, TacRequestConfig} from "./tdapiinterface";
 import {ICandle} from "./sharedTypes";
 
 /**
- * The type of period by which to group price data (which will be subdivided into candles by FREQUENCY_TYPE)
- * @enum {string}
+ * The type of period by which to group price data (which will be subdivided into candles by {@link EFrequencyType)}
  */
 export enum EPeriodType {
     /** DEFAULT */
@@ -15,7 +14,10 @@ export enum EPeriodType {
     YTD = "ytd",
 }
 
-export enum EPeriod {
+/**
+ * This pairs with {@link EPeriodType}. Use {@link EPeriodQtyByPeriodType} to get valid quantities for the given type.
+ */
+export enum EPeriodQty {
     ONE = 1,
     TWO = 2,
     THREE = 3,
@@ -28,47 +30,51 @@ export enum EPeriod {
 }
 
 /**
- * The number of periods to show. Acceptable values depend on, and are enumerated by, PERIOD_TYPE
- * @enum {number}
+ * The number of periods to show. Acceptable values are members of {@link EPeriodQty} and depend on, and are enumerated by, {@link EPeriodType}
+ * @example
+ * EPeriodQtyByPeriodType[EPeriodType.DAY].FIVE
  */
-export const EPeriodByPeriodType = {
-    /** Use these values if you selected PERIOD_TYPE.DAY */
+export const EPeriodQtyByPeriodType = {
+    /** Use these values if you selected EPeriodType.DAY */
     [EPeriodType.DAY]: {
         /** DEFAULT */
-        TEN: EPeriod.TEN,
-        FIVE: EPeriod.FIVE,
-        FOUR: EPeriod.FOUR,
-        THREE: EPeriod.THREE,
-        TWO: EPeriod.TWO,
-        ONE: EPeriod.ONE,
+        TEN: EPeriodQty.TEN,
+        FIVE: EPeriodQty.FIVE,
+        FOUR: EPeriodQty.FOUR,
+        THREE: EPeriodQty.THREE,
+        TWO: EPeriodQty.TWO,
+        ONE: EPeriodQty.ONE,
     },
-    /** Use these values if you selected PERIOD_TYPE.MONTH */
+    /** Use these values if you selected EPeriodType.MONTH */
     [EPeriodType.MONTH]: {
-        SIX: EPeriod.SIX,
-        THREE: EPeriod.THREE,
-        TWO: EPeriod.TWO,
+        SIX: EPeriodQty.SIX,
+        THREE: EPeriodQty.THREE,
+        TWO: EPeriodQty.TWO,
         /** DEFAULT */
-        ONE: EPeriod.ONE,
+        ONE: EPeriodQty.ONE,
     },
-    /** Use these values if you selected PERIOD_TYPE.YEAR */
+    /** Use these values if you selected EPeriodType.YEAR */
     [EPeriodType.YEAR]: {
-        TWENTY: EPeriod.TWENTY,
-        FIFTEEN: EPeriod.FIFTEEN,
-        TEN: EPeriod.TEN,
-        FIVE: EPeriod.FIVE,
-        THREE: EPeriod.THREE,
-        TWO: EPeriod.TWO,
+        TWENTY: EPeriodQty.TWENTY,
+        FIFTEEN: EPeriodQty.FIFTEEN,
+        TEN: EPeriodQty.TEN,
+        FIVE: EPeriodQty.FIVE,
+        THREE: EPeriodQty.THREE,
+        TWO: EPeriodQty.TWO,
         /** DEFAULT */
-        ONE: EPeriod.ONE,
+        ONE: EPeriodQty.ONE,
     },
-    /** Use these values if you selected PERIOD_TYPE.YTD */
+    /** Use these values if you selected EPeriodType.YTD */
     [EPeriodType.YTD]: {
         /** DEFAULT */
-        ONE: EPeriod.ONE,
+        ONE: EPeriodQty.ONE,
     },
 
 };
 
+/**
+ * Each candle represents this time unit, quantity specified with {@link EFrequencyQty}
+ */
 export enum EFrequencyType {
     MINUTE = "minute",
     DAILY = "daily",
@@ -77,31 +83,31 @@ export enum EFrequencyType {
 }
 
 /**
- * The frquency type for the price candles. Valid {@link EFrequencyType} values
- * for your chosen period type depend on, and are enumerated by, {@link EPeriodType}
+ * The frequency type (time unit) for the price candles. Valid {@link EFrequencyType} values
+ * for your chosen period type (time span for the whole chart) depend on, and are enumerated by, {@link EPeriodType}
  * @example
  * EFrequencyTypeByPeriodType[EPeriodType.DAY].MINUTE
  */
 export const EFrequencyTypeByPeriodType = {
-    /** Use these values if you selected PERIOD_TYPE.DAY */
+    /** Use these values if you selected EPeriodType.DAY */
     [EPeriodType.DAY]: {
         /** DEFAULT */
         MINUTE: EFrequencyType.MINUTE,
     },
-    /** Use these values if you selected PERIOD_TYPE.MONTH */
+    /** Use these values if you selected EPeriodType.MONTH */
     [EPeriodType.MONTH]: {
         /** DEFAULT */
         WEEKLY: EFrequencyType.WEEKLY,
         DAILY: EFrequencyType.DAILY,
     },
-    /** Use these values if you selected PERIOD_TYPE.YEAR */
+    /** Use these values if you selected EPeriodType.YEAR */
     [EPeriodType.YEAR]: {
         /** DEFAULT */
         MONTHLY: EFrequencyType.MONTHLY,
         WEEKLY: EFrequencyType.WEEKLY,
         DAILY: EFrequencyType.DAILY,
     },
-    /** Use these values if you selected PERIOD_TYPE.YTD */
+    /** Use these values if you selected EPeriodType.YTD */
     [EPeriodType.YTD]: {
         /** DEFAULT */
         WEEKLY: EFrequencyType.WEEKLY,
@@ -109,7 +115,10 @@ export const EFrequencyTypeByPeriodType = {
     },
 };
 
-export enum EFrequency {
+/**
+ * Each candle represents this many time units, specified in {@link EFrequencyType}
+ */
+export enum EFrequencyQty {
     ONE = 1,
     FIVE = 5,
     TEN = 10,
@@ -118,33 +127,35 @@ export enum EFrequency {
 }
 
 /**
- * How many units of the FREQUENCY_TYPE make up a candle. Valid frequencies depend on, and are enumerated by, FREQUENCY_TYPE
- * @enum {number}
+ * How many units of the EFrequencyType time units make up a candle. Valid quantities/frequencies come from {@link EFrequencyQty}
+ * and depend on, and are enumerated by, {@link EFrequencyType}
+ * @example
+ * EFrequencyQtyByFrequencyType[EFrequencyType.MINUTE].FIFTEEN
  */
-export const EFrequencyByFrequencyType = {
-    /** Use these values if you selected FREQUENCY_TYPE.MINUTE */
+export const EFrequencyQtyByFrequencyType = {
+    /** Use these values if you selected EFrequencyType.MINUTE */
     [EFrequencyType.MINUTE]: {
         /** DEFAULT */
-        ONE: EFrequency.ONE,
-        FIVE: EFrequency.FIVE,
-        TEN: EFrequency.TEN,
-        FIFTEEN: EFrequency.FIFTEEN,
-        THIRTY: EFrequency.THIRTY,
+        ONE: EFrequencyQty.ONE,
+        FIVE: EFrequencyQty.FIVE,
+        TEN: EFrequencyQty.TEN,
+        FIFTEEN: EFrequencyQty.FIFTEEN,
+        THIRTY: EFrequencyQty.THIRTY,
     },
-    /** Use this value if you selected FREQUENCY_TYPE.DAILY */
+    /** Use this value if you selected EFrequencyType.DAILY */
     [EFrequencyType.DAILY]: {
         /** DEFAULT */
-        ONE: EFrequency.ONE,
+        ONE: EFrequencyQty.ONE,
     },
-    /** Use these values if you selected FREQUENCY_TYPE.WEEKLY */
+    /** Use these values if you selected EFrequencyType.WEEKLY */
     [EFrequencyType.WEEKLY]: {
         /** DEFAULT */
-        ONE: EFrequency.ONE,
+        ONE: EFrequencyQty.ONE,
     },
-    /** Use these values if you selected FREQUENCY_TYPE.MONTHLY */
+    /** Use these values if you selected EFrequencyType.MONTHLY */
     [EFrequencyType.MONTHLY]: {
         /** DEFAULT */
-        ONE: EFrequency.ONE,
+        ONE: EFrequencyQty.ONE,
     },
 };
 
@@ -161,16 +172,16 @@ export interface IPriceHistoryConfig extends TacRequestConfig {
      */
     frequencyType: EFrequencyType | string,
     /**
-     * Can use {@link EFrequencyByFrequencyType} to get appropriate values to use
+     * Can use {@link EFrequencyQtyByFrequencyType} to get appropriate values to use
      */
-    frequency: EFrequency | number,
+    frequency: EFrequencyQty | number,
     // optional
     getExtendedHours?: boolean,
     /**
-     * Can use {@link EPeriodByPeriodType} to get appropriate values to use.
+     * Can use {@link EPeriodQtyByPeriodType} to get appropriate values to use.
      * Provide either this or startDate and endDate
      */
-    period?: EPeriod | number,
+    period?: EPeriodQty | number,
     // ms since epoch. Use this and endDate OR supply period.
     startDate?: number,
     // ms since epoch. Use this and startDate OR supply period.
