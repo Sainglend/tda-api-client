@@ -1,0 +1,114 @@
+// RAW
+{
+  '1': 122.25,
+  '2': 123,
+  '3': 123.5,
+  '4': 11,
+  '5': 2,
+  '6': 63,
+  '7': 63,
+  '8': 207,
+  '9': 2,
+  '10': 1641364583546,
+  '11': 1641360830980,
+  '12': 123.5,
+  '13': 120.75,
+  '14': 116,
+  '15': 63,
+  '16': 'E-mini S&P 500 Options',
+  '17': 120.75,
+  '18': 2521,
+  '19': 122.75,
+  '22': 50,
+  '23': 116,
+  '24': '/ESH22',
+  '25': 4750,
+  '26': 1647576000000,
+  key: './ESH22P4750',
+  delayed: false
+}
+
+
+// TYPED
+{
+  key: './ESH22P4750',
+  symbol: './ESH22P4750',
+  delayed: false,
+  description: 'E-mini S&P 500 Options',
+  multiplier: 50,
+  underlyingSymbol: '/ESH22',
+  strike: 4750,
+  expirationDateMSEpoch: 1647576000000,
+  bid: 122.25,
+  ask: 123,
+  last: 123.5,
+  dailyHigh: 123.5,
+  dailyLow: 120.75,
+  previousDayClose: 116,
+  dailyOpen: 120.75,
+  unknown19: 122.75,
+  unknown23: 116,
+  bidSize: 11,
+  askSize: 2,
+  dailyVolume: 207,
+  lastSize: 2,
+  openInterest: 2521,
+  exchangeBestAsk: 63,
+  exchangeBestBid: 63,
+  exchangeOfPrimaryListing: 63,
+  timeLasatQuote: 1641364583546,
+  timeLastTrade: 1641360830980
+}
+
+
+// RAW UNKNOWN SYMBOL
+{
+  '1': 0,
+  '2': 0,
+  '3': 0,
+  '6': 63,
+  '7': 63,
+  '12': 0,
+  '13': 0,
+  '14': 0,
+  '15': 63,
+  '16': 'Symbol not found',
+  '17': 0,
+  '19': 0,
+  '23': 0,
+  '24': 'N/A',
+  key: 'yourmom',
+  delayed: false
+}
+
+
+// TYPED UNKNOWN SYMBOL
+{
+  key: 'yourmom',
+  symbol: 'yourmom',
+  delayed: false,
+  description: 'Symbol not found',
+  multiplier: undefined,
+  underlyingSymbol: 'N/A',
+  strike: undefined,
+  expirationDateMSEpoch: undefined,
+  bid: 0,
+  ask: 0,
+  last: 0,
+  dailyHigh: 0,
+  dailyLow: 0,
+  previousDayClose: 0,
+  dailyOpen: 0,
+  unknown19: 0,
+  unknown23: 0,
+  bidSize: undefined,
+  askSize: undefined,
+  dailyVolume: undefined,
+  lastSize: undefined,
+  openInterest: undefined,
+  exchangeBestAsk: 63,
+  exchangeBestBid: 63,
+  exchangeOfPrimaryListing: 63,
+  timeLasatQuote: undefined,
+  timeLastTrade: undefined
+}

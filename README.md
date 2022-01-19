@@ -1,12 +1,17 @@
 
 # TDA API CLIENT
-v1.1.0
+https://www.github.com/sainglend/tda-api-client
+
+v2.0.0
 ## Summary
 This library is a client to use the API exposed by TD Ameritrade at https://developer.tdameritrade.com
-This project can also be cloned from github to use as a command line utility.
+This project can also be used as a sort of command line utility.
+
+TO REFER BACK TO V1.2 documentation, visit [https://github.com/sainglend/tda-api-client/tree/v1_2](https://github.com/sainglend/tda-api-client/tree/v1_2)
 
 Other README files (also referenced in relevant sections below):
 - [Authentication](authREADME.md)
+- [Streaming](streamingREADME.md)
 - [Code Samples](samples/codesamples.md)
 
 ## Installation
@@ -15,22 +20,30 @@ Other README files (also referenced in relevant sections below):
 npm i tda-api-client
 ```
 ## What's New
-v 1.1.2 - Fixed the Get Price History API call. The query param names were wrong. 
+v 2.0.0 
+- Streaming! You can now utilize the full power of TD Ameritrade's API, both the REST and the Streaming sides. Click the link to the [Streaming README](http://www.github.com/sainglend/tda-api-client/tree/master/streamingREADME.md).
+- TypeScript: care has been taken to make this very IDE friendly by using TypeScript, along with plenty of interfaces and enums. Note that the intent was to create interfaces that are as close to the shape of the objects from TDA as possible. In some cases, this isn't very nice looking (see the response type from the Market Hours api, e.g.). With streaming, there may be an option to get the original shape or a transformed type. For example, when getting streaming data, fields returned are retruned in an object indexed with "1", "17", etc., which I've mapped to an object with human readable keys, like "ask" and "lastTradeTime", and you can choose to get the original or transformed data.
+- Project structure: What gets published to npm is the result of compiling the typescript into `dist/` and copying over a stripped down package.json and README files. View the github page at https://www.github.com/sainglend/tda-api-client for the full experience.
+- There is now sample data in the form of raw requests and responses in [the sampledata folder](http://www.github.com/sainglend/tda-api-client/tree/master/src/sampledata)
+- Unit tests: There are unit tests living side-by-side with the .ts files in src/. Run these with caution!!! See notes below, but be aware that a couple actually execute trades (send and cancel).
+- The module system has changed so that things can be easily and atomically imported.
+
+v 1.1.2 - Fixed the Get Price History API call. The query param names were wrong.
 
 v 1.1.1 - You can now use this library without a config file, instead passing in a lightweight config object with each request.
 
 Full version review in the Version History section at the bottom.
 
 ## Known Issues
-When testing the Saved Orders API, a 400 response code was received as well as a message that said: "Saved Orders are not supported for this account." Using the feature Ask Ted on the main website, Ted said: "If you have upgraded trading features, you're unable to save orders on the website. However, there are equivalent tools on thinkorswim Desktop, thinkorswim Web, and thinkorswim Mobile." It isn't clear if this is related to the Saved Orders API. Saved orders worked fine when tested on the other platforms.
-
-UPDATE in v1.0.2: I now understand the above to be because I have Advanced Features turned on in my account. This will also preclude you from placing complex orders, like 1 TRG OCO. This boggles my mind. So again, you have to turn OFF Advanced Features in your account in order to unlock some API capabilities. I haven't yet completely mapped that.
+When testing the Saved Orders API, a 400 response code was received as well as a message that said: "Saved Orders are not supported for this account." Using the feature Ask Ted on the main website, Ted said: "If you have upgraded trading features, you're unable to save orders on the website. However, there are equivalent tools on thinkorswim Desktop, thinkorswim Web, and thinkorswim Mobile." In other words, if you have have Advanced Features turned on in your account, you can't use Saved Orders. This will also preclude you from placing complex orders, like 1 TRG OCO. This boggles my mind. So again, you have to turn OFF Advanced Features in your account in order to unlock some API capabilities. I haven't yet completely mapped that.
 
 Watchlists are a little wonky. When creating a watchlist, it can be retrieved with the API, but it doesn't appear in Thinkorswim unless it is restarted.
 
-## Usage
+Streaming: The documentation on TDA's website is crap, let's be honest. Book endpoints aren't documented at all. The baseline functionality is there and available for you to try. I'll keep adding documentation and examples as I can.
 
+## Usage
 You may make unauthenticated requests (which typically give delayed data) for some endpoints, but generally requests must be authenticated.
+
 ### DO THIS FIRST: You must know your authentication information
 For a primer on Auth, see [authREADME.md](authREADME.md).
 
@@ -42,46 +55,50 @@ Using this library, there are three ways to make requests:
 ### 1. Unauthenticated requests
 For the methods that support it, ```apikey``` can be passed in as a config option.
 Example:
-```js
-const tdaclient = require('tda-api-client');
+```typescript
+import {
+  SearchInstrumentsFundamentalsConfig,
+  searchInstrumentFundamentals,
+  ISearchInstrumentResults
+} from "tda-api-client";
 
-const configGetMarketHrs = {
-        market: 'OPTION',
-        date: '2021-03-02',
-        apikey: 'FIEJ33342@AMER.OAUTHAP'
+const config: ISearchInstrumentsFundamentalsConfig = {
+  symbol: "MSFT",
+  apikey: "EXAMPLE@AMER.OAUTHAP",
 };
 
-const hrs = await tdaclient.markethours.getSingleMarketHours(configGetMarketHrs);
-
+const result: ISearchInstrumentResults = await searchInstrumentFundamentals(config);
 ```
-A list of methods allowing unauthenticated requests are listed below.
+A list of methods allowing unauthenticated requests is presented below.
 
 ### 2. Authenticated requests with a config object
 The difference here is that you'd pass in your client_id and refresh_token in as ```config.authConfig``` like this:
-```js
-const tdaclient = require('tda-api-client');
+```typescript
+import {
+  SearchInstrumentsFundamentalsConfig,
+  searchInstrumentFundamentals,
+  ISearchInstrumentResults
+} from "tda-api-client";
 
-const configGetMarketHrs = {
-        market: 'OPTION',
-        date: '2021-03-02',
-        authConfig: {
-            "refresh_token": "SrgS0QJK",
-            "client_id": "FIEJ33342@AMER.OAUTHAP",
-        }
+const config: ISearchInstrumentsFundamentalsConfig = {
+  symbol: "MSFT",
+  authConfig: {
+    refresh_token: "WOEFIJ23OIF2OIFJ2O3FIJ",
+    client_id: "EXAMPLE@AMER.OAUTHAP",
+  },
 };
 
-const hrs = await tdaclient.markethours.getSingleMarketHours(configGetMarketHrs);
-
+const result: ISearchInstrumentResults = await searchInstrumentFundamentals(config);
 ```
 
 ### 3. Authenticated requests with a config file
-To use this method, you must have a file at ```{project root}/config/tdaclientauth.json```. Please copy the example file from this library's [config/](config/) folder using the below command:
+To use this method, you must have a config file. The default location is ```{project root}/config/tdaclientauth.json```. Please copy the example file from this library's [config/](config/) folder using the below command:
 
 ```bash
 cp ./node_modules/tda-api-client/config/tdaclientauth.json ./config/tdaclientauth.json
 ```
 
-OR copy this json and replace the values with your own:
+OR simply copy this json into that same file location and replace the values with your own:
 ```json
 {
     "refresh_token":"REPLACEME",
@@ -89,19 +106,41 @@ OR copy this json and replace the values with your own:
 }
 ```
 
-### Now that you've got your auth file ready...
+ALTERNATIVELY, you can place your auth file anywhere you like that node has r/w access to, and use that in your requests.
 
-Here's a little sample code for a taste of how to use this thing. This is using auth from a file.
+Example with the default file location. Note that no extra parameters are necessary:
+```typescript
+import {
+  SearchInstrumentsFundamentalsConfig,
+  searchInstrumentFundamentals,
+  ISearchInstrumentResults
+} from "tda-api-client";
 
-```javascript
-const tdaclient = require('tda-api-client');
+const config: ISearchInstrumentsFundamentalsConfig = {
+  symbol: "MSFT",
+};
 
-await tdaclient.orders.cancelOrder({orderId: 123, accountId: 456});
-await tdaclient.watchlists.deleteWatchlist({watchlistId: 4242, accountId: 456});
-const hours = await tdaclient.markethours.getSingleMarketHours({index: tdaclient.markethours.MARKETS.EQUITY, date: '2020-09-20'});
+const result: ISearchInstrumentResults = await searchInstrumentFundamentals(config);
 ```
 
-The hierarchy is pretty flat. Under the root object, named "tdaclient" in the above example, we have (asterisks indicate unauthenticated requests are possible):
+Example with a custom file location, using the parameter authConfigFileLocation:
+```typescript
+import {
+  SearchInstrumentsFundamentalsConfig,
+  searchInstrumentFundamentals,
+  ISearchInstrumentResults
+} from "tda-api-client";
+
+const config: ISearchInstrumentsFundamentalsConfig = {
+  symbol: "MSFT",
+  authConfigFileLocation: testauthpath,
+};
+
+const result: ISearchInstrumentResults = await searchInstrumentFundamentals(config);
+```
+
+## Available REST Methods
+The hierarchy is pretty flat. Under the library root, named "tda-api-client", we have (asterisks indicate unauthenticated requests are possible):
 - accounts
     - getAccount
     - getAccounts
@@ -153,16 +192,15 @@ The hierarchy is pretty flat. Under the root object, named "tdaclient" in the ab
     - replaceWatchlist
     - updateWatchlist
 
-Each of the 13 first-level objects has their functions, as listed, which correspond 1-to-1 with an API endpoint, and possibly some useful ENUMS.
-
-These aren't strictly organized like the API on the TD Developer site. For example, their site has Accounts, Orders, and Saved Orders grouped together.
-
+Each of these functions correspond 1-to-1 with an API endpoint, and possibly some useful ENUMS.
 
 ## Documentation
 ### Mine
-I've used JSDoc to add comments to each enum and function that wraps an API. I also converted this to TypeScript and will be adding in better and better type support.
+I've used a combo of Typescript with JSDoc to add comments to each enum and function that wraps an API, so that the transpiled JavaScript should be very IDE-friendly. I've also tried to add types to everything so that the shape of the output or expected input or very clear.
 
-You can look in the [samples/](samples/) folder to see [code samples](samples/codesamples.md), which has a simple usage of each of the functions. That folder also has an inputJSON folder with sample inputs.
+You can look in the [samples/](samples/) folder to see [code samples](samples/codesamples.md), which has a simple usage of each of the functions. That folder also has an inputJSON folder with a couple sample JSON inputs.
+
+Additionally, it'd be worth checking out the unit tests for example usage, though you'll have to read around all the testing structure, with the expect statements and whatnot.
 
 ### Theirs
 You can find the documentation for how the API endpoints work at https://developer.tdameritrade.com
@@ -171,7 +209,7 @@ Copies of those pages are also available locally in [apidocsarchive/](apidocsarc
 
 ## Command Line Tool
 
-You can run this as a standalone command line tool by cloning the project and running 
+You can run this as a kind of 3/4-baked standalone command line tool by cloning the project and running 
 ```
 node ./cli_index.js
 ```
@@ -250,6 +288,8 @@ Here is an example:
 node ./cli_index.js hours get 2020-12-02 FUTURES > hours.json
 ```
 ## Version History
+v2.0.0 - (Jan 2022) Redid conversion to TypeScript, added streaming, unit tests, and example data.
+
 v1.1.0 - (Feb 27, 2021) Converted to TypeScript, added in ability to make authenticated requests through the config object for each method, instead of requiring a config file.
 
 v1.0.3 - (Feb 24, 2021) Removed logging statements and fixed auth
@@ -263,16 +303,14 @@ v1.0.0 - (Sept 18, 2020) Initial publish of library
 ## Roadmap (no particular order)
 This was originally built for a particular set of use cases, and those will continue to be the driver for future project direction.
 In no particular order:
-- Improved type support for Typescript
-- Data structures for the input and output types, like Order, for easy parsing
+- More documentation around streaming
 - Helper methods for creating a properly formatted JSON input object (order, watchlist, etc.) given input params.
-- Streaming data support for daemon apps.
 
 Another project is planned which will leverage this library in order to make a command line app, a shell, for trading. The goal is to be able to type "buy 10 F" instead of clicking a bunch of things in Thinkorswim or having to write a clunky Order JSON object.
 
 ## Support
 
-Visit the github page [https://www.github.com/Sainglend/tda-api-client](https://www.github.com/Sainglend/tda-api-client), write a comment, or open a pull request! 
+Visit the github page [https://www.github.com/sainglend/tda-api-client](https://www.github.com/sainglend/tda-api-client), write a comment, or open a pull request! 
 Find me on Reddit: u/sainglend
 Email: sainglend@gmail.com
 
@@ -280,7 +318,7 @@ Email: sainglend@gmail.com
 
 tda-api-client : a client library for the TD Ameritrade API
 
-Copyright (C) 2020  Aaron Satterlee
+Copyright (C) 2020-2  Aaron Satterlee
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

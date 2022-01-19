@@ -1,68 +1,157 @@
-// Copyright (C) 2020  Aaron Satterlee
+// Copyright (C) 2020-2  Aaron Satterlee
 
-import { Arguments } from "yargs";
-const tdApiInterface = require ('./tdapiinterface');
+import {apiGet, TacRequestConfig} from "./tdapiinterface";
+import {IInstrument} from "./sharedTypes";
+import {IOrderStrategy} from "./orders";
+
+export interface IAccountBalance {
+    accruedInterest: number,
+    availableFundsNonMarginableTrade: number,
+    bondValue: number,
+    buyingPower: number,
+    cashBalance: number,
+    cashAvailableForTrading: number,
+    cashReceipts: number,
+    dayTradingBuyingPower: number,
+    dayTradingBuyingPowerCall: number,
+    dayTradingEquityCall: number,
+    equity: number,
+    equityPercentage: number,
+    liquidationValue: number,
+    longMarginValue: number,
+    longOptionMarketValue: number,
+    longStockValue: number,
+    maintenanceCall: number,
+    maintenanceRequirement: number,
+    margin: number,
+    marginEquity: number,
+    moneyMarketFund: number,
+    mutualFundValue: number,
+    regTCall: number,
+    shortMarginValue: number,
+    shortOptionMarketValue: number,
+    shortStockValue: number,
+    totalCash: number,
+    isInCall: boolean,
+    pendingDeposits: number,
+    marginBalance: number,
+    shortBalance: number,
+    accountValue: number
+}
+
+export interface IProjectedBalance {
+    availableFunds: number,
+    availableFundsNonMarginableTrade: number,
+    buyingPower: number,
+    dayTradingBuyingPower: number,
+    dayTradingBuyingPowerCall: number,
+    maintenanceCall: number,
+    regTCall: number,
+    isInCall: boolean,
+    stockBuyingPower: number
+}
+
+export interface ICurrentBalance {
+    accruedInterest: number,
+    cashBalance: number,
+    cashReceipts: number,
+    longOptionMarketValue: number,
+    liquidationValue: number,
+    longMarketValue: number,
+    moneyMarketFund: number,
+    savings: number,
+    shortMarketValue: number,
+    pendingDeposits: number,
+    availableFunds: number,
+    availableFundsNonMarginableTrade: number,
+    buyingPower: number,
+    buyingPowerNonMarginableTrade: number,
+    dayTradingBuyingPower: number,
+    equity: number,
+    equityPercentage: number,
+    longMarginValue: number,
+    maintenanceCall: number,
+    maintenanceRequirement: number,
+    marginBalance: number,
+    regTCall: number,
+    shortBalance: number,
+    shortMarginValue: number,
+    shortOptionMarketValue: number,
+    sma: number,
+    mutualFundValue: number,
+    bondValue: number
+}
+
+export interface IAccountPosition {
+    shortQuantity: number,
+    averagePrice: number,
+    currentDayProfitLoss: number,
+    currentDayProfitLossPercentage: number,
+    longQuantity: number,
+    settledLongQuantity: number,
+    settledShortQuantity: number,
+    agedQuantity: number,
+    instrument: IInstrument,
+    marketValue: number,
+    maintenanceRequirement: number,
+    currentDayCost: number,
+    previousSessionLongQuantity: number,
+}
+
+export interface IAccount {
+    securitiesAccount: ISecuritiesAccount
+}
+
+export interface ISecuritiesAccount {
+    type: string,
+    accountId: string,
+    roundTrips: number,
+    isDayTrader: boolean,
+    isClosingOnlyRestricted: boolean,
+    positions: IAccountPosition[],
+    orderStrategies: IOrderStrategy[],
+    initialBalances: IAccountBalance,
+    currentBalances: ICurrentBalance,
+    projectedBalances: IProjectedBalance,
+}
+
+export interface IGetAccountConfig extends TacRequestConfig {
+    accountId: string | number,
+    fields?: string | EGetAccountField[],
+}
+
+export interface IGetAccountsConfig extends TacRequestConfig {
+    fields?: string | EGetAccountField[],
+}
+
+export enum EGetAccountField {
+    POSITIONS = "positions",
+    ORDERS = "orders",
+}
+
 
 /**
- * Gets account info for a single account. You can request additional fields with config.fields as a comma-separated string.
- * Possible values for fields are: positions, orders
- * @param {Object} config - takes accountId, fields (optional)
- * @returns {Promise<Object>} api GET result
- * @async
+ * Gets account info for a single account. You can request additional fields with config.fields as a comma-separated string
+ * or as an array of string or an array of EGetAccountField
+ * Possible values for fields are: positions, orders (or EGetAccountField.POSITIONS and .ORDERS)
  */
-const getAccount = async (config: any) => {
+export async function getAccount(config: IGetAccountConfig): Promise<IAccount> {
+    let fields = config.fields;
+    if (Array.isArray(config.fields)) fields = config.fields.join(",");
     config.path = `/v1/accounts/${config.accountId}` +
-        (config.fields ? `?fields=${config.fields}` : '');
-
-    return tdApiInterface.apiGet(config);
-};
+        (fields ? `?fields=${fields}` : "");
+    return await apiGet(config);
+}
 
 /**
- * Gets account info for all linked accounts. You can request additional fields with config.fields as a comma-separated string.
- * Possible values for fields are: positions, orders
- * @param {Object} config - takes fields (optional)
- * @returns {Promise<Object>} api GET result
- * @async
+ * Gets account info for all accounts associated to your auth info. You can request additional fields with config.fields as a comma-separated string
+ * or as an array of string or an array of EGetAccountField
+ * Possible values for fields are: positions, orders (or EGetAccountField.POSITIONS and .ORDERS)
  */
-const getAccounts = async (config: any) => {
+export async function getAccounts(config: IGetAccountsConfig): Promise<IAccount[]> {
+    let fields = config.fields;
+    if (Array.isArray(config.fields)) fields = config.fields.join(",");
     config.path = `/v1/accounts` +
-        (config.fields ? `?fields=${config.fields}` : '');
-
-    return tdApiInterface.apiGet(config);
-};
-
-exports.api = {
-    getAccount,
-    getAccounts
-};
-exports.command = `accounts <command>`;
-exports.desc = 'Get your account info for one or all linked accounts';
-exports.builder = (yargs: any) => {
-  return yargs
-    .command('get <accountId> <fields>',
-        'Get <accountId> account info that returns data based on <fields>. Fields is a common-separated string like "positions,orders"',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log('getting account info for account %s with fields %s', argv.accountId, argv.fields);
-            }
-            return getAccount({
-                accountId: argv.accountId,
-                fields: argv.fields,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('getall <fields>',
-        'Get account info for all connected accounts. Data returned is based on <fields>, a common-separated string like "positions,orders"',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log('getting account info for all linked accounts fields %s', argv.fields);
-            }
-            return getAccounts({
-                fields: argv.fields,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        });
-};
-exports.handler = (argv: any) => {};
+        (fields ? `?fields=${fields}` : "");
+    return await apiGet(config);
+}

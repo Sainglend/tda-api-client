@@ -1,0 +1,113 @@
+curl -X PUT --header "Authorization: " --header "Authorization: Bearer INSERT_ACCESS_CODE" --header "Content-Type: application/json" -d "{
+  \"expressTrading\": false,
+  \"directOptionsRouting\": false,
+  \"directEquityRouting\": false,
+  \"defaultEquityOrderLegInstruction\": \"NONE\",
+  \"defaultEquityOrderType\": \"LIMIT\",
+  \"defaultEquityOrderPriceLinkType\": \"NONE\",
+  \"defaultEquityOrderDuration\": \"DAY\",
+  \"defaultEquityOrderMarketSession\": \"NORMAL\",
+  \"defaultEquityQuantity\": 0,
+  \"mutualFundTaxLotMethod\": \"FIFO\",
+  \"optionTaxLotMethod\": \"FIFO\",
+  \"equityTaxLotMethod\": \"FIFO\",
+  \"defaultAdvancedToolLaunch\": \"NONE\",
+  \"authTokenTimeout\": \"EIGHT_HOURS\"
+}" "https://api.tdameritrade.com/v1/accounts/000123456789/preferences"
+
+
+REQUEST
+
+PUT /v1/accounts/000123456789/preferences HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+    Bearer INSERT_ACCESS_CODE
+Content-Length:
+    514
+Content-Type:
+    application/json
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+{
+  "expressTrading": false,
+  "directOptionsRouting": false,
+  "directEquityRouting": false,
+  "defaultEquityOrderLegInstruction": "NONE",
+  "defaultEquityOrderType": "LIMIT",
+  "defaultEquityOrderPriceLinkType": "NONE",
+  "defaultEquityOrderDuration": "DAY",
+  "defaultEquityOrderMarketSession": "NORMAL",
+  "defaultEquityQuantity": 0,
+  "mutualFundTaxLotMethod": "FIFO",
+  "optionTaxLotMethod": "FIFO",
+  "equityTaxLotMethod": "FIFO",
+  "defaultAdvancedToolLaunch": "NONE",
+  "authTokenTimeout": "EIGHT_HOURS"
+}
+
+
+RESPONSE
+
+HTTP/1.1 204 No Content
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Length:
+    0
+Content-Security-Policy:
+    frame-ancestors 'self'
+Date:
+    Fri, 17 Dec 2021 05:40:40 GMT
+Expires:
+    0
+Location:
+    https://api.tdameritrade.com/v1/accounts/000123456789/preferences
+Pragma:
+    no-cache
+Set-Cookie:
+    ADRUM_BTa="R:35|g:3a3b9341-bca8-48d7-abae-856c3482715d"; Version=1; Max-Age=30; Expires=Fri
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Vary:
+    origin
+X-API-Version:
+    1.11.3
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    DENY
+X-XSS-Protection:
+    1; mode=block

@@ -1,0 +1,184 @@
+curl -X GET --header "Authorization: " --header "Authorization: Bearer INSERT_ACCESS_TOKEN" "https://api.tdameritrade.com/v1/userprincipals?fields=streamerSubscriptionKeys%2CstreamerConnectionInfo%2Cpreferences%2CsurrogateIds"
+
+
+REQUEST
+
+GET /v1/userprincipals?fields=streamerSubscriptionKeys%2CstreamerConnectionInfo%2Cpreferences%2CsurrogateIds HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+    Bearer INSERT_ACCESS_TOKEN
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+RESPONSE
+
+HTTP/1.1 200 OK
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json
+Date:
+    Fri, 17 Dec 2021 05:22:28 GMT
+Expires:
+    0
+Pragma:
+    no-cache
+Set-Cookie:
+    ADRUM_BTa="R:35|g:b7fae472-25d7-460e-9513-8894252bfdec"; Version=1; Max-Age=30; Expires=Fri
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Transfer-Encoding:
+    chunked
+X-API-Version:
+    1.11.3
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    DENY
+X-XSS-Protection:
+    1; mode=block
+
+{
+  "userId": "thedude",
+  "userCdDomainId": "A000000000000000",
+  "primaryAccountId": "000123456789",
+  "lastLoginTime": "2021-12-17T04:54:57+0000",
+  "tokenExpirationTime": "2021-12-17T05:24:57+0000",
+  "loginTime": "2021-12-17T04:54:57+0000",
+  "accessLevel": "CUS",
+  "stalePassword": false,
+  "streamerInfo": {
+    "streamerBinaryUrl": "streamer-bin.tdameritrade.com",
+    "streamerSocketUrl": "streamer-ws.tdameritrade.com",
+    "token": "b29000123456789",
+    "tokenTimestamp": "2021-12-17T05:22:28+0000",
+    "userGroup": "ACCT",
+    "accessLevel": "ACCT",
+    "acl": "AKB48",
+    "appId": "DKA"
+  },
+  "professionalStatus": "NON_PROFESSIONAL",
+  "quotes": {
+    "isNyseDelayed": false,
+    "isNasdaqDelayed": false,
+    "isOpraDelayed": false,
+    "isAmexDelayed": false,
+    "isCmeDelayed": true,
+    "isIceDelayed": true,
+    "isForexDelayed": true
+  },
+  "streamerSubscriptionKeys": {
+    "keys": [
+      {
+        "key": "b7wefiweoifjoi434ifjo3ij4ofij2oifj23f"
+      }
+    ]
+  },
+  "exchangeAgreements": {
+    "NYSE_EXCHANGE_AGREEMENT": "ACCEPTED",
+    "OPRA_EXCHANGE_AGREEMENT": "ACCEPTED",
+    "NASDAQ_EXCHANGE_AGREEMENT": "ACCEPTED"
+  },
+  "accounts": [
+    {
+      "accountId": "000123456789",
+      "displayName": "optionman",
+      "accountCdDomainId": "A000000000000000",
+      "company": "AMER",
+      "segment": "ADVNCED",
+      "surrogateIds": {
+        "SCARR": "a_key_goes_here",
+        "Market Edge": "a_key_goes_here",
+        "Zacks": "a_key_goes_here",
+        "Localytics": "a_key_goes_here",
+        "Market Watch": "a_key_goes_here",
+        "Flybits": "a_key_goes_here",
+        "BOZEL": "a_key_goes_here",
+        "WallStreetStrategies": "a_key_goes_here",
+        "STS": "a_key_goes_here",
+        "SiteCatalyst": "a_key_goes_here",
+        "OpinionLab": "a_key_goes_here",
+        "BriefingTrader": "a_key_goes_here",
+        "WSOD": "a_key_goes_here",
+        "SP": "a_key_goes_here",
+        "DART": "a_key_goes_here",
+        "EF": "a_key_goes_here",
+        "GK": "a_key_goes_here",
+        "ePay": "a_key_goes_here",
+        "VB": "a_key_goes_here",
+        "Layer": "a_key_goes_here",
+        "PWS": "a_key_goes_here",
+        "Investools": "a_key_goes_here",
+        "MIN": "a_key_goes_here",
+        "MGP": "a_key_goes_here",
+        "VCE": "a_key_goes_here",
+        "HAVAS": "a_key_goes_here",
+        "MSTAR": "a_key_goes_here"
+      },
+      "preferences": {
+        "expressTrading": false,
+        "directOptionsRouting": false,
+        "directEquityRouting": false,
+        "defaultEquityOrderLegInstruction": "NONE",
+        "defaultEquityOrderType": "LIMIT",
+        "defaultEquityOrderPriceLinkType": "NONE",
+        "defaultEquityOrderDuration": "DAY",
+        "defaultEquityOrderMarketSession": "NORMAL",
+        "defaultEquityQuantity": 0,
+        "mutualFundTaxLotMethod": "FIFO",
+        "optionTaxLotMethod": "FIFO",
+        "equityTaxLotMethod": "FIFO",
+        "defaultAdvancedToolLaunch": "NONE",
+        "authTokenTimeout": "FIFTY_FIVE_MINUTES"
+      },
+      "acl": "AKB48",
+      "authorizations": {
+        "apex": false,
+        "levelTwoQuotes": true,
+        "stockTrading": true,
+        "marginTrading": false,
+        "streamingNews": false,
+        "optionTradingLevel": "LONG",
+        "streamerAccess": true,
+        "advancedMargin": false,
+        "scottradeAccount": false
+      }
+    }
+  ]
+}

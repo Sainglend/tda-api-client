@@ -1,0 +1,113 @@
+curl -X GET --header "Authorization: " --header "Authorization: Bearer INSERT_TOKEN_HERE" "https://api.tdameritrade.com/v1/accounts/000123546789/transactions/123456789"
+
+
+REQUEST
+
+GET /v1/accounts/000123456789/transactions/123456789 HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+    Bearer INSERT_TOKEN_HERE
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+RESPONSE
+
+HTTP/1.1 200 OK
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Length:
+    814
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json
+Date:
+    Fri, 17 Dec 2021 06:38:15 GMT
+Expires:
+    0
+Pragma:
+    no-cache
+Set-Cookie:
+    ADRUM_BTa="R:35|g:69966272-718f-4f6e-b1cd-cc80b97cc70b"; Version=1; Max-Age=30; Expires=Fri
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Vary:
+    origin
+X-API-Version:
+    1.3.5
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    DENY
+X-XSS-Protection:
+    1; mode=block
+
+{
+  "type": "TRADE",
+  "subAccount": "1",
+  "settlementDate": "2021-06-04",
+  "orderId": "T44444444",
+  "netAmount": 4050.97,
+  "transactionDate": "2021-06-02T11:00:48+0000",
+  "orderDate": "2021-06-02T08:56:59+0000",
+  "transactionSubType": "SL",
+  "transactionId": 123456789,
+  "cashBalanceEffectFlag": true,
+  "description": "SELL TRADE",
+  "fees": {
+    "rFee": 0,
+    "additionalFee": 0,
+    "cdscFee": 0,
+    "regFee": 0.03,
+    "otherCharges": 0,
+    "commission": 0,
+    "optRegFee": 0,
+    "secFee": 0.02
+  },
+  "transactionItem": {
+    "accountId": 000123456789,
+    "amount": 100,
+    "price": 40.51,
+    "cost": 4051,
+    "instruction": "SELL",
+    "instrument": {
+      "symbol": "AMC",
+      "cusip": "00165C104",
+      "assetType": "EQUITY"
+    }
+  }
+}

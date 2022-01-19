@@ -1,0 +1,359 @@
+curl -X GET --header "Authorization: " --header "Authorization: Bearer INSERT_ACCESS_TOKEN" "https://api.tdameritrade.com/v1/marketdata/quotes?symbol=SPY%2C%24SPX.X%2CT_021822C25%2C%2FES%2CEUR%2FUSD%2CMSFT%2CCPOAX""
+
+REQUEST
+
+GET /v1/marketdata/quotes?symbol=SPY%2C%24SPX.X%2CT_021822C25%2C%2FES%2CEUR%2FUSD%2CMSFT%2CCPOAX HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+    Bearer INSERT_ACCESS_TOKEN
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+RESPONSE
+
+HTTP/1.1 200
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Encoding:
+    gzip
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json
+Date:
+    Mon, 20 Dec 2021 07:27:30 GMT
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Transfer-Encoding:
+    chunked
+vary:
+    accept-encoding
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    SAMEORIGIN
+X-Xss-Protection:
+    1; mode=block
+
+{
+  "SPY": {
+    "assetType": "ETF",
+    "assetMainType": "EQUITY",
+    "cusip": "78462F103",
+    "assetSubType": "ETF",
+    "symbol": "SPY",
+    "description": "SPDR S&P 500",
+    "bidPrice": 477.55,
+    "bidSize": 1000,
+    "bidId": "P",
+    "askPrice": 477.58,
+    "askSize": 100,
+    "askId": "P",
+    "lastPrice": 477.71,
+    "lastSize": 1612900,
+    "lastId": "P",
+    "openPrice": 476.3,
+    "highPrice": 477.85,
+    "lowPrice": 473.85,
+    "bidTick": " ",
+    "closePrice": 474.96,
+    "netChange": 2.75,
+    "totalVolume": 72668233,
+    "quoteTimeInLong": 1641258000645,
+    "tradeTimeInLong": 1641258000003,
+    "mark": 477.71,
+    "exchange": "p",
+    "exchangeName": "PACIFIC",
+    "marginable": true,
+    "shortable": true,
+    "volatility": 0.0064,
+    "digits": 2,
+    "52WkHigh": 479,
+    "52WkLow": 364.82,
+    "nAV": 0,
+    "peRatio": 0,
+    "divAmount": 5.7182,
+    "divYield": 1.2,
+    "divDate": "2021-12-17 00:00:00.000",
+    "securityStatus": "Normal",
+    "regularMarketLastPrice": 477.71,
+    "regularMarketLastSize": 1,
+    "regularMarketNetChange": 2.75,
+    "regularMarketTradeTimeInLong": 1641258000003,
+    "netPercentChangeInDouble": 0.579,
+    "markChangeInDouble": 2.75,
+    "markPercentChangeInDouble": 0.579,
+    "regularMarketPercentChangeInDouble": 0.579,
+    "delayed": true,
+    "realtimeEntitled": false
+  },
+  "$SPX.X": {
+    "assetType": "INDEX",
+    "assetMainType": "INDEX",
+    "cusip": "",
+    "symbol": "$SPX.X",
+    "description": "S&P 500 INDEX",
+    "lastPrice": 4796.5601,
+    "openPrice": 0,
+    "highPrice": 0,
+    "lowPrice": 0,
+    "closePrice": 4766.1802,
+    "netChange": 30.38,
+    "totalVolume": 2238181149,
+    "tradeTimeInLong": 1641246740795,
+    "exchange": "x",
+    "exchangeName": "INDICES",
+    "digits": 2,
+    "52WkHigh": 4808.9302,
+    "52WkLow": 3662.71,
+    "securityStatus": "Closed",
+    "netPercentChangeInDouble": 0.6374,
+    "delayed": false,
+    "realtimeEntitled": true
+  },
+  "T_021822C25": {
+    "assetType": "OPTION",
+    "assetMainType": "OPTION",
+    "cusip": "0T....BI20025000",
+    "symbol": "T_021822C25",
+    "description": "T Feb 18 2022 25 Call",
+    "bidPrice": 0.77,
+    "bidSize": 238,
+    "askPrice": 0.82,
+    "askSize": 137,
+    "lastPrice": 0.78,
+    "lastSize": 10,
+    "openPrice": 0.52,
+    "highPrice": 0.87,
+    "lowPrice": 0.52,
+    "closePrice": 0.495,
+    "netChange": 0.285,
+    "totalVolume": 1834,
+    "quoteTimeInLong": 1641243599812,
+    "tradeTimeInLong": 1641243517185,
+    "mark": 0.795,
+    "openInterest": 10972,
+    "volatility": 21.7034,
+    "moneyIntrinsicValue": 0.43,
+    "multiplier": 100,
+    "digits": 2,
+    "strikePrice": 25,
+    "contractType": "C",
+    "underlying": "T",
+    "expirationDay": 18,
+    "expirationMonth": 2,
+    "expirationYear": 2022,
+    "daysToExpiration": 45,
+    "timeValue": 0.35,
+    "deliverables": "",
+    "delta": 0.5559,
+    "gamma": 0.2577,
+    "theta": -0.0044,
+    "vega": 0.0331,
+    "rho": 0.0098,
+    "securityStatus": "Normal",
+    "theoreticalOptionValue": 0.795,
+    "underlyingPrice": 25.43,
+    "uvExpirationType": "R",
+    "exchange": "o",
+    "exchangeName": "OPR",
+    "lastTradingDay": 1645232400000,
+    "settlementType": " ",
+    "netPercentChangeInDouble": 57.5758,
+    "markChangeInDouble": 0.3,
+    "markPercentChangeInDouble": 60.6061,
+    "impliedYield": 0.1547,
+    "isPennyPilot": true,
+    "delayed": true,
+    "realtimeEntitled": false
+  },
+  "/ES": {
+    "assetType": "FUTURE",
+    "assetMainType": "FUTURE",
+    "cusip": null,
+    "symbol": "/ES",
+    "bidPriceInDouble": 4795.25,
+    "askPriceInDouble": 4795.5,
+    "lastPriceInDouble": 4795.5,
+    "bidSizeInLong": 12,
+    "askSizeInLong": 15,
+    "bidId": "?",
+    "askId": "?",
+    "totalVolume": 47349,
+    "lastSizeInLong": 2,
+    "quoteTimeInLong": 1641282080530,
+    "tradeTimeInLong": 1641282078995,
+    "highPriceInDouble": 4798.5,
+    "lowPriceInDouble": 4781,
+    "closePriceInDouble": 4786,
+    "exchange": "E",
+    "description": "E-mini S&P 500 Index Futures,Mar-2022,ETH",
+    "lastId": "?",
+    "openPriceInDouble": 4785.25,
+    "changeInDouble": 9.5,
+    "futurePercentChange": 0.002,
+    "exchangeName": "XCME",
+    "securityStatus": "Unknown",
+    "openInterest": 2239274,
+    "mark": 4795.5,
+    "tick": 0.25,
+    "tickAmount": 12.5,
+    "product": "/ES",
+    "futurePriceFormat": "D,D",
+    "futureTradingHours": "GLBX(de=1640;0=-17001600;1=r-17001600d-15551640;7=d-16401555)",
+    "futureIsTradable": true,
+    "futureMultiplier": 50,
+    "futureIsActive": true,
+    "futureSettlementPrice": 4786,
+    "futureActiveSymbol": "/ESH22",
+    "futureExpirationDate": 1647576000000,
+    "delayed": false,
+    "realtimeEntitled": true
+  },
+  "EUR/USD": {
+    "assetType": "FOREX",
+    "assetMainType": "FOREX",
+    "cusip": null,
+    "symbol": "EUR/USD",
+    "bidPriceInDouble": 1.12869,
+    "askPriceInDouble": 1.12882,
+    "lastPriceInDouble": 1.12876,
+    "bidSizeInLong": 1000000,
+    "askSizeInLong": 1000000,
+    "totalVolume": 29010000,
+    "lastSizeInLong": 10000,
+    "quoteTimeInLong": 1641282077679,
+    "tradeTimeInLong": 1641282077679,
+    "highPriceInDouble": 1.13095,
+    "lowPriceInDouble": 1.1284,
+    "closePriceInDouble": 1.1373,
+    "exchange": "T",
+    "description": "Euro/USDollar Spot",
+    "openPriceInDouble": 1.12978,
+    "changeInDouble": -0.00854,
+    "percentChange": 0,
+    "exchangeName": "GFT",
+    "digits": 2,
+    "securityStatus": "Unknown",
+    "tick": 0,
+    "tickAmount": 0,
+    "product": "",
+    "tradingHours": "",
+    "isTradable": false,
+    "marketMaker": "",
+    "52WkHighInDouble": 1.13095,
+    "52WkLowInDouble": 1.1284,
+    "mark": 1.12876,
+    "delayed": false,
+    "realtimeEntitled": true
+  },
+  "MSFT": {
+    "assetType": "EQUITY",
+    "assetMainType": "EQUITY",
+    "cusip": "594918104",
+    "symbol": "MSFT",
+    "description": "Microsoft Corporation - Common Stock",
+    "bidPrice": 334.12,
+    "bidSize": 200,
+    "bidId": "P",
+    "askPrice": 334.6,
+    "askSize": 100,
+    "askId": "P",
+    "lastPrice": 334.41,
+    "lastSize": 0,
+    "lastId": "Q",
+    "openPrice": 335.35,
+    "highPrice": 338,
+    "lowPrice": 329.78,
+    "bidTick": " ",
+    "closePrice": 336.32,
+    "netChange": -1.91,
+    "totalVolume": 28918013,
+    "quoteTimeInLong": 1641257988820,
+    "tradeTimeInLong": 1641257984777,
+    "mark": 334.75,
+    "exchange": "q",
+    "exchangeName": "NASD",
+    "marginable": true,
+    "shortable": true,
+    "volatility": 0.0117,
+    "digits": 4,
+    "52WkHigh": 349.67,
+    "52WkLow": 211.94,
+    "nAV": 0,
+    "peRatio": 37.5958,
+    "divAmount": 2.48,
+    "divYield": 0.74,
+    "divDate": "2022-02-16 00:00:00.000",
+    "securityStatus": "Normal",
+    "regularMarketLastPrice": 334.75,
+    "regularMarketLastSize": 28339,
+    "regularMarketNetChange": -1.57,
+    "regularMarketTradeTimeInLong": 1641243600763,
+    "netPercentChangeInDouble": -0.5679,
+    "markChangeInDouble": -1.57,
+    "markPercentChangeInDouble": -0.4668,
+    "regularMarketPercentChangeInDouble": -0.4668,
+    "delayed": true,
+    "realtimeEntitled": false
+  },
+  "CPOAX": {
+    "assetType": "MUTUAL_FUND",
+    "assetMainType": "MUTUAL_FUND",
+    "cusip": "61747T106",
+    "symbol": "CPOAX",
+    "description": "MS Insight Fund Class A",
+    "closePrice": 65.88,
+    "netChange": -1.02,
+    "totalVolume": 0,
+    "tradeTimeInLong": 1641258000000,
+    "exchange": "m",
+    "exchangeName": "MUTUAL FUND",
+    "digits": 2,
+    "52WkHigh": 98.4,
+    "52WkLow": 63.72,
+    "nAV": 64.86,
+    "peRatio": 0,
+    "divAmount": 0,
+    "divYield": 0,
+    "divDate": "",
+    "securityStatus": "Normal",
+    "netPercentChangeInDouble": -1.5483,
+    "delayed": false,
+    "realtimeEntitled": true
+  }
+}

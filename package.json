@@ -1,13 +1,20 @@
 {
   "name": "tda-api-client",
-  "version": "1.1.2",
-  "description": "A client app to provide access to TD Ameritrade's API",
+  "version": "2.0.0",
+  "description": "A client library for the TD Ameritrade API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "prepublish": "tsc",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 0"
+    "test": "jest --runInBand --bail --forceExit",
+    "lint": "eslint src --ext .ts,.js",
+    "lint:fix": "eslint --fix src --ext .ts,.js",
+    "build:npm": "tsc && cp *.md dist/ && cp -r config/ dist/ && cp npmpackage.json dist/package.json"
   },
+  "files": [
+    "dist/*",
+    "cli_index.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Sainglend/tda-api-client.git"
@@ -28,15 +35,28 @@
   "homepage": "https://github.com/Sainglend/tda-api-client#readme",
   "dependencies": {
     "axios": "^0.21.1",
-    "querystring": "^0.2.0",
+    "moment": "^2.29.1",
+    "qs": "^6.10.2",
+    "ws": "^7.4.3",
+    "xml-js": "^1.6.11",
     "yargs": "^16.0.3"
   },
   "devDependencies": {
-    "@types/node": "^14.14.31",
+    "@babel/core": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "@babel/preset-typescript": "^7.16.5",
+    "@types/axios": "^0.14.0",
+    "@types/jest": "^27.0.3",
+    "@types/node": "^14.14.32",
+    "@types/qs": "^6.9.7",
+    "@types/ws": "^8.2.0",
     "@types/yargs": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^4.15.2",
     "@typescript-eslint/parser": "^4.15.2",
+    "babel-jest": "^27.4.5",
     "eslint": "^7.20.0",
+    "jest": "^27.4.5",
+    "ts-node": "^10.4.0",
     "typescript": "^4.2.2"
   }
 }

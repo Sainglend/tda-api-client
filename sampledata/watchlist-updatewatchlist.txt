@@ -1,0 +1,113 @@
+curl -X PATCH --header "Authorization: Bearer INSERT_ACCESS_TOKEN" --header "Content-Type: application/json" -d "{
+  \"name\": \"wlnewname\",
+  \"watchlistId\": \"123456\",
+  \"watchlistItems\": [
+    {
+      \"sequenceId\": 1,
+      \"quantity\": 0,
+      \"averagePrice\": 0,
+      \"commission\": 0,
+      \"instrument\": {
+        \"symbol\": \"SPY\",
+        \"assetType\": \"EQUITY\"
+      }
+    }
+  ]
+}" "https://api.tdameritrade.com/v1/accounts/000123456789/watchlists/123456"
+
+
+REQUEST
+
+PATCH /v1/accounts/000123456789/watchlists/123456 HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+    Bearer INSERT_ACCESS_TOKEN
+Content-Length:
+    272
+Content-Type:
+    application/json
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+{
+  "name": "wlnewname",
+  "watchlistId": "123456",
+  "watchlistItems": [
+    {
+      "sequenceId": 1,
+      "quantity": 0,
+      "averagePrice": 0,
+      "commission": 0,
+      "instrument": {
+        "symbol": "SPY",
+        "assetType": "EQUITY"
+      }
+    }
+  ]
+}
+
+
+RESPONSE
+
+HTTP/1.1 204 No Content
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Length:
+    0
+Content-Location:
+    https://api.tdameritrade.com/v1/accounts/000123456789/watchlists/123456
+Content-Security-Policy:
+    frame-ancestors 'self'
+Date:
+    Sun, 12 Dec 2021 06:17:31 GMT
+Expires:
+    0
+Pragma:
+    no-cache
+Set-Cookie:
+    ADRUM_BTa="R:35|g:d61ee2f9-581b-4743-bb3a-c578ef2cdbe7"; Version=1; Max-Age=30; Expires=Sun
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Vary:
+    origin
+X-API-Version:
+    1.2.4
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    DENY
+X-XSS-Protection:
+    1; mode=block

@@ -1,203 +1,176 @@
-// Copyright (C) 2020  Aaron Satterlee
+// Copyright (C) 2020-2  Aaron Satterlee
 
-const tdApiInterface = require ('./tdapiinterface');
-import { Arguments } from "yargs";
+import {apiDelete, apiGet, apiPatch, apiPost, apiPut, IWriteResponse, TacRequestConfig} from "./tdapiinterface";
+import {EAssetType} from "./sharedTypes";
+
+export interface ICreateWatchlistInstrument {
+    symbol: string,
+    assetType?: EAssetType,
+}
+
+export interface ICreateWatchlist {
+    name: string,
+    watchlistItems: ICreateWatchlistItem[],
+}
+
+export interface ICreateWatchlistItem {
+    quantity?: number,
+    averagePrice?: number,
+    commission?: number,
+    purchasedDate?: string | Date,
+    instrument: ICreateWatchlistInstrument,
+}
+
+export enum EWatchlistStatus {
+    UNCHANGED,
+    CREATED,
+    UPDATED,
+    DELETED,
+}
+
+export interface IWatchlistItem extends ICreateWatchlistItem {
+    sequenceId: number,
+    instrument: IWatchlistInstrument,
+}
+
+export interface IWatchlistInstrument extends ICreateWatchlistInstrument {
+    description?: string,
+}
+
+export interface IWatchlist {
+    name: string,
+    watchlistId: string,
+    accountId: string,
+    status?: EWatchlistStatus,
+    watchlistItems: IWatchlistItem[],
+}
+
+export interface IWatchlistReplacement {
+    name: string,
+    watchlistId?: string,
+    watchlistItems: IWatchlistReplacementItem[],
+}
+
+export interface IWatchlistUpdate {
+    name: string,
+    watchlistId?: string,
+    watchlistItems: ICreateWatchlistItem[],
+}
+
+export interface IWatchlistReplacementItem extends ICreateWatchlistItem {
+    sequenceId?: number,
+}
+
+export interface ICreateWatchlistConfig extends TacRequestConfig {
+    watchlistJSON: ICreateWatchlist,
+    accountId: string | number,
+}
+
+export interface IDeleteWatchlistConfig extends TacRequestConfig {
+    accountId: string | number,
+    watchlistId: string,
+}
+
+export interface IGetWatchlistConfig extends TacRequestConfig {
+    accountId: string | number,
+    watchlistId: string,
+}
+
+export interface IGetWatchlistsSingleAcctConfig extends TacRequestConfig {
+    accountId: string | number,
+}
+
+export interface IWatchlistReplaceConfig extends TacRequestConfig {
+    watchlistJSON: IWatchlistReplacement,
+    accountId: string | number,
+    watchlistId: string,
+}
+
+export interface IWatchlistUpdateConfig extends TacRequestConfig {
+    watchlistJSON: IWatchlistUpdate,
+    accountId: string | number,
+    watchlistId: string,
+}
+
 
 /**
- * Create a new watchlist for a specified accountId using watchlistJSON
- * @param {Object} config - takes accountId, watchlistJSON
- * @returns {Promise<Object>} api PATCH result
- * @async
+ * Create a new watchlist for a specified accountId using watchlistJSON.
+ * The new watchlist id can be parsed from the location property on the return object
  */
-const createWatchlist = async (config: any) => {
+export async function createWatchlist(config: ICreateWatchlistConfig): Promise<IWriteResponse> {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists`;
 
-    return tdApiInterface.apiPost(config);
-};
+    return await apiPost(config);
+}
 
 /**
- * Delete a single watchlist having watchlistId for a specified accountId
- * @param {Object} config - takes accountId, watchlistId
- * @returns {Promise<Object>} api DELETE result
- * @async
+ * Delete a single watchlist having watchlistId for a specified accountId.
+ * Returns a 204 response on success.
  */
-const deleteWatchlist = async (config: any) => {
+export async function deleteWatchlist(config: IDeleteWatchlistConfig): Promise<any> {
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
-    return tdApiInterface.apiDelete(config);
-};
+    return await apiDelete(config);
+}
 
 /**
  * Get a single watchlist having watchlistId for a specified accountId
- * @param {Object} config - takes accountId, watchlistId
- * @returns {Promise<Object>} api GET result
- * @async
  */
-const getWatchlist = async (config: any) => {
+export async function getWatchlist(config: IGetWatchlistConfig): Promise<IWatchlist> {
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
-    return tdApiInterface.apiGet(config);
-};
-
+    return await apiGet(config);
+}
 
 /**
  * Get all watchlists for all linked accounts
- * @param {Object} config - (no input required)
- * @returns {Promise<Object>} api GET result
- * @async
  */
-const getWatchlistsMultiAcct = async (config: any) => {
-    if (!config) config = {};
-    config.path = `/v1/accounts/watchlists`;
+export async function getWatchlistsMultiAcct(config?: TacRequestConfig): Promise<IWatchlist[]> {
+    const getConfig = {
+        ...config,
+        path: `/v1/accounts/watchlists`,
+    };
 
-    return tdApiInterface.apiGet(config);
-};
-
+    return await apiGet(getConfig);
+}
 
 /**
  * Get all watchlists for a single account with specified accountId
- * @param {Object} config - takes accountId
- * @returns {Promise<Object>} api GET result
- * @async
  */
-const getWatchlistsSingleAcct = async (config: any) => {
+export async function getWatchlistsSingleAcct(config: IGetWatchlistsSingleAcctConfig): Promise<IWatchlist[]> {
     config.path = `/v1/accounts/${config.accountId}/watchlists`;
 
-    return tdApiInterface.apiGet(config);
-};
-
+    return await apiGet(config);
+}
 
 /**
  * Replace an entire watchlist having watchlistId for a specified accountId using watchlistJSON
- * @param {Object} config - takes accountId, watchlistId, watchlistJSON
- * @returns {Promise<Object>} api PUT result
- * @async
+ * Note that sequenceId can not be included in the watchlist item json
+ * The location will be returned in the return object but the watchlist id is unchanged
  */
-const replaceWatchlist = async (config: any) => {
+export async function replaceWatchlist(config: IWatchlistReplaceConfig): Promise<IWriteResponse> {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
-    return tdApiInterface.apiPut(config);
-};
-
+    return await apiPut(config);
+}
 
 /**
  * Append/update in place a watchlist having watchlistId for a specified accountId using watchlistJSON
- * @param {Object} config - takes accountId, watchlistId, watchlistJSON
- * @returns {Promise<Object>} api PATCH result
- * @async
+ * The location will be returned in the return object but the watchlist id is unchanged
  */
-const updateWatchlist = async (config: any) => {
+export async function updateWatchlist(config: IWatchlistUpdateConfig): Promise<IWriteResponse> {
     config.bodyJSON = config.watchlistJSON;
     config.path = `/v1/accounts/${config.accountId}/watchlists/${config.watchlistId}`;
 
-    return tdApiInterface.apiPatch(config);
-};
+    return await apiPatch(config);
+}
 
-exports.api = {
-    createWatchlist,
-    deleteWatchlist,
-    getWatchlist,
-    getWatchlistsSingleAcct,
-    getWatchlistsMultiAcct,
-    replaceWatchlist,
-    updateWatchlist
-};
-exports.command = 'watchlists <command>';
-exports.desc = 'Manage your watchlists';
-exports.builder = (yargs: any) => {
-  return yargs
-    .command('create <accountId> <orderJSON>',
-        'Create a watchlist for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`creating a watchlist for ${argv.accountId}`);
-            }
-            return createWatchlist({
-                accountId: argv.accountId,
-                watchlistJSON: (typeof(argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('replace <watchlistId> <accountId> <watchlistJSON>',
-        'Replace an entire watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`replacing watchlist ${argv.watchlistId} for ${argv.accountId}`);
-            }
-            return replaceWatchlist({
-                accountId: argv.accountId,
-                watchlistJSON: (typeof(argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                watchlistId: argv.watchlistId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('update <watchlistId> <accountId> <watchlistJSON>',
-        'Append/update in place a watchlist having <watchlistId> for a specified <accountId> using the properly formatted <watchlistJSON> (on command line, enclose JSON in quotes, escape inner quotes, e.g. "{\\"prop1\\":\\"abc\\"}" )',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`updating watchlist ${argv.watchlistId} for ${argv.accountId}`);
-            }
-            return updateWatchlist({
-                accountId: argv.accountId,
-                watchlistJSON: (typeof(argv.watchlistJSON) === 'string' ? JSON.parse(argv.watchlistJSON) : argv.watchlistJSON),
-                watchlistId: argv.watchlistId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('get <watchlistId> <accountId>',
-        'Get a single watchlist having <watchlistId> for a given <accountId>',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
-            }
-            return getWatchlist({
-                accountId: argv.accountId,
-                watchlistId: argv.watchlistId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('getall <accountId>',
-        'Get all watchlists for a given <accountId>',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting all watchlists for account ${argv.accountId}`);
-            }
-            return getWatchlistsSingleAcct({
-                accountId: argv.accountId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('getmulti',
-        'Get all watchlists for all your linked accounts',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting all watchlists for all linked accounts`);
-            }
-            return getWatchlistsMultiAcct({
-                verbose: argv.verbose || false
-            })
-            .then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('delete <watchlistId> <accountId>',
-        'Delete a specified watchlist with <watchlistId> for a given <accountId>',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`deleting watchlist ${argv.watchlistId} for account ${argv.accountId}`);
-            }
-            return deleteWatchlist({
-                accountId: argv.accountId,
-                watchlistId: argv.watchlistId,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        });
-};
-exports.handler = (argv: Arguments) => {};
+export function createBasicWatchlistItem(symbol: string): ICreateWatchlistItem {
+    return {
+        instrument: {
+            symbol,
+        },
+    };
+}

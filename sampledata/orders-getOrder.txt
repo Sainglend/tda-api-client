@@ -1,0 +1,110 @@
+curl -X GET --header "Authorization: Bearer INSERT_ACCESS_TOKEN" "https://api.tdameritrade.com/v1/accounts/00123456789/orders/54321"
+
+
+REQUEST
+
+GET /v1/accounts/000123456789/orders/54321 HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+    Bearer INSERT_ACCESS_TOKEN
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+RESPONSE
+
+HTTP/1.1 200
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Length:
+    740
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json
+Date:
+    Fri, 10 Dec 2021 05:17:21 GMT
+Expires:
+    0
+Pragma:
+    no-cache
+Set-Cookie:
+    ADRUM_BTa=R:35|g:b050e3c9-250d-470b-8507-d26348988e81; Max-Age=30; Expires=Fri
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Vary:
+    origin
+X-API-Version:
+    1.13.12
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    DENY
+X-XSS-Protection:
+    1; mode=block
+
+{
+  "session": "NORMAL",
+  "duration": "DAY",
+  "orderType": "MARKET",
+  "complexOrderStrategyType": "NONE",
+  "quantity": 15,
+  "filledQuantity": 0,
+  "remainingQuantity": 15,
+  "requestedDestination": "AUTO",
+  "destinationLinkName": "AutoRoute",
+  "orderLegCollection": [
+    {
+      "orderLegType": "EQUITY",
+      "legId": 1,
+      "instrument": {
+        "assetType": "EQUITY",
+        "cusip": "345370860",
+        "symbol": "F"
+      },
+      "instruction": "BUY",
+      "positionEffect": "OPENING",
+      "quantity": 15
+    }
+  ],
+  "orderStrategyType": "SINGLE",
+  "orderId": 54321,
+  "cancelable": true,
+  "editable": false,
+  "status": "QUEUED",
+  "enteredTime": "2021-12-10T04:45:05+0000",
+  "accountId": 000123456789
+}

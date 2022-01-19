@@ -1,0 +1,113 @@
+curl -X POST --header "Authorization: Bearer INSERT_ACCESS_TOKEN" --header "Content-Type: application/json" -d "{
+  \"orderType\": \"MARKET\",
+  \"session\": \"NORMAL\",
+  \"duration\": \"DAY\",
+  \"orderStrategyType\": \"SINGLE\",
+  \"orderLegCollection\": [
+    {
+      \"instruction\": \"Buy\",
+      \"quantity\": 15,
+      \"instrument\": {
+        \"symbol\": \"F\",
+        \"assetType\": \"EQUITY\"
+      }
+    }
+  ]
+}" "https://api.tdameritrade.com/v1/accounts/000123456789/orders"
+
+
+REQUEST
+
+POST /v1/accounts/00123456789/orders HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+    Bearer INSERT_ACCESS_TOKEN
+Content-Length:
+    282
+Content-Type:
+    application/json
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+{
+  "orderType": "MARKET",
+  "session": "NORMAL",
+  "duration": "DAY",
+  "orderStrategyType": "SINGLE",
+  "orderLegCollection": [
+    {
+      "instruction": "Buy",
+      "quantity": 15,
+      "instrument": {
+        "symbol": "F",
+        "assetType": "EQUITY"
+      }
+    }
+  ]
+}
+
+
+RESPONSE
+
+HTTP/1.1 201
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Length:
+    0
+Content-Security-Policy:
+    frame-ancestors 'self'
+Date:
+    Fri, 10 Dec 2021 04:45:05 GMT
+Expires:
+    0
+Location:
+    https://api.tdameritrade.com/v1/accounts/000123456789/orders/54321
+Pragma:
+    no-cache
+Set-Cookie:
+    ADRUM_BTa=R:35|g:5a8fb378-1c9e-4c93-8c27-c0d0bd7fc2f3; Max-Age=30; Expires=Fri
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Vary:
+    origin
+X-API-Version:
+    1.13.12
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    DENY
+X-XSS-Protection:
+    1; mode=block

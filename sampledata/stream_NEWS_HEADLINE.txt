@@ -1,0 +1,33 @@
+// RAW
+{
+  '1': 0,
+  '2': 1641363248000,
+  '3': 'B24899724',
+  '4': 'U',
+  '5': "Elon Musk's Name Used With Verified Twitter Profile Of Hacked Indonesian Consulate To Dupe Unsuspecting Users Of Bitcoin",
+  '6': 'B24899724',
+  '7': 2,
+  '8': 'TSLA,$ETH,News,Markets,Cryptocurrency,$BTC,*ALL*',
+  '9': false,
+  '10': 'BENZINGA',
+  seq: 151,
+  key: 'TSLA'
+}
+
+// TYPED
+{
+  timestamp: 1641366406204,
+  seq: 151,
+  key: 'TSLA',
+  symbol: 'TSLA',
+  errorCode: 0,
+  storyDatetime: 1641363248000,
+  headlineId: 'B24899724',
+  status: 'U',
+  headline: "Elon Musk's Name Used With Verified Twitter Profile Of Hacked Indonesian Consulate To Dupe Unsuspecting Users Of Bitcoin",
+  storyId: 'B24899724',
+  keywordCount: 2,
+  keywords: 'TSLA,$ETH,News,Markets,Cryptocurrency,$BTC,*ALL*',
+  isHot: false,
+  storySource: 'BENZINGA'
+}

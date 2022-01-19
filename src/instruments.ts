@@ -1,81 +1,129 @@
-// Copyright (C) 2020  Aaron Satterlee
+// Copyright (C) 2020-2  Aaron Satterlee
 
-import { Arguments } from "yargs";
-const tdApiInterface = require ('./tdapiinterface');
+import {apiGet, TacRequestConfig} from "./tdapiinterface";
+import {EAssetType} from "./sharedTypes";
 
-const PROJECTION_TYPE = {
-    SYMBOL_SEARCH: "symbol-search",
-    SYMBOL_REGEX: "symbol-regex",
-    DESC_SEARCH: "desc-search",
-    DESC_REGEX: "desc-regex",
-    FUNDAMENTAL: "fundamental"
-};
+export enum EProjectionType {
+    // Retrieve instrument data of a specific symbol or cusip
+    SYMBOL_SEARCH = "symbol-search",
+    // Retrieve instrument data for all symbols matching regex. Example: symbol=XYZ.* will return all symbols beginning with XYZ
+    SYMBOL_REGEX = "symbol-regex",
+    // Retrieve instrument data for instruments whose description contains the word supplied. Example: symbol=FakeCompany will return all instruments with FakeCompany in the description.
+    DESC_SEARCH = "desc-search",
+    // Search description with full regex support. Example: symbol=XYZ.[A-C] returns all instruments whose descriptions contain a word beginning with XYZ followed by a character A through C.
+    DESC_REGEX = "desc-regex",
+    // Returns fundamental data for a single instrument specified by exact symbol.'
+    FUNDAMENTAL = "fundamental",
+}
+
+export interface ISearchInstrumentResult {
+    assetType: EAssetType,
+    cusip: string,
+    symbol: string,
+    description: string,
+    exchange: string,
+    fundamental?: IFundamental,
+    bondPrice?: number,
+}
+
+export interface IFundamental {
+    high52: number, // double
+    low52: number, // double
+    dividendAmount: number, // double
+    dividendYield: number, // double
+    dividendDate: string,
+    peRatio: number, // double
+    pegRatio: number, // double
+    pbRatio: number, // double
+    prRatio: number, // double
+    pcfRatio: number, // double
+    grossMarginTTM: number, // double
+    grossMarginMRQ: number, // double
+    netProfitMarginTTM: number, // double
+    netProfitMarginMRQ: number, // double
+    operatingMarginTTM: number, // double
+    operatingMarginMRQ: number, // double
+    returnOnEquity: number, // double
+    returnOnAssets: number, // double
+    returnOnInvestment: number, // double
+    quickRatio: number, // double
+    currentRatio: number, // double
+    interestCoverage: number, // double
+    totalDebtToCapital: number, // double
+    ltDebtToEquity: number, // double
+    totalDebtToEquity: number, // double
+    epsTTM: number, // double
+    epsChangePercentTTM: number, // double
+    epsChangeYear: number, // double
+    epsChange: number, // double
+    revChangeYear: number, // double
+    revChangeTTM: number, // double
+    revChangeIn: number, // double
+    sharesOutstanding: number, // double
+    marketCapFloat: number, // double
+    marketCap: number, // double
+    bookValuePerShare: number, // double
+    shortIntToFloat: number, // double
+    shortIntDayToCover: number, // double
+    divGrowthRate3Year: number, // double
+    dividendPayAmount: number, // double
+    dividendPayDate: string,
+    beta: number, // double
+    vol1DayAvg: number, // double
+    vol10DayAvg: number, // double
+    vol3MonthAvg: number, // double
+}
+
+export interface ISearchInstrumentsFundamentalsConfig extends TacRequestConfig {
+    symbol: string,
+}
+
+export interface ISearchInstrumentsConfig extends ISearchInstrumentsFundamentalsConfig {
+    projection: EProjectionType,
+}
+
+export interface IGetInstrumentConfig extends TacRequestConfig {
+    cusip: string,
+}
+
+export interface ISearchInstrumentResults {
+    [key: string]: ISearchInstrumentResult,
+}
 
 /**
- * Search for an instrument using search string or regex (config.symbol) and search type (config.projection>)
- * projection (use ENUM) is one of: symbol-search, symbol-regex, desc-search, desc-regex, fundamental.
+ * Search for an instrument using search string or regex (config.symbol) and search type (config.projection)
+ * Projection (you may use enum EProjectionType) is one of: symbol-search, symbol-regex, desc-search, desc-regex, fundamental.
  * Can optionally use apikey for delayed data with an unauthenticated request.
- * @param {Object} config - takes symbol, projection (ENUM is PROJECTION_TYPE), apikey (optional)
- * @returns {Promise<Object>} api GET result
- * @async
  */
-const searchInstruments = async (config: any) => {
-    config.path = `/v1/instruments?symbol=${config.symbol}&projection=${config.projection}` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
+export async function searchInstruments(config: ISearchInstrumentsConfig): Promise<ISearchInstrumentResults> {
+    config.path = `/v1/instruments`
+        + `?symbol=${config.symbol}`
+        + `&projection=${config.projection}`
+        + (config.apikey ? `&apikey=${config.apikey}` : "");
+    return await apiGet(config);
+}
 
-    return tdApiInterface.apiGet(config);
-};
+/**
+ * This is specifically a shortcut for getting fundamental data for a particular symbol, which can also be achieved
+ * by calling searchInstruments() with config.projection = EProjectionType.FUNDAMENTAL. The availability of this
+ * feature seemed less obvious behind the name "searchInstruments"
+ * Can optionally use apikey for delayed data with an unauthenticated request.
+ */
+export async function searchInstrumentFundamentals(config: ISearchInstrumentsFundamentalsConfig): Promise<ISearchInstrumentResults> {
+    config.path = `/v1/instruments`
+        + `?symbol=${config.symbol}`
+        + `&projection=${EProjectionType.FUNDAMENTAL}`
+        + (config.apikey ? `&apikey=${config.apikey}` : "");
+    return await apiGet(config);
+}
 
 /**
  * Get an instrument by CUSIP (unique id number assigned to all stocks and registered bonds in US/CA).
  * List of instruments here: https://www.sec.gov/divisions/investment/13flists.htm
  * Can optionally use apikey for delayed data with an unauthenticated request.
- * @param {Object} config - takes cusip, apikey (optional)
- * @returns {Promise<Object>} api GET result
- * @async
  */
-const getInstrument = async (config: any) => {
-    config.path = `/v1/instruments/${config.cusip}` +
-        (config.apikey ? `?apikey=${config.apikey}` : '');
-
-    return tdApiInterface.apiGet(config);
-};
-
-exports.api = {
-    getInstrument,
-    searchInstruments,
-    PROJECTION_TYPE
-};
-exports.command = 'instruments <command>';
-exports.desc = 'Search for an instrument with a text string, or get an instrument by CUSIP';
-exports.builder = (yargs: any) => {
-  return yargs
-    .command('search <symbol> <projection> [apikey]',
-        'Search for an instrument using search string <symbol> and search type indicated by <projection> (one of symbol-search, symbol-regex, desc-search, desc-regex, fundamental), can optionally use apikey for unauthenticated request',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`searching instruments for ${argv.symbol} with search type ${argv.projection}`);
-            }
-            return searchInstruments({
-                symbol: argv.symbol,
-                projection: argv.projection,
-                verbose: argv.verbose || false,
-                apikey: argv.apikey
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('get <cusip> [apikey]',
-        'Get an instrument by CUSIP <cusip> (unique id number assigned to all stocks and registered bonds in US/CA). List here: https://www.sec.gov/divisions/investment/13flists.htm , can use <apikey> for delayed data',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting instrument info for cusip ${argv.cusip}`);
-            }
-            return getInstrument({
-                cusip: argv.cusip,
-                apikey: argv.apikey || '',
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        });
-};
-exports.handler = (argv: Arguments) => {};
+export async function getInstrument(config: IGetInstrumentConfig): Promise<ISearchInstrumentResult[]> {
+    config.path = `/v1/instruments/${config.cusip}`
+        + (config.apikey ? `?apikey=${config.apikey}` : "");
+    return await apiGet(config);
+}

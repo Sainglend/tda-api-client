@@ -1,80 +1,69 @@
-// Copyright (C) 2020  Aaron Satterlee
+// Copyright (C) 2020-2  Aaron Satterlee
 
-import { Arguments } from "yargs";
+import {apiGet, TacRequestConfig} from "./tdapiinterface";
 
-const tdApiInterface = require ('./tdapiinterface');
-
-enum MARKETS {
-    EQUITY = 'EQUITY',
-    OPTION = 'OPTION',
-    FUTURE = 'FUTURE',
-    BOND = 'BOND',
-    FOREX = 'FOREX'
-};
-
-/**
- * Get market open hours for a specified date (e.g. 2020-09-18) and a specified market (use ENUM).
- * Can optionally use apikey for delayed data with an unauthenticated request.
- * @param {Object} config - takes market (ENUM is MARKETS), date, apikey (optional)
- * @returns {Promise<Object>} api GET result
- * @async
- */
-const getSingleMarketHours = async (config: any) => {
-    config.path = `/v1/marketdata/${config.market}/hours?date=${config.date}` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
-
-    return tdApiInterface.apiGet(config);
-};
-
-/**
- * Get market open hours for a specified date (e.g. 2020-09-18) and a comma-separated set of markets from EQUITY, OPTION, FUTURE, BOND, or FOREX, e.g. "EQUITY,OPTION".
- * Can optionally use apikey for delayed data with an unauthenticated request.
- * @param {Object} config - takes markets, date, apikey (optional)
- * @returns {Promise<Object>} api GET result
- * @async
- */
-const getMultipleMarketHours = async (config: any) => {
-    config.path = `/v1/marketdata/hours?markets=${config.markets}&date=${config.date}` +
-        (config.apikey ? `&apikey=${config.apikey}` : '');
-
-    return tdApiInterface.apiGet(config);
-};
-exports.api = {
-    getSingleMarketHours,
-    getMultipleMarketHours,
-    MARKETS
+export enum EMarkets {
+    EQUITY = "EQUITY",
+    OPTION = "OPTION",
+    FUTURE = "FUTURE",
+    BOND = "BOND",
+    FOREX = "FOREX"
 }
-exports.command = 'hours <command>';
-exports.desc = 'Get market hours';
-exports.builder = (yargs: any) => {
-  return yargs
-    .command('get <date> <markets> [apikey]',
-        'Get market open hours for a specified date <date> (e.g. 2020-09-18) and a comma-separated set of <markets> from EQUITY, OPTION, FUTURE, BOND, or FOREX, e.g. "EQUITY,OPTION". Including your optional <apikey> makes an unauthenticated request.',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting market hours for ${argv.date} for markets ${argv.markets}`);
-            }
-            return getMultipleMarketHours({
-                markets: argv.markets,
-                date: argv.date,
-                apikey: argv.apikey,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        })
-    .command('getone <date> <market> [apikey]',
-        'Get market open hours for a specified date <date> and a single <market> from EQUITY, OPTION, FUTURE, BOND, or FOREX. Including your optional <apikey> makes an unauthenticated request.',
-        {},
-        async (argv: Arguments) => {
-            if (argv.verbose) {
-                console.log(`getting market hours for ${argv.date} for market ${argv.market}`);
-            }
-            return getSingleMarketHours({
-                market: argv.market,
-                date: argv.date,
-                apikey: argv.apikey,
-                verbose: argv.verbose || false
-            }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);
-        });
-};
-exports.handler = (argv: any) => {};
+
+export interface IMarketSession {
+    start: string,
+    end: string,
+}
+
+export interface IMarketHours {
+    category: string,
+    date: string,
+    exchange: string,
+    isOpen: boolean,
+    marketType: EMarkets,
+    product: string,
+    productName: string,
+    sessionHours: {[index: string]: IMarketSession},
+}
+
+export interface IProductMarketHours {
+    [index:string]: IMarketHours
+}
+
+export interface IMarketMarketHours {
+    [index:string]: IProductMarketHours
+}
+
+export interface IGetSingleMarketHoursConfig extends TacRequestConfig {
+    market: EMarkets | string,
+    date: string,
+}
+
+export interface IGetMultiMarketHoursConfig extends TacRequestConfig {
+    markets: EMarkets[] | string[] | string,
+    date: string,
+}
+
+/**
+ * Get market open hours for a specified date in ISO-8601 (yyyy-MM-dd and yyyy-MM-dd'T'HH:mm:ssz)
+ * (e.g. 2020-09-18) and a specified market (use enum EMarkets).
+ * Can optionally use apikey for delayed data with an unauthenticated request.
+ */
+export async function getSingleMarketHours(config: IGetSingleMarketHoursConfig): Promise<IMarketMarketHours> {
+    config.path = `/v1/marketdata/${config.market}/hours?date=${config.date}` +
+        (config.apikey ? `&apikey=${config.apikey}` : "");
+    return await apiGet(config);
+}
+
+/**
+ * Get market open hours for a specified date (e.g. 2020-09-18) and a set of markets.
+ * Markets can be an array of EMarkets (enum), an array of strings, or a string with comma-separated values
+ * e.g. [EMarkets.EQUITY, EMarkets.OPTION] or ["EQUITY","OPTION"] or "EQUITY,OPTION".
+ * Can optionally use apikey for delayed data with an unauthenticated request.
+ */
+export async function getMultipleMarketHours(config: IGetMultiMarketHoursConfig): Promise<IMarketMarketHours> {
+    const markets = Array.isArray(config.markets) ? config.markets.join(",") : config.markets;
+    config.path = `/v1/marketdata/hours?markets=${markets}&date=${config.date}` +
+        (config.apikey ? `&apikey=${config.apikey}` : "");
+    return await apiGet(config);
+}

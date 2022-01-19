@@ -1,0 +1,125 @@
+curl -X GET --header "Authorization: " "https://api.tdameritrade.com/v1/instruments?apikey=insertkeyhere&symbol=TSLA&projection=fundamental"
+
+REQUEST
+
+GET /v1/instruments?apikey=insertkeyhere&symbol=TSLA&projection=fundamental HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+RESPONSE
+
+HTTP/1.1 200 OK
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Length:
+    1237
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json;charset=UTF-8
+Date:
+    Tue, 07 Dec 2021 08:02:34 GMT
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+X-Application-Context:
+    application:8080
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    SAMEORIGIN
+X-Xss-Protection:
+    1; mode=block
+
+{
+  "TSLA": {
+    "fundamental": {
+      "symbol": "TSLA",
+      "high52": 1243.49,
+      "low52": 539.49,
+      "dividendAmount": 0,
+      "dividendYield": 0,
+      "dividendDate": " ",
+      "peRatio": 329.3561,
+      "pegRatio": 0.657245,
+      "pbRatio": 37.66791,
+      "prRatio": 21.75757,
+      "pcfRatio": 162.3604,
+      "grossMarginTTM": 23.10664,
+      "grossMarginMRQ": 26.60464,
+      "netProfitMarginTTM": 7.67802,
+      "netProfitMarginMRQ": 12.05932,
+      "operatingMarginTTM": 9.57351,
+      "operatingMarginMRQ": 14.56713,
+      "returnOnEquity": 16.09878,
+      "returnOnAssets": 6.94905,
+      "returnOnInvestment": 10.38665,
+      "quickRatio": 1.09706,
+      "currentRatio": 1.38508,
+      "interestCoverage": 16.57258,
+      "totalDebtToCapital": 22.24951,
+      "ltDebtToEquity": 23.79773,
+      "totalDebtToEquity": 30.14083,
+      "epsTTM": 3.08168,
+      "epsChangePercentTTM": 501.1158,
+      "epsChangeYear": 430.6936,
+      "epsChange": 0,
+      "revChangeYear": 0,
+      "revChangeTTM": 66.26917,
+      "revChangeIn": 15.04432,
+      "sharesOutstanding": 1004264852,
+      "marketCapFloat": 811.8643,
+      "marketCap": 1019299,
+      "bookValuePerShare": 69.61395,
+      "shortIntToFloat": 0,
+      "shortIntDayToCover": 0,
+      "divGrowthRate3Year": 0,
+      "dividendPayAmount": 0,
+      "dividendPayDate": " ",
+      "beta": 2.05101,
+      "vol1DayAvg": 24914380,
+      "vol10DayAvg": 24976442,
+      "vol3MonthAvg": 534816470
+    },
+    "cusip": "88160R101",
+    "symbol": "TSLA",
+    "description": "Tesla, Inc.  - Common Stock",
+    "exchange": "NASDAQ",
+    "assetType": "EQUITY"
+  }
+}

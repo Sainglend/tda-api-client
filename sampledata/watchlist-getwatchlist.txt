@@ -1,0 +1,95 @@
+curl -X GET --header "Authorization: Bearer INSERT_ACCESS_TOKEN" "https://api.tdameritrade.com/v1/accounts/000123456789/watchlists/123456"
+
+
+REQUEST
+
+GET /v1/accounts/000123456789/watchlists/123456 HTTP/1.1
+
+Accept:
+    */*
+Accept-Encoding:
+    gzip
+Accept-Language:
+    en-US
+Authorization:
+    Bearer INSERT_ACCESS_TOKEN
+Host:
+    api.tdameritrade.com
+NS-Proxy-Client-IP:
+    24.24.24.24
+Sec-Fetch-Dest:
+    empty
+Sec-Fetch-Mode:
+    cors
+Sec-Fetch-Site:
+    same-site
+User-Agent:
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:94.0) Gecko/20100101 Firefox/94.0
+X-Forwarded-For:
+    10.152.4.23
+X-Forwarded-Port:
+    59002
+X-Forwarded-Proto:
+    http
+
+
+RESPONSE
+
+HTTP/1.1 200 OK
+
+Access-Control-Allow-Headers:
+    origin
+Access-Control-Allow-Methods:
+    GET
+Access-Control-Allow-Origin:
+    https://developer.tdameritrade.com
+Access-Control-Max-Age:
+    3628800
+Cache-Control:
+    no-cache
+Connection:
+    keep-alive
+Content-Length:
+    296
+Content-Security-Policy:
+    frame-ancestors 'self'
+Content-Type:
+    application/json
+Date:
+    Sun, 12 Dec 2021 05:48:59 GMT
+Expires:
+    0
+Pragma:
+    no-cache
+Set-Cookie:
+    ADRUM_BTa="R:35|g:fa2847af-c49a-4b19-b112-6d167a1673bb"; Version=1; Max-Age=30; Expires=Sun
+Strict-Transport-Security:
+    max-age=31536000; includeSubDomains
+Vary:
+    origin
+X-API-Version:
+    1.2.4
+X-Content-Type-Options:
+    nosniff
+X-Frame-Options:
+    DENY
+X-XSS-Protection:
+    1; mode=block
+
+{
+  "name": "test20211211",
+  "watchlistId": "123456",
+  "accountId": "000123456789",
+  "watchlistItems": [
+    {
+      "sequenceId": 1,
+      "quantity": 0,
+      "averagePrice": 0,
+      "commission": 0,
+      "instrument": {
+        "symbol": "SPY",
+        "assetType": "EQUITY"
+      }
+    }
+  ]
+}
