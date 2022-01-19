@@ -1,7 +1,7 @@
 // Copyright (C) 2020-2  Aaron Satterlee
 
 import {Arguments} from "yargs";
-import {getInstrument, searchInstruments} from "../instruments";
+import {EProjectionType, getInstrument, searchInstruments} from "../instruments";
 
 export default {
     command: "instruments <command>",
@@ -17,7 +17,7 @@ export default {
                     }
                     return searchInstruments({
                         symbol: argv.symbol as string,
-                        projection: argv.projection as string,
+                        projection: argv.projection as EProjectionType,
                         verbose: String(argv.verbose) === "true",
                         apikey: argv.apikey ? String(argv.apikey) : "",
                     }).then(data => JSON.stringify(data, null, 2)).then(console.log).catch(console.log);

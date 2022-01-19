@@ -1,13 +1,13 @@
 import {
     L1FuturesQuote,
     L1FuturesQuoteRough,
-    FuturesChartResponse,
-    FuturesChartResponseRough,
+    ChartFuturesResponse,
+    ChartFuturesResponseRough,
     ChartHistoryFutures,
     ChartHistoryFuturesRough,
     ChartHistoryFuturesCandleRough,
-    EquityChartResponseRough,
-    EquityChartResponse,
+    ChartEquityResponseRough,
+    ChartEquityResponse,
     TimeSaleRough,
     TimeSale,
     L1FuturesOptionsQuoteRough,
@@ -27,6 +27,12 @@ import {ICandle} from "./sharedTypes";
 import convert from "xml-js";
 import qs from "qs";
 
+export function normalizeSymbol(ticker: string): string {
+    if (ticker) {
+        return ticker.replace(/\W/g, "_");
+    } else return ticker;
+}
+
 export default class StreamingUtils {
     static buildNumberArray(start: number, finish: number) : string {
         const arr = [];
@@ -36,18 +42,11 @@ export default class StreamingUtils {
         return arr.join(",");
     }
 
-    static normalizeSymbol(ticker: string): string {
-        // console.log(`in normalizesymbol with ticker: ${ticker}`);
-        if (ticker) {
-            return ticker.replace(/\W/g, "_");
-        } else return ticker;
-    }
-
     static jsonToQueryString(json: any): string {
         return qs.stringify(json);
     }
 
-    static transformFuturesChartResponse(resp: FuturesChartResponseRough, timestamp: number) : FuturesChartResponse {
+    static transformFuturesChartResponse(resp: ChartFuturesResponseRough, timestamp: number) : ChartFuturesResponse {
         return {
             timestamp: timestamp,
             key: resp.key,
@@ -62,7 +61,7 @@ export default class StreamingUtils {
         };
     }
 
-    static transformEquityChartResponse(resp: EquityChartResponseRough) : EquityChartResponse {
+    static transformEquityChartResponse(resp: ChartEquityResponseRough) : ChartEquityResponse {
         return {
             key: resp.key,
             symbol: resp.key,

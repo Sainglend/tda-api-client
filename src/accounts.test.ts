@@ -28,6 +28,7 @@ describe("accounts", () => {
 
         const config: IGetAccountConfig = {
             accountId: accounts[0].securitiesAccount.accountId,
+            fields: "positions,orders",
             authConfigFileLocation: testauthpath,
         };
         const account: IAccount = await getAccount(config);

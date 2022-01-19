@@ -1,6 +1,6 @@
 import {EAssetType, ICandle} from "./sharedTypes";
 
-export interface FuturesChartResponseRough extends StringIndexed {
+export interface ChartFuturesResponseRough extends StringIndexed {
     key: string,
     seq: number,
     "0": string, // key
@@ -12,13 +12,13 @@ export interface FuturesChartResponseRough extends StringIndexed {
     "6": number // volume
 }
 
-export interface FuturesChartResponse extends StringIndexed, ICandle {
+export interface ChartFuturesResponse extends StringIndexed, ICandle {
     key: string,
     symbol: string,
     seq: number,
 }
 
-export interface EquityChartResponseRough extends StringIndexed {
+export interface ChartEquityResponseRough extends StringIndexed {
     key: string,
     seq: number,
     "0": string, // key
@@ -32,7 +32,7 @@ export interface EquityChartResponseRough extends StringIndexed {
     "8"?: number, // chart day
 }
 
-export interface EquityChartResponse extends StringIndexed, ICandle {
+export interface ChartEquityResponse extends StringIndexed, ICandle {
     key: string,
     symbol: string,
     seq: number,

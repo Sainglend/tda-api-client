@@ -8,7 +8,7 @@ import {
     EServices, IStreamNotify,
     StreamingResponseData,
 } from "./streamingdatatypes";
-import StreamingUtils from "./streamingutils";
+import StreamingUtils, {normalizeSymbol} from "./streamingutils";
 import EventEmitter from "events";
 import {EUserPrincipalFields, getStreamerSubKeys, getUserPrincipals} from "./userinfo";
 import {getAccounts} from "./accounts";
@@ -80,6 +80,11 @@ enum EQueueState {
 export interface IChartHistoryFuturesGetConfig {
     symbol: string,
     frequency: EChartHistoryFuturesFrequency,
+    /** period must be specified if start and end time aren't
+     * Flexible time period examples:
+     * d5, w4, n10, y1, y10
+     * (d=day, w=week, n=month, y=year)
+     */
     period?: string,
     startTimeMSEpoch?: number,
     endTimeMSEpoch?: number,
@@ -93,6 +98,27 @@ export interface IAccountUpdatesSubConfig {
     requestSeqNum?: number,
 }
 
+export declare interface StreamDataTDA {
+    // events are: "heartbeat", "response", "data", "snapshot", "streamClosed", or one of the following four templates: "{service}_RAW", "{service}_RAW_{normalizedSymbol}", "{service}_TYPED", "{service}_TYPED_{normalizedSymbol}", e.g. "QUOTE_TYPED_MSFT"
+    addListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    // events are: "heartbeat", "response", "data", "snapshot", "streamClosed", or one of the following four templates: "{service}_RAW", "{service}_RAW_{normalizedSymbol}", "{service}_TYPED", "{service}_TYPED_{normalizedSymbol}", e.g. "QUOTE_TYPED_MSFT"
+    on(event: string | symbol, listener: (...args: any[]) => void): this;
+    // events are: "heartbeat", "response", "data", "snapshot", "streamClosed", or one of the following four templates: "{service}_RAW", "{service}_RAW_{normalizedSymbol}", "{service}_TYPED", "{service}_TYPED_{normalizedSymbol}", e.g. "QUOTE_TYPED_MSFT"
+    once(event: string | symbol, listener: (...args: any[]) => void): this;
+    removeListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    off(event: string | symbol, listener: (...args: any[]) => void): this;
+    removeAllListeners(event?: string | symbol): this;
+    setMaxListeners(n: number): this;
+    getMaxListeners(): number;
+    listeners(event: string | symbol): any[];
+    rawListeners(event: string | symbol): any[];
+    emit(event: string | symbol, ...args: any[]): boolean;
+    listenerCount(event: string | symbol): number;
+    prependListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    prependOnceListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    eventNames(): Array<string | symbol>;
+}
+
 /**
  * Events emitted:
  *  heartbeat - for stream heartbeats
@@ -100,6 +126,10 @@ export interface IAccountUpdatesSubConfig {
  *  streamClosed - when the stream is closed;
  *  data - only emitted when config.emitDataRaw is true; covers all realtime data;
  *  snapshot - only emitted when config.emitDataRaw is true; applicable for CHART_FUTURES_HISTORY;
+ *  {EServices}_RAW - an array of raw data for the specified service
+ *  {EServices}_RAW_{normalizedSymbol} - an item of raw data for the specified service and symbol
+ *  {EServices}_TYPED - an array of typed data for the specified service
+ *  {EServices}_TYPED_{normalizedSymbol} - an item of typed data for the specified service and symbol
  */
 export class StreamDataTDA extends EventEmitter {
     private dataStreamSocket: any;
@@ -247,8 +277,8 @@ export class StreamDataTDA extends EventEmitter {
         }
         if (this.emitDataBySubAndTickerRaw) {
             element.content.forEach((item: any) => {
-                if (this.debug) console.debug(`${emitEventBase}_RAW_${StreamingUtils.normalizeSymbol(item.key)}`, JSON.stringify(item, null, 2));
-                this.emit(`${emitEventBase}_RAW_${StreamingUtils.normalizeSymbol(item.key)}`, item);
+                if (this.debug) console.debug(`${emitEventBase}_RAW_${normalizeSymbol(item.key)}`, JSON.stringify(item, null, 2));
+                this.emit(`${emitEventBase}_RAW_${normalizeSymbol(item.key)}`, item);
             });
         }
 
@@ -261,8 +291,8 @@ export class StreamDataTDA extends EventEmitter {
             }
             if (this.emitDataBySubAndTickerTyped && typedResponses) {
                 typedResponses.forEach(item => {
-                    if (this.debug) console.debug(`${emitEventBase}_TYPED_${StreamingUtils.normalizeSymbol(item.key)}`, JSON.stringify(item, null, 2));
-                    this.emit(`${emitEventBase}_TYPED_${StreamingUtils.normalizeSymbol(item.key)}`, item);
+                    if (this.debug) console.debug(`${emitEventBase}_TYPED_${normalizeSymbol(item.key)}`, JSON.stringify(item, null, 2));
+                    this.emit(`${emitEventBase}_TYPED_${normalizeSymbol(item.key)}`, item);
                 });
             }
         }
@@ -334,6 +364,10 @@ export class StreamDataTDA extends EventEmitter {
                 case EServices.TIMESALE_EQUITY: fn = StreamingUtils.transformTimeSaleResponse; break;
                 case EServices.NEWS_STORY:
                 case EServices.NEWS_HEADLINE_LIST:
+                case EServices.ACTIVES_NASDAQ:
+                case EServices.ACTIVES_NYSE:
+                case EServices.ACTIVES_OPTIONS:
+                case EServices.ACTIVES_OTCBB:
                 case EServices.FUTURES_BOOK:
                 case EServices.OPTIONS_BOOK:
                 case EServices.NASDAQ_BOOK:
@@ -455,7 +489,7 @@ export class StreamDataTDA extends EventEmitter {
     }
 
     private async handleStreamClose(): Promise<void> {
-        console.log("handleStreamClose called");
+        if (this.verbose) console.log("handleStreamClose called");
         if (this.heartbeatCheckerInterval) clearInterval(this.heartbeatCheckerInterval);
         this.heartbeatCheckerInterval = 0;
         if (this.queueIntervalObj) clearInterval(this.queueIntervalObj);
@@ -600,29 +634,30 @@ export class StreamDataTDA extends EventEmitter {
      */
     async genericStreamRequest(config: IGenericStreamConfig, queueConfig: IQueueRequestConfig = { useQueue: false }) : Promise<number> {
         if (!config) throw "You must pass in a config object";
-        if (!config.requestSeqNum) config.requestSeqNum = this.requestId++;
+        const localConfig = { ...config };
+        if (!localConfig.requestSeqNum) localConfig.requestSeqNum = this.requestId++;
 
-        if (queueConfig && queueConfig.useQueue) {
+        if (queueConfig?.useQueue) {
             await this.qpush({
-                fn: this.genericStreamRequest.bind(this, config),
+                fn: this.genericStreamRequest.bind(this, localConfig),
                 fnDesc: "genericStreamRequest",
-                params: config,
-                queueRequestConfig: queueConfig,
+                params: localConfig,
+                queueRequestConfig: { ...queueConfig },
             });
-            return config.requestSeqNum;
+            return localConfig.requestSeqNum;
         }
 
-        const parameters = { ...config.parameters };
-        const {requestSeqNum, service, command, account, source} = config;
+        const parameters = { ...localConfig.parameters };
+        const {requestSeqNum, service, command, account, source} = localConfig;
         if ([ECommands.SUBS, ECommands.ADD].includes(command)) {
             if (!parameters || !parameters.keys) throw "With commands ADD or SUBS, your config object must have parameters";
             if (!parameters.fields) {
-                parameters.fields = this.getDefaultFields(config.service);
+                parameters.fields = this.getDefaultFields(localConfig.service);
             }
         }
 
         // store parameters so the streams can be recovered in case of websocket connection loss
-        this.handleParamStorage(config);
+        this.handleParamStorage(localConfig);
 
         const request = {
             requests: [
@@ -695,7 +730,7 @@ export class StreamDataTDA extends EventEmitter {
             ],
         };
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.dataStreamSocket = new WebSocket("wss://" + this.userPrincipalsResponse.streamerInfo.streamerSocketUrl + "/ws");
 
             this.dataStreamSocket.on("message", (response: string) => this.handleIncoming.call(this, response, resolve));
@@ -729,26 +764,27 @@ export class StreamDataTDA extends EventEmitter {
      * Change the qosLevel of your stream, meaning data streams faster or slower. Possible values are
      * in the enum {@link EQosLevels}, ranging from 500ms to 5sec. Default is level 2, 1 second.
      */
-    async qosRequest({ qosLevel, requestSeqNum }: IQosRequestConfig, queueConfig?: IQueueRequestConfig) : Promise<number> {
-        requestSeqNum = requestSeqNum ?? this.requestId++;
+    async qosRequest(qosConfig: IQosRequestConfig, queueConfig?: IQueueRequestConfig) : Promise<number> {
+        const localConfig = { ...qosConfig };
+        localConfig.requestSeqNum = localConfig.requestSeqNum ?? this.requestId++;
         if (queueConfig?.useQueue) {
             await this.qpush({
-                fn: this.qosRequest.bind(this, { qosLevel, requestSeqNum }),
+                fn: this.qosRequest.bind(this, localConfig),
                 fnDesc: "qosRequest",
-                params: { qosLevel, requestSeqNum },
-                queueRequestConfig: queueConfig,
+                params: localConfig,
+                queueRequestConfig: { ...queueConfig },
             });
-            return requestSeqNum;
+            return localConfig.requestSeqNum;
         }
 
-        if (!EQosLevels[qosLevel]) return 0;
-        this.currentQosLevel = qosLevel;
+        if (!EQosLevels[localConfig.qosLevel]) return 0;
+        this.currentQosLevel = localConfig.qosLevel;
         return await this.genericStreamRequest({
             service: EServices.ADMIN,
-            requestSeqNum,
+            requestSeqNum: localConfig.requestSeqNum,
             command: ECommands.QOS,
             parameters: {
-                qoslevel: qosLevel,
+                qoslevel: localConfig.qosLevel,
             },
         });
     }
@@ -770,7 +806,7 @@ export class StreamDataTDA extends EventEmitter {
                 fn: this.chartHistoryFuturesGet.bind(this, { ...config, requestSeqNum }),
                 fnDesc: "chartHistoryFuturesGet",
                 params: { ...config, requestSeqNum },
-                queueRequestConfig: queueConfig,
+                queueRequestConfig: { ...queueConfig },
             });
             return requestSeqNum;
         }
@@ -802,26 +838,27 @@ export class StreamDataTDA extends EventEmitter {
      * Subscribe to real-time data updates on specified account ids. Each subsequent call overrides the previous one.
      * You may optionally queue this request.
      */
-    async accountActivitySub({ accountIds, fields, requestSeqNum } : IAccountUpdatesSubConfig, queueConfig?: IQueueRequestConfig): Promise<number> {
-        if (!fields) fields = "0,1,2,3";
-        if (!requestSeqNum) requestSeqNum = this.requestId++;
+    async accountActivitySub(config?: IAccountUpdatesSubConfig, queueConfig?: IQueueRequestConfig): Promise<number> {
+        const localConfig = { ...config };
+        if (!localConfig.fields) localConfig.fields = "0,1,2,3";
+        if (!localConfig.requestSeqNum) localConfig.requestSeqNum = this.requestId++;
 
         if (queueConfig?.useQueue) {
             await this.qpush({
-                fn: this.accountActivitySub.bind(this, { accountIds, fields, requestSeqNum }),
+                fn: this.accountActivitySub.bind(this, localConfig),
                 fnDesc: "accountActivitySub",
-                params: {accountIds, fields, requestSeqNum},
-                queueRequestConfig: queueConfig,
+                params: localConfig,
+                queueRequestConfig: { ...queueConfig },
             });
-            return requestSeqNum;
+            return localConfig.requestSeqNum;
         }
 
-        if (!accountIds) {
+        if (!localConfig.accountIds) {
             const allAccounts = await getAccounts({
                 authConfig: this.authConfig,
                 authConfigFileAccess: "NONE",
             });
-            accountIds = allAccounts
+            localConfig.accountIds = allAccounts
                 .map((acct: any) => {
                     const acctIds = [];
                     for (const acctLabel in acct) acctIds.push(acct[acctLabel].accountId);
@@ -831,22 +868,22 @@ export class StreamDataTDA extends EventEmitter {
         }
 
         const streamKeyObj = await getStreamerSubKeys({
-            accountIds: accountIds,
+            accountIds: localConfig.accountIds,
             authConfig: this.authConfig,
             authConfigFileAccess: "NONE",
         });
 
-        const config : IGenericStreamConfig = {
+        const genericConfig : IGenericStreamConfig = {
             parameters: {
                 keys: streamKeyObj.keys[0].key,
-                fields: fields,
+                fields: localConfig.fields,
             },
             service: EServices.ACCT_ACTIVITY,
             command: ECommands.SUBS,
-            requestSeqNum,
+            requestSeqNum: localConfig.requestSeqNum,
         };
 
-        return await this.genericStreamRequest(config);
+        return await this.genericStreamRequest(genericConfig);
     }
 
     /**
@@ -860,7 +897,7 @@ export class StreamDataTDA extends EventEmitter {
                 fn: this.accountActivityUnsub.bind(this, requestSeqNum),
                 fnDesc: "accountActivityUnsub",
                 params: { requestSeqNum },
-                queueRequestConfig: queueConfig,
+                queueRequestConfig: { ...queueConfig },
             });
             return requestSeqNum;
         }

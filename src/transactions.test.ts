@@ -26,7 +26,7 @@ describe("transactions", () => {
         accountId = accounts[0].securitiesAccount.accountId;
     });
 
-    test.only("getTransactions and getTransaction", async () => {
+    test("getTransactions and getTransaction", async () => {
         expect(baseConfig.authConfigFileLocation).toBeTruthy();
 
         const config: IGetTransactionsConfig = {

@@ -3,7 +3,7 @@ import path from "path";
 import {
     EProjectionType,
     getInstrument,
-    IGetInstrumentConfig,
+    IGetInstrumentConfig, ISearchInstrumentResult, ISearchInstrumentResults,
     ISearchInstrumentsConfig, ISearchInstrumentsFundamentalsConfig, searchInstrumentFundamentals,
     searchInstruments,
 } from "./instruments";
@@ -18,7 +18,7 @@ describe("instruments", () => {
             projection: EProjectionType.SYMBOL_SEARCH,
             authConfigFileLocation: testauthpath,
         };
-        const result = await searchInstruments(config);
+        const result: ISearchInstrumentResults = await searchInstruments(config);
         expect(result).toBeTruthy();
         // @ts-ignore
         expect(result["MSFT"].symbol).toBe("MSFT");
@@ -30,7 +30,7 @@ describe("instruments", () => {
             projection: EProjectionType.SYMBOL_SEARCH,
             apikey: testAuthConfig.client_id,
         };
-        const result = await searchInstruments(config);
+        const result: ISearchInstrumentResults = await searchInstruments(config);
         expect(result).toBeTruthy();
         // @ts-ignore
         expect(result["MSFT"].symbol).toBe("MSFT");
@@ -44,7 +44,7 @@ describe("instruments", () => {
             projection: EProjectionType.SYMBOL_REGEX,
             authConfigFileLocation: testauthpath,
         };
-        const result = await searchInstruments(config);
+        const result: ISearchInstrumentResults = await searchInstruments(config);
         expect(result).toBeTruthy();
         expect(Array.isArray(Object.keys(result))).toBe(true);
         expect(Object.keys(result).length).toBeGreaterThan(0);
@@ -58,7 +58,7 @@ describe("instruments", () => {
             projection: EProjectionType.SYMBOL_REGEX,
             apikey: testAuthConfig.client_id,
         };
-        const result = await searchInstruments(config);
+        const result: ISearchInstrumentResults = await searchInstruments(config);
         expect(result).toBeTruthy();
         expect(Array.isArray(Object.keys(result))).toBe(true);
         expect(Object.keys(result).length).toBeGreaterThan(0);
@@ -73,7 +73,7 @@ describe("instruments", () => {
             symbol: "MSFT",
             authConfigFileLocation: testauthpath,
         };
-        const result = await searchInstrumentFundamentals(config);
+        const result: ISearchInstrumentResults = await searchInstrumentFundamentals(config);
         expect(result).toBeTruthy();
         // @ts-ignore
         expect(result["MSFT"].symbol).toBe("MSFT");
@@ -85,7 +85,7 @@ describe("instruments", () => {
             symbol: "MSFT",
             apikey: testAuthConfig.client_id,
         };
-        const result = await searchInstrumentFundamentals(config);
+        const result: ISearchInstrumentResults = await searchInstrumentFundamentals(config);
         expect(result).toBeTruthy();
         // @ts-ignore
         expect(result["MSFT"].symbol).toBe("MSFT");
@@ -98,7 +98,7 @@ describe("instruments", () => {
             cusip: "594918104",
             authConfigFileLocation: testauthpath,
         };
-        const result = await getInstrument(config);
+        const result: ISearchInstrumentResult[] = await getInstrument(config);
         expect(result).toBeTruthy();
         // @ts-ignore
         expect(result[0].symbol).toBe("MSFT");
@@ -109,7 +109,7 @@ describe("instruments", () => {
             cusip: "594918104",
             apikey: testAuthConfig.client_id,
         };
-        const result = await getInstrument(config);
+        const result: ISearchInstrumentResult[] = await getInstrument(config);
         expect(result).toBeTruthy();
         // @ts-ignore
         expect(result[0].symbol).toBe("MSFT");

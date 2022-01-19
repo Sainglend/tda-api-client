@@ -13,8 +13,8 @@ import {
     EAdminResponseCode,
     EChartHistoryFuturesFrequency,
     ECommands,
-    EQosLevels, EquityChartResponse, EquityChartResponseRough,
-    EServices, FuturesChartResponseRough,
+    EQosLevels, ChartEquityResponse, ChartEquityResponseRough,
+    EServices, ChartFuturesResponseRough,
     ILoginLogoutResponse,
     IStreamNotify,
     IStreamResponse,
@@ -25,7 +25,7 @@ import {
     L1FuturesQuote,
     L1FuturesQuoteRough, L1OptionsQuote, L1OptionsQuoteRough, NewsHeadline, NewsHeadlineRough,
 } from "./streamingdatatypes";
-import StreamingUtils from "./streamingutils";
+import { normalizeSymbol } from "./streamingutils";
 import {IWriteResponse, TacRequestConfig} from "./tdapiinterface";
 import {getAccounts} from "./accounts";
 import path from "path";
@@ -39,6 +39,11 @@ import {
 jest.setTimeout(30000);
 
 const testauthpath = path.join(__dirname, "test_tdaclientauth.json");
+const baseStreamConfig: IStreamDataTDAConfig = {
+    authConfig,
+    // verbose: false,
+    // debug: true,
+};
 
 function todayMidnight(): Date {
     return new Date(`${new Date().toISOString().substring(0, 10)}T00:00:00.000Z`);
@@ -59,9 +64,37 @@ function formatDateMMDDYY(date: Date): string {
     return `${ds.substring(5,7)}${ds.substring(8,10)}${ds.substring(2,4)}`;
 }
 
-function formatDateYYMMDD(date: Date): string {
-    const ds = date.toISOString().substring(0, 10);
-    return `${ds.substring(2,4)}${ds.substring(5,7)}${ds.substring(8,10)}`;
+async function doStreamSetup() {
+    const tdaDataStream = new StreamDataTDA({
+        ...baseStreamConfig,
+        verbose: true,
+        debug: true,
+        emitDataRaw: true,
+        emitDataBySubRaw: true,
+        emitDataBySubAndTickerRaw: true,
+        emitDataBySubTyped: true,
+        emitDataBySubAndTickerTyped: true,
+    });
+
+    await new Promise(res => {
+        tdaDataStream.once("response", () => {
+            res("");
+        });
+
+        tdaDataStream.doDataStreamLogin();
+    });
+
+    return tdaDataStream;
+}
+
+async function doStreamTeardown(stream: StreamDataTDA): Promise<void> {
+    const closingPromise = new Promise<void>((res) => {
+        stream.on("streamClosed", (data: any) => {
+            if (!data.attemptingReconnect) res();
+        });
+    });
+    await stream.doDataStreamLogout();
+    await closingPromise;
 }
 
 describe("streaming", () => {
@@ -79,17 +112,25 @@ describe("streaming", () => {
         accountId = accounts[0].securitiesAccount.accountId;
     });
 
-    const baseStreamConfig: IStreamDataTDAConfig = {
-        authConfig,
-        verbose: false,
-        debug: true,
-    };
+    beforeEach(async () => {
+        // use this to avoid rate restrictions during testing
+        await new Promise<void>((res) => {
+            setTimeout(res, 2000);
+        });
+    });
 
     describe("ADMIN functions and heartbeat", () => {
+        beforeEach(async () => {
+            // use this to avoid rate restrictions during testing
+            await new Promise<void>((res) => {
+                setTimeout(res, 2000);
+            });
+        });
+
         // heartbeat, response, data, snapshot, streamClosed
         test("subscribe to stream and get the login response", async () => {
-            const tdaDataStream = new StreamDataTDA(baseStreamConfig);
-            const loginResponse: IStreamResponse[] = await new Promise((res, rej) => {
+            const tdaDataStream = new StreamDataTDA({...baseStreamConfig});
+            const loginResponse: IStreamResponse[] = await new Promise((res) => {
                 tdaDataStream.once("response", (data: IStreamResponse[]) => {
                     res(data);
                 });
@@ -100,11 +141,13 @@ describe("streaming", () => {
             expect(loginResponse[0].service).toBe(EServices.ADMIN);
             expect(loginResponse[0].command).toBe(ECommands.LOGIN);
             expect((loginResponse[0].content as ILoginLogoutResponse).code).toBe(EAdminResponseCode.SUCCESS);
+
+            await doStreamTeardown(tdaDataStream);
         });
 
         test("subscribe to stream and get a heartbeat", async () => {
-            const tdaDataStream = new StreamDataTDA(baseStreamConfig);
-            const hbResponse: IStreamNotify[] = await new Promise((res, rej) => {
+            const tdaDataStream = new StreamDataTDA({...baseStreamConfig});
+            const hbResponse: IStreamNotify[] = await new Promise((res) => {
                 tdaDataStream.once("heartbeat", (data: IStreamNotify[]) => {
                     res(data);
                 });
@@ -113,20 +156,31 @@ describe("streaming", () => {
             });
             expect(hbResponse).toBeTruthy();
             expect(hbResponse[0].heartbeat).toBeTruthy();
+
+            await doStreamTeardown(tdaDataStream);
         });
 
         test("subscribe to stream, logout, and get the logout response", async () => {
-            const tdaDataStream = new StreamDataTDA(baseStreamConfig);
-            const logoutResponse: IStreamResponse[] = await new Promise((res, rej) => {
+            const tdaDataStream = new StreamDataTDA({...baseStreamConfig});
+
+            await new Promise((res) => {
+                tdaDataStream.once("response", (data: IStreamResponse[]) => {
+                    res(data);
+                });
+                tdaDataStream.doDataStreamLogin();
+            });
+
+            const logoutPromise = new Promise<IStreamResponse[]>((res) => {
                 tdaDataStream.on("response", (data: IStreamResponse[]) => {
                     if (data.some(r => r.command === ECommands.LOGOUT)) {
                         res(data);
                     }
                 });
-
-                tdaDataStream.doDataStreamLogin();
-                setTimeout(() => tdaDataStream.doDataStreamLogout(), 5000);
             });
+            setTimeout(() => tdaDataStream.doDataStreamLogout(), 2000);
+
+            const logoutResponse = await logoutPromise;
+            tdaDataStream.removeAllListeners("response");
             expect(logoutResponse).toBeTruthy();
             expect(logoutResponse[0].service).toBe(EServices.ADMIN);
             expect(logoutResponse[0].command).toBe(ECommands.LOGOUT);
@@ -135,31 +189,47 @@ describe("streaming", () => {
         });
 
         test("logging out emits streamClosed", async () => {
-            const tdaDataStream = new StreamDataTDA(baseStreamConfig);
-            const streamClosedEmit: any = await new Promise((res, rej) => {
-                tdaDataStream.on("streamClosed", (data: any) => {
+            const tdaDataStream = new StreamDataTDA({...baseStreamConfig});
+
+            await new Promise((res) => {
+                tdaDataStream.once("response", (data: IStreamResponse[]) => {
                     res(data);
                 });
-
                 tdaDataStream.doDataStreamLogin();
-                setTimeout(() => tdaDataStream.doDataStreamLogout(), 5000);
             });
+
+            const streamClosedPromise = new Promise<IStreamResponse[]>((res) => {
+                tdaDataStream.once("streamClosed", (data: any) => {
+                    res(data);
+                });
+            });
+            setTimeout(() => tdaDataStream.doDataStreamLogout(), 2000);
+
+            const streamClosedEmit: any = await streamClosedPromise;
             expect(streamClosedEmit).toBeTruthy();
             expect(streamClosedEmit.attemptingReconnect).toBe(false);
         });
 
         test("QOS change works as expected", async () => {
             const targetQoSLevel = EQosLevels.L3_MODERATE_1500MS;
+            const tdaDataStream = new StreamDataTDA({...baseStreamConfig});
 
-            const tdaDataStream = new StreamDataTDA(baseStreamConfig);
-            const qosResponse: IStreamResponse[] = await new Promise((res, rej) => {
+            await new Promise((res) => {
+                tdaDataStream.once("response", (data: IStreamResponse[]) => {
+                    res(data);
+                });
+                tdaDataStream.doDataStreamLogin();
+            });
+
+            const qosChangedPromise = new Promise<IStreamResponse[]>((res) => {
                 tdaDataStream.on("response", (data: IStreamResponse[]) => {
                     if(data[0].command === ECommands.QOS) res(data);
                 });
-
-                tdaDataStream.doDataStreamLogin();
-                setTimeout(() => tdaDataStream.qosRequest(targetQoSLevel), 5000);
             });
+            setTimeout(() => tdaDataStream.qosRequest({ qosLevel: targetQoSLevel }), 2000);
+
+            const qosResponse = await qosChangedPromise;
+            tdaDataStream.removeAllListeners("response");
             expect(qosResponse).toBeTruthy();
             expect(qosResponse[0].service).toBe(EServices.ADMIN);
             expect(qosResponse[0].command).toBe(ECommands.QOS);
@@ -169,181 +239,19 @@ describe("streaming", () => {
     });
 
     describe("open stream functionality", () => {
-        const tdaDataStream = new StreamDataTDA({
-            ...baseStreamConfig,
-            verbose: true,
-            emitDataRaw: true,
-            emitDataBySubRaw: true,
-            emitDataBySubAndTickerRaw: true,
-            emitDataBySubTyped: true,
-            emitDataBySubAndTickerTyped: true,
-        });
-
-        beforeAll(async () => {
-            return new Promise(res => {
-                tdaDataStream.once("response", () => {
-                    res("");
-                });
-
-                tdaDataStream.doDataStreamLogin();
-            });
-        });
-
-        afterAll(async () => {
-            await tdaDataStream.doDataStreamLogout();
-        });
-
         describe("SNAPSHOT data functions", () => {
-            /*
-            test.skip("CHART_HISTORY_FUTURES raw", async () => {
-                const tdaDataStream = new StreamDataTDA({
-                    ...baseStreamConfig,
-                    emitDataRaw: true,
+            beforeEach(async () => {
+                // use this to avoid rate restrictions during testing
+                await new Promise<void>((res) => {
+                    setTimeout(res, 2000);
                 });
-                const streamResponse: IStreamResponse[] = await new Promise((res, rej) => {
-                    tdaDataStream.on("snapshot", (data: IStreamResponse[]) => {
-                        res(data);
-                    });
-
-                    tdaDataStream.once("response", (data: IStreamResponse[]) => {
-                        const futuresGetConfig: IChartHistoryFuturesGetConfig = {
-                            symbol: "/ES",
-                            frequency: EChartHistoryFuturesFrequency.MINUTE_THIRTY,
-                            period: "d5",
-                        };
-
-                        tdaDataStream.chartHistoryFuturesGet(futuresGetConfig);
-                    });
-
-                    tdaDataStream.doDataStreamLogin();
-                });
-
-                expect(streamResponse).toBeTruthy();
-                expect(streamResponse[0].command).toBe(ECommands.GET);
-                expect(streamResponse[0].service).toBe(EServices.CHART_HISTORY_FUTURES);
-                const chartHistoryFutures: ChartHistoryFuturesRough = streamResponse[0].content[0];
-                expect(chartHistoryFutures.key).toBe("/ES");
-                expect(chartHistoryFutures["2"]).toBe(chartHistoryFutures["3"].length);
             });
-
-            test.skip("CHART_HISTORY_FUTURES data by sub raw", async () => {
-                const tdaDataStream = new StreamDataTDA({
-                    ...baseStreamConfig,
-                    emitDataBySubRaw: true,
-                });
-                const streamResponse: ChartHistoryFuturesRough[] = await new Promise((res, rej) => {
-                    tdaDataStream.on("CHART_HISTORY_FUTURES_RAW", (data: ChartHistoryFuturesRough[]) => {
-                        res(data);
-                    });
-
-                    tdaDataStream.once("response", () => {
-                        const futuresGetConfig: IChartHistoryFuturesGetConfig = {
-                            symbol: "/ES",
-                            frequency: EChartHistoryFuturesFrequency.MINUTE_THIRTY,
-                            period: "d5",
-                        };
-
-                        tdaDataStream.chartHistoryFuturesGet(futuresGetConfig);
-                    });
-
-                    tdaDataStream.doDataStreamLogin();
-                });
-
-                expect(streamResponse).toBeTruthy();
-                const chartHistoryFutures: ChartHistoryFuturesRough = streamResponse[0];
-                expect(chartHistoryFutures.key).toBe("/ES");
-                expect(chartHistoryFutures["2"]).toBe(chartHistoryFutures["3"].length);
-            });
-
-            test.skip("CHART_HISTORY_FUTURES data by sub and ticker raw", async () => {
-                const tdaDataStream = new StreamDataTDA({
-                    ...baseStreamConfig,
-                    emitDataBySubAndTickerRaw: true,
-                });
-                const streamResponse: ChartHistoryFuturesRough = await new Promise((res, rej) => {
-                    tdaDataStream.on("CHART_HISTORY_FUTURES_RAW__ES", (data: ChartHistoryFuturesRough) => {
-                        res(data);
-                    });
-
-                    tdaDataStream.once("response", () => {
-                        const futuresGetConfig: IChartHistoryFuturesGetConfig = {
-                            symbol: "/ES",
-                            frequency: EChartHistoryFuturesFrequency.MINUTE_THIRTY,
-                            period: "d5",
-                        };
-
-                        tdaDataStream.chartHistoryFuturesGet(futuresGetConfig);
-                    });
-
-                    tdaDataStream.doDataStreamLogin();
-                });
-
-                expect(streamResponse).toBeTruthy();
-                expect(streamResponse.key).toBe("/ES");
-                expect(streamResponse["2"]).toBe(streamResponse["3"].length);
-            });
-
-            test.skip("CHART_HISTORY_FUTURES data by sub typed", async () => {
-                const tdaDataStream = new StreamDataTDA({
-                    ...baseStreamConfig,
-                    emitDataBySubTyped: true,
-                });
-                const streamResponse: ChartHistoryFutures[] = await new Promise((res, rej) => {
-                    tdaDataStream.on("CHART_HISTORY_FUTURES_TYPED", (data: ChartHistoryFutures[]) => {
-                        res(data);
-                    });
-
-                    tdaDataStream.once("response", () => {
-                        const futuresGetConfig: IChartHistoryFuturesGetConfig = {
-                            symbol: "/ES",
-                            frequency: EChartHistoryFuturesFrequency.MINUTE_THIRTY,
-                            period: "d5",
-                        };
-
-                        tdaDataStream.chartHistoryFuturesGet(futuresGetConfig);
-                    });
-
-                    tdaDataStream.doDataStreamLogin();
-                });
-
-                expect(streamResponse).toBeTruthy();
-                expect(streamResponse[0].key).toBe("/ES");
-                expect(streamResponse[0].count).toBe(streamResponse[0].candles.length);
-            });
-
-            test.skip("CHART_HISTORY_FUTURES data by sub and ticker typed", async () => {
-                const tdaDataStream = new StreamDataTDA({
-                    ...baseStreamConfig,
-                    emitDataBySubAndTickerTyped: true,
-                });
-                const streamResponse: ChartHistoryFutures = await new Promise((res, rej) => {
-                    tdaDataStream.on("CHART_HISTORY_FUTURES_TYPED__ES", (data: ChartHistoryFutures) => {
-                        res(data);
-                    });
-
-                    tdaDataStream.once("response", () => {
-                        const futuresGetConfig: IChartHistoryFuturesGetConfig = {
-                            symbol: "/ES",
-                            frequency: EChartHistoryFuturesFrequency.MINUTE_THIRTY,
-                            period: "d5",
-                        };
-
-                        tdaDataStream.chartHistoryFuturesGet(futuresGetConfig);
-                    });
-
-                    tdaDataStream.doDataStreamLogin();
-                });
-
-                expect(streamResponse).toBeTruthy();
-                expect(streamResponse.key).toBe("/ES");
-                expect(streamResponse.count).toBe(streamResponse.candles.length);
-            });
-            */
 
             test("CHART_HISTORY_FUTURES", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.CHART_HISTORY_FUTURES;
                 const symbol = "/ES";
-                const normalizedSymbol = StreamingUtils.normalizeSymbol(symbol);
+                const normalizedSymbol = normalizeSymbol(symbol);
 
                 const promises = [
                     new Promise((res) =>
@@ -398,15 +306,18 @@ describe("streaming", () => {
                 expect(subTickerTyped).toBeTruthy();
                 expect(subTickerTyped.key).toBe(symbol);
                 expect(subTickerTyped.count).toBe(subTickerTyped.candles.length);
+
+                await doStreamTeardown(tdaDataStream);
             });
 
             /**
              * This appears not to work at all
              */
             test.skip("NEWS_HEADLINE_LIST", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.NEWS_HEADLINE_LIST;
                 const symbol = "MSFT";
-                const normalizedSymbol = StreamingUtils.normalizeSymbol(symbol);
+                const normalizedSymbol = normalizeSymbol(symbol);
 
                 const promises = [
                     new Promise((res) =>
@@ -450,6 +361,7 @@ describe("streaming", () => {
                 expect(subTyped).toBeTruthy();
 
                 expect(subTickerTyped).toBeTruthy();
+                await doStreamTeardown(tdaDataStream);
             });
         });
 
@@ -460,11 +372,12 @@ describe("streaming", () => {
             // CHART_EQUITY
             // CHART_FUTURES
             test("LEVELONE_FUTURES_OPTIONS", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.LEVELONE_FUTURES_OPTIONS;
                 // unknown symbol
                 const symbol1 = "yourmom";
 
-                const promises = await genericDataStreamPart1(service, symbol1);
+                const promises = await genericDataStreamPart1(tdaDataStream, service, symbol1);
 
                 const tuple = await Promise.all(promises) as [
                     IStreamResponse[],
@@ -509,17 +422,26 @@ describe("streaming", () => {
                     command: ECommands.UNSUBS,
                 };
                 await tdaDataStream.genericStreamRequest(configEnd);
+                await doStreamTeardown(tdaDataStream);
             });
         });
 
         describe("DATA stream responses", () => {
+            beforeEach(async () => {
+                // use this to avoid rate restrictions during testing
+                await new Promise<void>((res) => {
+                    setTimeout(res, 5000);
+                });
+            });
+
             test("QUOTE", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.QUOTE;
                 const symbol1 = "MSFT";
                 const symbol2 = "AAPL";
 
                 // set up promises, send initial SUBS command
-                const promises = await genericDataStreamPart1(service, symbol1);
+                const promises = await genericDataStreamPart1(tdaDataStream, service, symbol1);
                 const tuple = await Promise.all(promises) as [
                     IStreamResponse[],
                     IStreamResponse[],
@@ -561,15 +483,17 @@ describe("streaming", () => {
                 expect(subTickerTyped.timeLastQuote).toBeTruthy();
 
                 // ADD, UNSUBS one, UNSUBS all
-                await genericDataStreamPart2(service, symbol2);
+                await genericDataStreamPart2(tdaDataStream, service, symbol2);
+                await doStreamTeardown(tdaDataStream);
             });
 
             test("LEVELONE_FUTURES", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.LEVELONE_FUTURES;
                 const symbol1 = "/ES";
                 const symbol2 = "/NQ";
 
-                const promises = await genericDataStreamPart1(service, symbol1);
+                const promises = await genericDataStreamPart1(tdaDataStream, service, symbol1);
 
                 const tuple = await Promise.all(promises) as [
                     IStreamResponse[],
@@ -610,15 +534,17 @@ describe("streaming", () => {
                 expect(subTickerTyped.timestamp).toBeTruthy();
                 expect(subTickerTyped.timeLastQuote).toBeTruthy();
 
-                await genericDataStreamPart2(service, symbol2);
+                await genericDataStreamPart2(tdaDataStream, service, symbol2);
+                await doStreamTeardown(tdaDataStream);
             });
 
             test("LEVELONE_FOREX", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.LEVELONE_FOREX;
                 const symbol1 = "EUR/USD";
                 const symbol2 = "USD/JPY";
 
-                const promises = await genericDataStreamPart1(service, symbol1);
+                const promises = await genericDataStreamPart1(tdaDataStream, service, symbol1);
 
                 const tuple = await Promise.all(promises) as [
                     IStreamResponse[],
@@ -660,16 +586,18 @@ describe("streaming", () => {
                 expect(subTickerTyped.timestamp).toBeTruthy();
                 expect(subTickerTyped.timeLastQuote).toBeTruthy();
 
-                await genericDataStreamPart2(service, symbol2);
+                await genericDataStreamPart2(tdaDataStream, service, symbol2);
+                await doStreamTeardown(tdaDataStream);
             });
 
             test("OPTION", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.OPTION;
                 // SPY C400 expiring this friday and next friday; always liquid
                 const symbol1 = `SPY_${formatDateMMDDYY(getFridaysDate())}C400`;
                 const symbol2 = `SPY_${formatDateMMDDYY(getFridaysDate(new Date(todayMidnight().getTime() + 7*24*3600*1000)))}C400`;
 
-                const promises = await genericDataStreamPart1(service, symbol1);
+                const promises = await genericDataStreamPart1(tdaDataStream, service, symbol1);
 
                 const tuple = await Promise.all(promises) as [
                     IStreamResponse[],
@@ -693,32 +621,34 @@ describe("streaming", () => {
 
                 expect(subRaw).toBeTruthy();
                 expect(subRaw[0].key).toBe(symbol1);
-                // volatility
-                expect(subRaw[0]["10"]).toBeTruthy();
+                // openInterest
+                expect(subRaw[0]["9"]).toBeGreaterThanOrEqual(0);
 
                 expect(subTickerRaw).toBeTruthy();
                 expect(subTickerRaw.key).toBe(symbol1);
-                // volatility
-                expect(subTickerRaw["10"]).toBeTruthy();
+                // openInterest
+                expect(subTickerRaw["9"]).toBeGreaterThanOrEqual(0);
 
                 expect(subTyped).toBeTruthy();
                 expect(subTyped[0].symbol).toBe(symbol1);
-                expect(subTyped[0].volatility).toBeTruthy();
+                expect(subTyped[0].openInterest).toBeGreaterThanOrEqual(0);
 
                 expect(subTickerTyped).toBeTruthy();
                 expect(subTickerTyped.symbol).toBe(symbol1);
-                expect(subTickerTyped.volatility).toBeTruthy();
+                expect(subTickerTyped.openInterest).toBeGreaterThanOrEqual(0);
 
-                await genericDataStreamPart2(service, symbol2);
+                await genericDataStreamPart2(tdaDataStream, service, symbol2);
+                await doStreamTeardown(tdaDataStream);
             });
 
             test("LEVELONE_FUTURES_OPTIONS", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.LEVELONE_FUTURES_OPTIONS;
                 // SPY C400 expiring this friday and next friday; always liquid
                 const symbol1 = `./ESH${new Date().getFullYear()-2000}P4750`;
                 const symbol2 = `./NQH${new Date().getFullYear()-2000}C16770`;
 
-                const promises = await genericDataStreamPart1(service, symbol1);
+                const promises = await genericDataStreamPart1(tdaDataStream, service, symbol1);
 
                 const tuple = await Promise.all(promises) as [
                     IStreamResponse[],
@@ -758,24 +688,26 @@ describe("streaming", () => {
                 expect(subTickerTyped.symbol).toBe(symbol1);
                 expect(subTickerTyped.strike).toBeTruthy();
 
-                await genericDataStreamPart2(service, symbol2);
+                await genericDataStreamPart2(tdaDataStream, service, symbol2);
+                await doStreamTeardown(tdaDataStream);
             });
 
             test("CHART_EQUITY", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.CHART_EQUITY;
                 // SPY C400 expiring this friday and next friday; always liquid
                 const symbol1 = `MSFT`;
                 const symbol2 = `TSLA`;
 
-                const promises = await genericDataStreamPart1(service, symbol1);
+                const promises = await genericDataStreamPart1(tdaDataStream, service, symbol1);
 
                 const tuple = await Promise.all(promises) as [
                     IStreamResponse[],
                     IStreamResponse[],
-                    EquityChartResponseRough[],
-                    EquityChartResponseRough,
-                    EquityChartResponse[],
-                    EquityChartResponse
+                    ChartEquityResponseRough[],
+                    ChartEquityResponseRough,
+                    ChartEquityResponse[],
+                    ChartEquityResponse
                 ];
                 const [response, raw, subRaw, subTickerRaw, subTyped, subTickerTyped] = tuple;
 
@@ -807,24 +739,26 @@ describe("streaming", () => {
                 expect(subTickerTyped.symbol).toBe(symbol1);
                 expect(subTickerTyped.seq).toBeTruthy();
 
-                await genericDataStreamPart2(service, symbol2);
+                await genericDataStreamPart2(tdaDataStream, service, symbol2);
+                await doStreamTeardown(tdaDataStream);
             });
 
             test("CHART_FUTURES", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.CHART_FUTURES;
                 // SPY C400 expiring this friday and next friday; always liquid
                 const symbol1 = `/ES`;
                 const symbol2 = `/NQ`;
 
-                const promises = await genericDataStreamPart1(service, symbol1);
+                const promises = await genericDataStreamPart1(tdaDataStream, service, symbol1);
 
                 const tuple = await Promise.all(promises) as [
                     IStreamResponse[],
                     IStreamResponse[],
-                    FuturesChartResponseRough[],
-                    FuturesChartResponseRough,
-                    EquityChartResponse[],
-                    EquityChartResponse
+                    ChartFuturesResponseRough[],
+                    ChartFuturesResponseRough,
+                    ChartEquityResponse[],
+                    ChartEquityResponse
                 ];
                 const [response, raw, subRaw, subTickerRaw, subTyped, subTickerTyped] = tuple;
 
@@ -856,16 +790,18 @@ describe("streaming", () => {
                 expect(subTickerTyped.symbol).toBe(symbol1);
                 expect(subTickerTyped.seq).toBeTruthy();
 
-                await genericDataStreamPart2(service, symbol2);
+                await genericDataStreamPart2(tdaDataStream, service, symbol2);
+                await doStreamTeardown(tdaDataStream);
             });
 
             test("NEWS_HEADLINE", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.NEWS_HEADLINE;
                 // SPY C400 expiring this friday and next friday; always liquid
                 const symbol1 = `TSLA`;
                 const symbol2 = `MSFT`;
 
-                const promises = await genericDataStreamPart1(service, symbol1);
+                const promises = await genericDataStreamPart1(tdaDataStream, service, symbol1);
 
                 const tuple = await Promise.all(promises) as [
                     IStreamResponse[],
@@ -905,10 +841,12 @@ describe("streaming", () => {
                 expect(subTickerTyped.symbol).toBe(symbol1);
                 expect(subTickerTyped.seq).toBeTruthy();
 
-                await genericDataStreamPart2(service, symbol2);
+                await genericDataStreamPart2(tdaDataStream, service, symbol2);
+                await doStreamTeardown(tdaDataStream);
             });
 
             test("ACCT_ACTIVITY", async () => {
+                const tdaDataStream = await doStreamSetup();
                 const service = EServices.ACCT_ACTIVITY;
 
                 const promises = [
@@ -1041,6 +979,7 @@ describe("streaming", () => {
 
                 // close account subs
                 await tdaDataStream.accountActivityUnsub();
+                await doStreamTeardown(tdaDataStream);
             });
         });
 
@@ -1051,7 +990,7 @@ describe("streaming", () => {
             // queueGenericStreamRequest
             // queueQosRequest
             // queueClear
-            test.only("request queue spacing is within expected bounds", async () => {
+            test("request queue spacing is within expected bounds", async () => {
                 const callbackTimes: number[] = [];
                 const callback = () => callbackTimes.push(Date.now());
 
@@ -1087,18 +1026,21 @@ describe("streaming", () => {
                     command: ECommands.UNSUBS,
                 };
 
+                const tdaDataStream = await doStreamSetup();
                 await tdaDataStream.genericStreamRequest(subConfig,
                     {
+                        useQueue: true,
                         callbackPre: callback,
                     });
 
                 for (let i = 0; i < 5; i++) {
-                    await tdaDataStream.genericStreamRequest(addConfig, { callbackPre: callback });
-                    await tdaDataStream.genericStreamRequest(unsubOneConfig, { callbackPre: callback });
+                    await tdaDataStream.genericStreamRequest(addConfig, { useQueue: true, callbackPre: callback });
+                    await tdaDataStream.genericStreamRequest(unsubOneConfig, { useQueue: true, callbackPre: callback });
                 }
 
                 await new Promise<void>(res => {
                     tdaDataStream.genericStreamRequest(unsubAllConfig, {
+                        useQueue: true,
                         callbackPre: () => {
                             callback();
                             res();
@@ -1110,12 +1052,13 @@ describe("streaming", () => {
                 const diffs: number[] = callbackTimes.map((val, idx, arr) => idx > 0 ? val - arr[idx-1] : val).slice(1);
                 const streamConfig = tdaDataStream.getConfig();
                 expect(diffs.reduce((prev, curr) => Math.min(prev, curr))).toBeGreaterThan(streamConfig.queueConfig?.minimumSpacingMS || Number.MAX_SAFE_INTEGER);
-                expect(diffs.reduce((prev, curr) => Math.max(prev, curr))).toBeLessThan(2 * (streamConfig.queueConfig?.minimumSpacingMS || 0));
+                expect(diffs.reduce((prev, curr) => Math.max(prev, curr))).toBeLessThan(1.1 * (streamConfig.queueConfig?.maximumSpacingMS || 0));
+                await doStreamTeardown(tdaDataStream);
             });
         });
 
-        async function genericDataStreamPart1(service: EServices, symbol1: string): Promise<Promise<any>[]> {
-            const normalizedSymbol1 = StreamingUtils.normalizeSymbol(symbol1);
+        async function genericDataStreamPart1(tdaDataStream: StreamDataTDA, service: EServices, symbol1: string): Promise<Promise<any>[]> {
+            const normalizedSymbol1 = normalizeSymbol(symbol1);
 
             const promises = [
                 new Promise((res) =>
@@ -1148,7 +1091,7 @@ describe("streaming", () => {
             return promises;
         }
 
-        async function genericDataStreamPart2(service: EServices, symbol2: string) {
+        async function genericDataStreamPart2(tdaDataStream: StreamDataTDA, service: EServices, symbol2: string) {
             // ADD symbol
             const addSubPromise = new Promise<IStreamResponse[]>((res) =>
                 tdaDataStream.once(`response`, (data: IStreamResponse[]) => {

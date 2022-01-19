@@ -1,18 +1,19 @@
 // Copyright (C) 2020-2  Aaron Satterlee
 
-export * as accounts from "./accounts";
-export * as authentication from "./authentication";
-export * as instruments from "./instruments";
-export * as markethours from "./markethours";
-export * as movers from "./movers";
-export * as optionschain from "./optionschain";
-export * as orders from "./orders";
-export * as pricehistory from "./pricehistory";
-export * as quotes from "./quotes";
-export * as savedorders from "./savedorders";
-export * as transactions from "./transactions";
-export * as userinfo from "./userinfo";
-export * as watchlists from "./watchlists";
+export * from "./accounts";
+export * from "./instruments";
+export * from "./markethours";
+export * from "./movers";
+export * from "./optionschain";
+export * from "./orders";
+export * from "./pricehistory";
+export * from "./quotes";
+export * from "./savedorders";
+export * from "./sharedTypes";
 export * from "./streamDataTDA";
 export * from "./streamingdatatypes";
 export * from "./streamingutils";
+export * from "./tdapiinterface";
+export * from "./transactions";
+export * from "./userinfo";
+export * from "./watchlists";

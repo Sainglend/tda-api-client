@@ -63,14 +63,14 @@ export enum ECashEquivalentType {
     MONEY_MARKET_FUND,
 }
 
-export enum EOptionType {
+export enum EOptionInstrumentType {
     VANILLA,
     BINARY,
     BARRIER,
 }
 
 export interface IOptionInstrument extends IInstrument {
-    type: EOptionType,
+    type: EOptionInstrumentType,
     putCall: "PUT" | "CALL",
     underlyingSymbol: string,
     optionMultiplier: number, // int32

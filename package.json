@@ -8,7 +8,8 @@
   "scripts": {
     "test": "jest --runInBand --bail --forceExit",
     "lint": "eslint src --ext .ts,.js",
-    "lint:fix": "eslint --fix src --ext .ts,.js"
+    "lint:fix": "eslint --fix src --ext .ts,.js",
+    "build:npm": "tsc && cp *.md dist/ && cp -r config/ dist/ && cp npmpackage.json dist/package.json"
   },
   "files": [
     "dist/*",

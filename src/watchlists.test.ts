@@ -201,8 +201,8 @@ describe("watchlists", () => {
         const result: IWriteResponse = await updateWatchlist(updateConfig);
         expect(result).toBeTruthy();
         expect(result.location).toBeTruthy();
-        const replacedWatchlistId: string = result.location.substring(result.location.lastIndexOf("/") + 1);
-        expect(replacedWatchlistId).toBe(watchlistId);
+        const updatedWatchlistId: string = result.location.substring(result.location.lastIndexOf("/") + 1);
+        expect(updatedWatchlistId).toBe(watchlistId);
 
         // get it to verify the change via name and no symbol change
         const getConfig2: IGetWatchlistConfig = {
