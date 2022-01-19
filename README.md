@@ -7,6 +7,8 @@ v2.0.0
 This library is a client to use the API exposed by TD Ameritrade at https://developer.tdameritrade.com
 This project can also be used as a sort of command line utility.
 
+TO REFER BACK TO V1.2 documentation, visit [https://github.com/sainglend/tda-api-client/tree/v1_2](https://github.com/sainglend/tda-api-client/tree/v1_2)
+
 Other README files (also referenced in relevant sections below):
 - [Authentication](authREADME.md)
 - [Streaming](streamingREADME.md)
