@@ -1,6 +1,6 @@
 {
   "name": "tda-api-client",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "description": "A client library for the TD Ameritrade API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
