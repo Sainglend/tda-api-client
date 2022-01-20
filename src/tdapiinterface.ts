@@ -31,6 +31,7 @@ export interface IAuthConfig {
 export interface TacRequestConfig extends TacBaseConfig {
     path?: string,
     bodyJSON?: any,
+    queueSettings?: IRestQueueConfig,
 }
 
 /**
@@ -51,6 +52,8 @@ export interface IWriteResponse {
     statusCode: number,
     location: string,
 }
+
+const writeMethods = ["patch", "put", "post"];
 
 /**
  * Use this for sending an HTTP GET request to api.tdameritrade.com
@@ -184,7 +187,27 @@ export async function getAPIAuthentication(config?: TacBaseConfig): Promise<IAut
     }
 }
 
+async function requestWrapper(config: TacRequestConfig, method: Method, skipAuth: boolean, res: any, rej: any): Promise<void> {
+    try {
+        if (config.queueSettings?.cbPre) processCallback(config.queueSettings.cbPre);
+        const result = writeMethods.includes(method)
+            ? await apiWriteResource({ ...config, queueSettings: {enqueue: false}}, method, skipAuth)
+            : await apiNoWriteResource({ ...config, queueSettings: {enqueue: false}}, method, skipAuth);
+        res(result);
+        if (config.queueSettings?.cbPost) processCallback(config.queueSettings.cbPost);
+    } catch (e) {
+        rej(e);
+    }
+}
+
+async function processCallback(cb: any): Promise<void> {
+    cb();
+}
+
 async function apiNoWriteResource(config: TacRequestConfig, method: Method, skipAuth: boolean): Promise<any> {
+    if (!config.queueSettings || config.queueSettings.enqueue) {
+        return new Promise((res, rej) => queue.qPush({ config, method, res, rej }));
+    }
     const requestConfig: AxiosRequestConfig = {
         method,
         url: config.path ?? "",
@@ -202,6 +225,9 @@ async function apiNoWriteResource(config: TacRequestConfig, method: Method, skip
 }
 
 async function apiWriteResource(config: TacRequestConfig, method: Method, skipAuth: boolean): Promise<IWriteResponse> {
+    if (!config.queueSettings || config.queueSettings.enqueue) {
+        return new Promise((res, rej) => queue.qPush({ config, method, res, rej }));
+    }
     const requestConfig = {
         method: method,
         url: config.path,
@@ -292,4 +318,103 @@ async function doAuthRequest(authConfig: IAuthConfig, data: any, config?: TacBas
     Object.assign(authConfig, result);
     await writeOutAuthResultToFile(authConfig, config);
     return authConfig;
+}
+
+class RequestQueue {
+    requestQueue: QueuedRequestConfig[];
+    minimumSpacing: number;
+    timeoutId: any;
+
+    constructor() {
+        this.requestQueue = [];
+        this.minimumSpacing = 0;
+        this.timeoutId = 0;
+    }
+
+    setSpacing(ms: number) {
+        this.minimumSpacing = Math.max(ms, 0);
+        if (this.timeoutId) {
+            clearTimeout(this.timeoutId);
+            this.timeoutId = 0;
+        }
+        if (ms === 0) {
+            const length = this.requestQueue.length;
+            for (let i = 0; i < length; i++) this.dequeueAndProcess();
+        } else {
+            this.dequeueAndProcess();
+        }
+    }
+
+    getSpacing() {
+        return this.minimumSpacing;
+    }
+
+    qPush(request: QueuedRequestConfig) {
+        if (request.config.queueSettings?.isPriority) this.requestQueue.unshift(request);
+        else this.requestQueue.push(request);
+        if (!this.timeoutId) {
+            this.dequeueAndProcess();
+        }
+    }
+
+    private dequeueAndProcess() {
+        if (this.requestQueue.length > 0) {
+            const req: QueuedRequestConfig | undefined = this.requestQueue.shift();
+            if (req) {
+                requestWrapper(req.config, req.method, false, req.res, req.rej);
+            }
+            if (!this.timeoutId && this.minimumSpacing > 0) {
+                this.timeoutId = setTimeout(this.dequeueAndProcess.bind(this), this.minimumSpacing);
+            }
+        } else {
+            this.qSleep();
+        }
+    }
+
+    qClear(): void {
+        this.requestQueue = [];
+    }
+
+    qInfo(): TacRequestConfig[] {
+        return this.requestQueue.map(q => q.config);
+    }
+
+    private qSleep() {
+        if (this.timeoutId) {
+            clearTimeout(this.timeoutId);
+            this.timeoutId = 0;
+        }
+    }
+}
+
+const queue = new RequestQueue();
+
+export function restQueueClear(): void {
+    queue.qClear();
+}
+
+export function restQueueInfo(): TacRequestConfig[] {
+    return queue.qInfo();
+}
+
+export function setRestQueueSpacing(ms = 510): void {
+    queue.setSpacing(ms);
+}
+
+export function getRestQueueSpacing(): number {
+    return queue.getSpacing();
+}
+
+export interface IRestQueueConfig {
+    enqueue: boolean,
+    isPriority?: boolean,
+    cbPre?: any,
+    cbPost?: any,
+}
+
+interface QueuedRequestConfig {
+    config: TacRequestConfig,
+    method: Method,
+    res: any,
+    rej: any,
 }

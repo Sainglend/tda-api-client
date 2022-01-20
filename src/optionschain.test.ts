@@ -1,5 +1,5 @@
 import testAuthConfig from "./test_tdaclientauth.json";
-import path from "path";
+import * as path from "path";
 import {
     EContractType,
     EExpirationMonth,
@@ -7,7 +7,7 @@ import {
     EStrategy,
     getOptionChain,
     IGetOptionChainConfig,
-    IOptionChain, IOptionStrategyListItem
+    IOptionChain, IOptionStrategyListItem,
 } from "./optionschain";
 
 const testauthpath = path.join(__dirname, "test_tdaclientauth.json");

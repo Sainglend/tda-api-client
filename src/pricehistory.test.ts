@@ -1,5 +1,5 @@
 import testAuthConfig from "./test_tdaclientauth.json";
-import path from "path";
+import * as path from "path";
 import {
     EFrequencyQtyByFrequencyType,
     EFrequencyType,

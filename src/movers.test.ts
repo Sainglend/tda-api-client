@@ -1,6 +1,6 @@
 import testAuthConfig from "./test_tdaclientauth.json";
 import {EChange, EDirection, EIndex, getMovers, IGetMoversConfig, IMover} from "./movers";
-import path from "path";
+import * as path from "path";
 const testauthpath = path.join(__dirname, "test_tdaclientauth.json");
 
 describe("movers", () => {

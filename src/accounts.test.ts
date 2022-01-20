@@ -1,5 +1,5 @@
 import testAuthConfig from "./test_tdaclientauth.json";
-import path from "path";
+import * as path from "path";
 import {EGetAccountField, getAccount, getAccounts, IAccount, IGetAccountConfig, IGetAccountsConfig} from "./accounts";
 
 const testauthpath = path.join(__dirname, "test_tdaclientauth.json");

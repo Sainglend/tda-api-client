@@ -28,7 +28,7 @@ import {
 import { normalizeSymbol } from "./streamingutils";
 import {IWriteResponse, TacRequestConfig} from "./tdapiinterface";
 import {getAccounts} from "./accounts";
-import path from "path";
+import * as path from "path";
 import {
     cancelOrder,
     generateBuyLimitEquityOrder,
