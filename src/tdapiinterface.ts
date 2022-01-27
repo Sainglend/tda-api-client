@@ -3,6 +3,7 @@
 import axios, {AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, Method} from "axios";
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import qs from "qs";
 
 const instance: AxiosInstance = axios.create({
@@ -31,7 +32,7 @@ export interface IAuthConfig {
 export interface TacRequestConfig extends TacBaseConfig {
     path?: string,
     bodyJSON?: any,
-    queueSettings?: IRestQueueConfig,
+    queueSettings?: IRestRequestQueueConfig,
 }
 
 /**
@@ -206,7 +207,7 @@ async function processCallback(cb: any): Promise<void> {
 
 async function apiNoWriteResource(config: TacRequestConfig, method: Method, skipAuth: boolean): Promise<any> {
     if (!config.queueSettings || config.queueSettings.enqueue) {
-        return new Promise((res, rej) => queue.qPush({ config, method, res, rej }));
+        return new Promise((res, rej) => queue.qPush({ id: crypto.randomBytes(16).toString("utf-8"), config, method, res, rej, deleted: false }));
     }
     const requestConfig: AxiosRequestConfig = {
         method,
@@ -226,7 +227,7 @@ async function apiNoWriteResource(config: TacRequestConfig, method: Method, skip
 
 async function apiWriteResource(config: TacRequestConfig, method: Method, skipAuth: boolean): Promise<IWriteResponse> {
     if (!config.queueSettings || config.queueSettings.enqueue) {
-        return new Promise((res, rej) => queue.qPush({ config, method, res, rej }));
+        return new Promise((res, rej) => queue.qPush({ id: crypto.randomBytes(16).toString("utf-8"), config, method, res, rej, deleted: false }));
     }
     const requestConfig = {
         method: method,
@@ -321,21 +322,23 @@ async function doAuthRequest(authConfig: IAuthConfig, data: any, config?: TacBas
 }
 
 class RequestQueue {
-    requestQueue: QueuedRequestConfig[];
-    minimumSpacing: number;
-    timeoutId: any;
+    requestQueue: IQueuedRequestInternal[];
+    minimumSpacingMS: number;
+    timeoutIntervalId: any;
+    lastRequestTime: number;
 
     constructor() {
         this.requestQueue = [];
-        this.minimumSpacing = 0;
-        this.timeoutId = 0;
+        this.minimumSpacingMS = 0;
+        this.timeoutIntervalId = 0;
+        this.lastRequestTime = 0;
     }
 
     setSpacing(ms: number) {
-        this.minimumSpacing = Math.max(ms, 0);
-        if (this.timeoutId) {
-            clearTimeout(this.timeoutId);
-            this.timeoutId = 0;
+        this.minimumSpacingMS = Math.max(ms, 0);
+        if (this.timeoutIntervalId) {
+            clearInterval(this.timeoutIntervalId);
+            this.timeoutIntervalId = 0;
         }
         if (ms === 0) {
             const length = this.requestQueue.length;
@@ -346,25 +349,34 @@ class RequestQueue {
     }
 
     getSpacing() {
-        return this.minimumSpacing;
+        return this.minimumSpacingMS;
     }
 
-    qPush(request: QueuedRequestConfig) {
+    qPush(request: IQueuedRequestInternal) {
         if (request.config.queueSettings?.isPriority) this.requestQueue.unshift(request);
         else this.requestQueue.push(request);
-        if (!this.timeoutId) {
+
+        if (request.config.queueSettings?.cbEnqueued) {
+            request.config.queueSettings?.cbEnqueued(request.id, this.requestQueue.length);
+        }
+        if (!this.timeoutIntervalId) {
             this.dequeueAndProcess();
         }
     }
 
     private dequeueAndProcess() {
-        if (this.requestQueue.length > 0) {
-            const req: QueuedRequestConfig | undefined = this.requestQueue.shift();
-            if (req) {
+        if (this.requestQueue.length > 0 && (Date.now() - this.lastRequestTime) > this.minimumSpacingMS) {
+            let req: IQueuedRequestInternal | undefined = this.requestQueue.shift();
+            while (req && req.deleted) {
+                req = this.requestQueue.shift();
+            }
+            if (req && !req.deleted) {
+                this.lastRequestTime = Date.now();
                 requestWrapper(req.config, req.method, false, req.res, req.rej);
             }
-            if (!this.timeoutId && this.minimumSpacing > 0) {
-                this.timeoutId = setTimeout(this.dequeueAndProcess.bind(this), this.minimumSpacing);
+            // if we don't have a timed interval set up but we should, then do it!
+            if (!this.timeoutIntervalId && this.minimumSpacingMS > 0) {
+                this.timeoutIntervalId = setInterval(this.dequeueAndProcess.bind(this), this.minimumSpacingMS);
             }
         } else {
             this.qSleep();
@@ -375,46 +387,70 @@ class RequestQueue {
         this.requestQueue = [];
     }
 
-    qInfo(): TacRequestConfig[] {
-        return this.requestQueue.map(q => q.config);
+    qInfo(): IQueuedRequest[] {
+        return this.requestQueue.filter(q => !q.deleted).map(q => ({ ...q.config, queuedId: q.id }));
+    }
+
+    deleteRequestById(id: string): boolean {
+        const idx = this.requestQueue.findIndex((q: IQueuedRequestInternal) => q.id === id);
+        if (idx >= 0) {
+            this.requestQueue[idx].deleted = true;
+            return true;
+        }
+        return false;
     }
 
     private qSleep() {
-        if (this.timeoutId) {
-            clearTimeout(this.timeoutId);
-            this.timeoutId = 0;
+        if (this.timeoutIntervalId) {
+            clearTimeout(this.timeoutIntervalId);
+            this.timeoutIntervalId = 0;
         }
     }
 }
 
 const queue = new RequestQueue();
 
-export function restQueueClear(): void {
-    queue.qClear();
+class TDARestRequestQueue {
+    restQueueClear(): void {
+        queue.qClear();
+    }
+
+    getRestQueueInfo(): IQueuedRequest[] {
+        return queue.qInfo();
+    }
+
+    setRestQueueSpacing(ms = 510): void {
+        queue.setSpacing(ms);
+    }
+
+    getRestQueueSpacing(): number {
+        return queue.getSpacing();
+    }
+
+    deleteRequestById(id: string): boolean {
+        return queue.deleteRequestById(id);
+    }
 }
 
-export function restQueueInfo(): TacRequestConfig[] {
-    return queue.qInfo();
-}
+export const tdaRestQueue = new TDARestRequestQueue();
 
-export function setRestQueueSpacing(ms = 510): void {
-    queue.setSpacing(ms);
-}
-
-export function getRestQueueSpacing(): number {
-    return queue.getSpacing();
-}
-
-export interface IRestQueueConfig {
+export interface IRestRequestQueueConfig {
     enqueue: boolean,
     isPriority?: boolean,
-    cbPre?: any,
-    cbPost?: any,
+    cbPre?: () => any,
+    cbPost?: () => any,
+    cbEnqueued?: (requestId: string, queueSize: number) => any,
 }
 
-interface QueuedRequestConfig {
+interface IQueuedRequestInternal {
+    id: string,
     config: TacRequestConfig,
     method: Method,
     res: any,
     rej: any,
+    deleted: boolean,
+}
+
+export interface IQueuedRequest extends TacRequestConfig {
+    queuedId: string,
 }
