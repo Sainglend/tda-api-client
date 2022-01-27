@@ -77,7 +77,7 @@ export interface ITransaction {
 
 export interface IGetTransactionsConfig extends TacRequestConfig {
     accountId: string | number,
-    type?: ETransactionType,
+    type?: ETransactionType | string,
     symbol?: string,
     startDate?: string,
     endDate?: string,

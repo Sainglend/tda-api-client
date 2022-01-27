@@ -195,14 +195,16 @@ async function requestWrapper(config: TacRequestConfig, method: Method, skipAuth
             ? await apiWriteResource({ ...config, queueSettings: {enqueue: false}}, method, skipAuth)
             : await apiNoWriteResource({ ...config, queueSettings: {enqueue: false}}, method, skipAuth);
         res(result);
+        if (config.queueSettings?.cbResult) processCallback(config.queueSettings.cbResult, result);
         if (config.queueSettings?.cbPost) processCallback(config.queueSettings.cbPost);
     } catch (e) {
         rej(e);
     }
 }
 
-async function processCallback(cb: any): Promise<void> {
-    cb();
+async function processCallback(cb: any, arg?: any): Promise<void> {
+    if (arg) cb(arg);
+    else cb();
 }
 
 async function apiNoWriteResource(config: TacRequestConfig, method: Method, skipAuth: boolean): Promise<any> {
@@ -440,6 +442,7 @@ export interface IRestRequestQueueConfig {
     cbPre?: () => any,
     cbPost?: () => any,
     cbEnqueued?: (requestId: string, queueSize: number) => any,
+    cbResult?: (result: any) => any,
 }
 
 interface IQueuedRequestInternal {

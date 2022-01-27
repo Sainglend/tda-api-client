@@ -59,16 +59,16 @@ export interface IQueueConfig {
 export interface IStreamParams {
     fields?: string,
     keys?: string,
-    qoslevel?: EQosLevels,
+    qoslevel?: EQosLevels | number,
 }
 
 export interface IGenericStreamConfig {
-    service: EServices,
-    command: ECommands,
+    service: EServices | string,
+    command: ECommands | string,
     requestSeqNum?: number,
     account?: string,
     source?: string,
-    parameters?: IStreamParams,
+    parameters?: IStreamParams | any,
 }
 
 enum EQueueState {
@@ -79,7 +79,7 @@ enum EQueueState {
 
 export interface IChartHistoryFuturesGetConfig {
     symbol: string,
-    frequency: EChartHistoryFuturesFrequency,
+    frequency: EChartHistoryFuturesFrequency | string,
     /** period must be specified if start and end time aren't
      * Flexible time period examples:
      * d5, w4, n10, y1, y10
@@ -948,7 +948,7 @@ export interface IQueueRequestConfig {
 }
 
 export interface IQosRequestConfig {
-    qosLevel: EQosLevels,
+    qosLevel: EQosLevels | number,
     requestSeqNum?: number,
 }
 

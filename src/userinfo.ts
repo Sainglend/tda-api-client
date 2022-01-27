@@ -180,7 +180,7 @@ export interface IUserPrincipal {
 }
 
 export interface IGetUserPrincipalsConfig extends TacRequestConfig {
-    fields?: EUserPrincipalFields[] | string,
+    fields?: EUserPrincipalFields[] | string[] | string,
 }
 
 export enum EUserPrincipalFields {

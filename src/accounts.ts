@@ -117,11 +117,11 @@ export interface ISecuritiesAccount {
 
 export interface IGetAccountConfig extends TacRequestConfig {
     accountId: string | number,
-    fields?: string | EGetAccountField[],
+    fields?: string | string[] | EGetAccountField[],
 }
 
 export interface IGetAccountsConfig extends TacRequestConfig {
-    fields?: string | EGetAccountField[],
+    fields?: string | string[] | EGetAccountField[],
 }
 
 export enum EGetAccountField {

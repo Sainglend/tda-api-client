@@ -26,7 +26,7 @@ interface IOrderSearchConfig extends TacRequestConfig {
     fromEnteredTime?: string,
     // yyyy-MM-dd
     toEnteredTime?: string,
-    status?: EOrderStatus,
+    status?: EOrderStatus | string,
 }
 
 export interface IGenericOrderConfig extends TacRequestConfig {
@@ -170,7 +170,7 @@ export interface IOrderLeg {
     instruction: EOrderInstruction,
     positionEffect?: EPositionEffect,
     quantity: number, // double
-    quantityType?: EQuantityType
+    quantityType?: EQuantityType,
 }
 
 export enum ESpecialInstruction {

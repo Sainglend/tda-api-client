@@ -382,4 +382,12 @@ describe("test queue", () => {
         const immediateResult = await resultPromises[3];
         expect(Date.now() - timeArray[0].time).toBeLessThan(1000);
     });
+
+    test("test priority", () => {
+        expect(1).toBe(1);
+    });
+
+    test("test callbacks", () => {
+        expect(1).toBe(1);
+    });
 });
