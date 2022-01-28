@@ -9,7 +9,7 @@
     "test": "jest --runInBand --bail --forceExit",
     "lint": "eslint src --ext .ts,.js",
     "lint:fix": "eslint --fix src --ext .ts,.js",
-    "build:npm": "tsc && cp *.md dist/ && cp -r config/ dist/ && cp npmpackage.json dist/package.json"
+    "build:npm": "tsc && cp *.md dist/ && cp -r config/ dist/ && cat package.json | jq 'del(.devDependencies)|del(.prepublish)|del(.scripts)|del(.files)|setpath([\"main\"]; \"index.js\")|setpath([\"types\"]; \"index.d.ts\")' > dist/package.json"
   },
   "files": [
     "dist/*",

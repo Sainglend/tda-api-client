@@ -405,7 +405,7 @@ export class StreamDataTDA extends EventEmitter {
 
     private handleParamStorage(config: IGenericStreamConfig) {
         // handle param storage
-        if (!config.service || [EServices.ADMIN, EServices.CHART_HISTORY_FUTURES].includes(config.service)) return;
+        if (!config.service || [EServices.ADMIN, EServices.CHART_HISTORY_FUTURES].includes(config.service as EServices)) return;
         const currentParams = this.subParams[config.service];
         if (config.command === ECommands.SUBS) {
             // overwrite
@@ -649,10 +649,10 @@ export class StreamDataTDA extends EventEmitter {
 
         const parameters = { ...localConfig.parameters };
         const {requestSeqNum, service, command, account, source} = localConfig;
-        if ([ECommands.SUBS, ECommands.ADD].includes(command)) {
+        if ([ECommands.SUBS, ECommands.ADD].includes(command as ECommands)) {
             if (!parameters || !parameters.keys) throw "With commands ADD or SUBS, your config object must have parameters";
             if (!parameters.fields) {
-                parameters.fields = this.getDefaultFields(localConfig.service);
+                parameters.fields = this.getDefaultFields(localConfig.service as EServices);
             }
         }
 
