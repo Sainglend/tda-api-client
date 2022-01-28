@@ -62,7 +62,7 @@ export interface IWatchlistReplacementItem extends ICreateWatchlistItem {
 }
 
 export interface ICreateWatchlistConfig extends TacRequestConfig {
-    watchlistJSON: ICreateWatchlist,
+    watchlistJSON: ICreateWatchlist | any,
     accountId: string | number,
 }
 
@@ -81,13 +81,13 @@ export interface IGetWatchlistsSingleAcctConfig extends TacRequestConfig {
 }
 
 export interface IWatchlistReplaceConfig extends TacRequestConfig {
-    watchlistJSON: IWatchlistReplacement,
+    watchlistJSON: IWatchlistReplacement | any,
     accountId: string | number,
     watchlistId: string,
 }
 
 export interface IWatchlistUpdateConfig extends TacRequestConfig {
-    watchlistJSON: IWatchlistUpdate,
+    watchlistJSON: IWatchlistUpdate | any,
     accountId: string | number,
     watchlistId: string,
 }

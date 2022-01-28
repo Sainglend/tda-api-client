@@ -234,12 +234,12 @@ export interface IUnderlying {
 
 export interface IGetOptionChainConfig extends TacRequestConfig {
     symbol: string,
-    contractType?: EContractType,
+    contractType?: EContractType | string,
     // Return only options expiring in the specified month
-    expMonth?: EExpirationMonth,
-    optionType?: EOptionType,
-    strategy?: EStrategy,
-    range?: ERange,
+    expMonth?: EExpirationMonth | string,
+    optionType?: EOptionType | string,
+    strategy?: EStrategy | string,
+    range?: ERange | string,
     includeQuotes?: boolean,
     // Only return expirations after this date. For strategies, expiration refers to the nearest term expiration in the strategy. Valid ISO-8601 formats are: yyyy-MM-dd and yyyy-MM-dd'T'HH:mm:ssz.
     fromDate?: string,

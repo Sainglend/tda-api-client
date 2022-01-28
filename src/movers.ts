@@ -19,15 +19,15 @@ export enum EChange {
 }
 
 export interface IGetMoversConfig extends TacRequestConfig {
-    index: EIndex,
-    direction: EDirection,
-    change: EChange,
+    index: EIndex | string,
+    direction: EDirection | string,
+    change: EChange | string,
 }
 
 export interface IMover {
     change: number,
     description: string,
-    direction: EDirection,
+    direction: EDirection | string,
     last: number,
     symbol: string,
     totalVolume: number,

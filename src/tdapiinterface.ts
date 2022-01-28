@@ -3,6 +3,7 @@
 import axios, {AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, Method} from "axios";
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import qs from "qs";
 
 const instance: AxiosInstance = axios.create({
@@ -31,6 +32,7 @@ export interface IAuthConfig {
 export interface TacRequestConfig extends TacBaseConfig {
     path?: string,
     bodyJSON?: any,
+    queueSettings?: IRestRequestQueueConfig,
 }
 
 /**
@@ -51,6 +53,8 @@ export interface IWriteResponse {
     statusCode: number,
     location: string,
 }
+
+const writeMethods = ["patch", "put", "post"];
 
 /**
  * Use this for sending an HTTP GET request to api.tdameritrade.com
@@ -184,7 +188,29 @@ export async function getAPIAuthentication(config?: TacBaseConfig): Promise<IAut
     }
 }
 
+async function requestWrapper(config: TacRequestConfig, method: Method, skipAuth: boolean, res: any, rej: any): Promise<void> {
+    try {
+        if (config.queueSettings?.cbPre) processCallback(config.queueSettings.cbPre);
+        const result = writeMethods.includes(method)
+            ? await apiWriteResource({ ...config, queueSettings: {enqueue: false}}, method, skipAuth)
+            : await apiNoWriteResource({ ...config, queueSettings: {enqueue: false}}, method, skipAuth);
+        res(result);
+        if (config.queueSettings?.cbResult) processCallback(config.queueSettings.cbResult, result);
+        if (config.queueSettings?.cbPost) processCallback(config.queueSettings.cbPost);
+    } catch (e) {
+        rej(e);
+    }
+}
+
+async function processCallback(cb: any, arg?: any): Promise<void> {
+    if (arg) cb(arg);
+    else cb();
+}
+
 async function apiNoWriteResource(config: TacRequestConfig, method: Method, skipAuth: boolean): Promise<any> {
+    if (!config.queueSettings || config.queueSettings.enqueue) {
+        return new Promise((res, rej) => queue.qPush({ id: crypto.randomBytes(16).toString("hex"), config, method, res, rej, deleted: false }));
+    }
     const requestConfig: AxiosRequestConfig = {
         method,
         url: config.path ?? "",
@@ -202,6 +228,9 @@ async function apiNoWriteResource(config: TacRequestConfig, method: Method, skip
 }
 
 async function apiWriteResource(config: TacRequestConfig, method: Method, skipAuth: boolean): Promise<IWriteResponse> {
+    if (!config.queueSettings || config.queueSettings.enqueue) {
+        return new Promise((res, rej) => queue.qPush({ id: crypto.randomBytes(16).toString("hex"), config, method, res, rej, deleted: false }));
+    }
     const requestConfig = {
         method: method,
         url: config.path,
@@ -292,4 +321,169 @@ async function doAuthRequest(authConfig: IAuthConfig, data: any, config?: TacBas
     Object.assign(authConfig, result);
     await writeOutAuthResultToFile(authConfig, config);
     return authConfig;
+}
+
+class RequestQueue {
+    requestQueue: IQueuedRequestInternal[];
+    minimumSpacingMS: number;
+    timeoutIntervalId: any;
+    lastRequestTime: number;
+
+    constructor() {
+        this.requestQueue = [];
+        this.minimumSpacingMS = 0;
+        this.timeoutIntervalId = 0;
+        this.lastRequestTime = 0;
+    }
+
+    setSpacing(ms: number) {
+        this.minimumSpacingMS = Math.max(ms, 0);
+        if (this.timeoutIntervalId) {
+            clearInterval(this.timeoutIntervalId);
+            this.timeoutIntervalId = 0;
+            this.lastRequestTime = 0;
+        }
+        if (ms === 0) {
+            const length = this.requestQueue.length;
+            for (let i = 0; i < length; i++) this.dequeueAndProcess();
+        } else {
+            this.dequeueAndProcess();
+        }
+    }
+
+    getSpacing() {
+        return this.minimumSpacingMS;
+    }
+
+    qPush(request: IQueuedRequestInternal) {
+        if (request.config.queueSettings?.isPriority) this.requestQueue.unshift(request);
+        else this.requestQueue.push(request);
+
+        if (request.config.queueSettings?.cbEnqueued) {
+            request.config.queueSettings?.cbEnqueued(request.id, this.requestQueue.length);
+        }
+        if (!this.timeoutIntervalId) {
+            this.dequeueAndProcess();
+        }
+    }
+
+    private dequeueAndProcess() {
+        if (this.requestQueue.length > 0) {
+            if ((Date.now() - this.lastRequestTime) > this.minimumSpacingMS) {
+                let req: IQueuedRequestInternal | undefined = this.requestQueue.shift();
+                while (req && req.deleted) {
+                    req = this.requestQueue.shift();
+                }
+                if (req && !req.deleted) {
+                    this.lastRequestTime = Date.now();
+                    requestWrapper(req.config, req.method, false, req.res, req.rej);
+                }
+            }
+            // if we don't have a timed interval set up but we should, then do it!
+            if (!this.timeoutIntervalId && this.minimumSpacingMS > 0) {
+                this.timeoutIntervalId = setInterval(this.dequeueAndProcess.bind(this), this.minimumSpacingMS);
+            }
+        } else {
+            this.qSleep();
+        }
+    }
+
+    qClear(): void {
+        if (this.requestQueue.length === 0) return;
+        let req = this.requestQueue.shift();
+        while(req) {
+            if (!req.deleted) req.res(null);
+            req = this.requestQueue.shift();
+        }
+        this.requestQueue = [];
+        this.qSleep();
+    }
+
+    qInfo(): IQueuedRequest[] {
+        return this.requestQueue.filter(q => !q.deleted).map(q => ({ ...q.config, queuedId: q.id }));
+    }
+
+    qCount(): number {
+        return this.requestQueue.filter(q => !q.deleted).length;
+    }
+
+    deleteRequestById(id: string): boolean {
+        const idx = this.requestQueue.findIndex((q: IQueuedRequestInternal) => q.id === id);
+        if (idx >= 0) {
+            this.requestQueue[idx].deleted = true;
+            this.requestQueue[idx].res(null);
+            return true;
+        }
+        return false;
+    }
+
+    private qSleep() {
+        if (this.timeoutIntervalId) {
+            clearTimeout(this.timeoutIntervalId);
+            this.timeoutIntervalId = 0;
+            this.lastRequestTime = 0;
+        }
+    }
+}
+
+const queue = new RequestQueue();
+
+class TDARestRequestQueue {
+    // clear the request queue, which causes all pending promises to resolve with null
+    clearRestQueue(): void {
+        queue.qClear();
+    }
+
+    // get info on all requests in the queue
+    getRestQueueInfo(): IQueuedRequest[] {
+        return queue.qInfo();
+    }
+
+    // how many active requests in the queue
+    getRestQueueCount(): number {
+        return queue.qCount();
+    }
+
+    // set the spacing in milliseconds between requests
+    // set to 0 to turn off queueing
+    setRestQueueSpacing(ms = 510): void {
+        queue.setSpacing(ms);
+    }
+
+    // get the current spacing (milliseconds)
+    getRestQueueSpacing(): number {
+        return queue.getSpacing();
+    }
+
+    // returns true if request id was found; causes pending promise to be resolved with null
+    // the callbacks for pre, result, and post won't be called
+    deleteRequestById(id: string): boolean {
+        return queue.deleteRequestById(id);
+    }
+}
+
+// initialize with tdatdaRestQueue.setRestQueueSpacing(number);
+// shut down gracefully with tdaRestQueue.clearRestQueue(); tdaRestQueue.setRestQueueSpacing(0);
+export const tdaRestQueue = new TDARestRequestQueue();
+
+export interface IRestRequestQueueConfig {
+    enqueue: boolean,
+    isPriority?: boolean,
+    cbPre?: () => any,
+    cbPost?: () => any,
+    cbEnqueued?: (requestId: string, queueSize: number) => any,
+    cbResult?: (result: any) => any,
+}
+
+interface IQueuedRequestInternal {
+    id: string,
+    config: TacRequestConfig,
+    method: Method,
+    res: any,
+    rej: any,
+    deleted: boolean,
+}
+
+export interface IQueuedRequest extends TacRequestConfig {
+    queuedId: string,
 }

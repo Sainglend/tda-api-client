@@ -2,7 +2,7 @@
 # TDA API CLIENT
 https://www.github.com/sainglend/tda-api-client
 
-v2.0.0
+v2.1.0
 ## Summary
 This library is a client to use the API exposed by TD Ameritrade at https://developer.tdameritrade.com
 This project can also be used as a sort of command line utility.
@@ -20,6 +20,13 @@ Other README files (also referenced in relevant sections below):
 npm i tda-api-client
 ```
 ## What's New
+v 2.1.0
+- REST Queueing! Note that streaming already has a queueing ability. Now you can queue your rest calls. This is useful because api calls, other than Accounts, Orders, Saved Orders, are rate limited to 120 requests per minute. Queueing is an opt-in feature and is described more below.
+- Loosened up the types on some Config objects. For example, changed some fields that wanted an enum to be enum | string.
+
+v 2.0.1
+- Fixed the names of some fields in IOption. Note that what is documented in TDA's api docs may be slightly different than the shape of the data they actually return.
+- 
 v 2.0.0 
 - Streaming! You can now utilize the full power of TD Ameritrade's API, both the REST and the Streaming sides. Click the link to the [Streaming README](http://www.github.com/sainglend/tda-api-client/tree/master/streamingREADME.md).
 - TypeScript: care has been taken to make this very IDE friendly by using TypeScript, along with plenty of interfaces and enums. Note that the intent was to create interfaces that are as close to the shape of the objects from TDA as possible. In some cases, this isn't very nice looking (see the response type from the Market Hours api, e.g.). With streaming, there may be an option to get the original shape or a transformed type. For example, when getting streaming data, fields returned are retruned in an object indexed with "1", "17", etc., which I've mapped to an object with human readable keys, like "ask" and "lastTradeTime", and you can choose to get the original or transformed data.
@@ -139,11 +146,74 @@ const config: ISearchInstrumentsFundamentalsConfig = {
 const result: ISearchInstrumentResults = await searchInstrumentFundamentals(config);
 ```
 
+## Queueing REST calls
+(For queueing of streaming requests, see the streaming README.)  
+You can put your REST API calls into a queue so that you don't have to worry about rate limiting. This is a strictly opt-in feature.  
+To turn on queueing you MUST set the desired spacing for request processing. When doing so, keep in mind:
+- This isn't exact. The intent is that the request spacing is AT LEAST your set spacing, but it may be faster by a couple milliseconds because of how far up the chain the timer runs.
+- There will be an occasional auth call, which counts against the rate limit but is NOT accounted for here. Generally, an access_token is good for many minutes, able to be set to be up to 55 (configurable with updateUserPreferences()).
+
+Anyway, here is how to turn ON queueing:
+```typescript
+import {tdaRestQueue} from "tda-api-client";
+// default value is 510 if you call without an input
+tdaRestQueue.setRestQueueSpacing(550);
+```
+
+Now all subsequent REST calls will be queued, except for those exempt, which are found in the next section under Orders, Saved Orders, and Accounts.  
+You can explicitly set a request to be queued or skip the queue (and can even though this for accounts, orders, saved order), but again, you must set the queue spacing first. You may also set callbacks to execute at four points in time. You may also optionally set something as a priority to move it to the front of the queue. A request with all of these parts looks like this:
+
+```typescript
+import {
+  IRestRequestQueueConfig, EProjectionType,
+  ISearchInstrumentResults, ISearchInstrumentsConfig,
+  searchInstruments, tdaRestQueue
+} from "tda-api-client";
+
+tdaRestQueue.setRestQueueSpacing(550);
+
+const queueConfig: IRestRequestQueueConfig = {
+  enqueue: true,
+  isPriority: false,
+  cbEnqueued: () => {
+    console.log("I was queued! Now I wait");
+  },
+  cbPre: () => {
+    console.log("About to get sent over the interwebs! Bye!");
+  },
+  cbResult: (result: ISearchInstrumentResults) => {
+    console.log(result);
+  },
+  cbPost: () => {
+    console.log("I guess my time here is done.");
+  },
+};
+
+const config: ISearchInstrumentsConfig = {
+  symbol: "MSFT",
+  projection: EProjectionType.SYMBOL_SEARCH,
+  queueConfig,
+};
+
+const searchResults: ISearchInstrumentResults = await searchInstruments(config);
+```
+Notice that you can get the result a couple different ways. You can get it in the cbResult callback, or you can get it via the Promise returned from request method. Just know that the promise may take a while to resolve, so you probably shouldn't await it right at the moment you enqueue it.  
+For more generic use, you could have the return type from `cbResult` be `any`.
+
+FANTASTIC! NOW HOW DO I TURN IT OFF?  
+Depending on how you want it to end, you turn it off by either optionally clearing the queue, then setting the spacing to 0.
+```typescript
+import {tdaRestQueue} from "tda-api-client";
+tdaRestQueue.clearRestQueue();
+tdaRestQueue.setRestQueueSpacing(0);
+```
+Clearing the queue will cause each pending promise to get resolved with NULL and none of the pre, result, or post callbacks will be called. If you set spacing to 0 without clearing, all of the queued requests will be executed, which may be undesirable behavior.
 ## Available REST Methods
-The hierarchy is pretty flat. Under the library root, named "tda-api-client", we have (asterisks indicate unauthenticated requests are possible):
+The hierarchy is pretty flat. Under the library root, named "tda-api-client", we have (asterisks (**) indicate unauthenticated requests are possible):  
+++ Indicates not rate limited, so won't be queued by default if you turn on REST request queueing.
 - accounts
-    - getAccount
-    - getAccounts
+    - getAccount ++
+    - getAccounts ++
 - authentication
     - getAuthentication
     - refreshAuthentication
@@ -158,23 +228,23 @@ The hierarchy is pretty flat. Under the library root, named "tda-api-client", we
 - optionchain
     - getOptionChain **
 - orders
-    - placeOrder
-    - replaceOrder
-    - cancelOrder
-    - getOrder
-    - getOrdersByAccount
-    - getOrdersByQuery
+    - placeOrder ++
+    - replaceOrder ++
+    - cancelOrder ++
+    - getOrder ++
+    - getOrdersByAccount ++
+    - getOrdersByQuery ++
 - pricehistory
     - getPriceHistory **
 - quotes
     - getQuote **
     - getQuotes **
 - savedorders
-    - createSavedOrder
-    - deleteSavedOrder
-    - getSavedOrderById
-    - getSavedOrders
-    - replaceSavedOrder
+    - createSavedOrder ++
+    - deleteSavedOrder ++
+    - getSavedOrderById ++
+    - getSavedOrders ++
+    - replaceSavedOrder ++
 - transactions
     - getTransaction
     - getTransactions

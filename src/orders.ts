@@ -26,7 +26,7 @@ interface IOrderSearchConfig extends TacRequestConfig {
     fromEnteredTime?: string,
     // yyyy-MM-dd
     toEnteredTime?: string,
-    status?: EOrderStatus,
+    status?: EOrderStatus | string,
 }
 
 export interface IGenericOrderConfig extends TacRequestConfig {
@@ -170,7 +170,7 @@ export interface IOrderLeg {
     instruction: EOrderInstruction,
     positionEffect?: EPositionEffect,
     quantity: number, // double
-    quantityType?: EQuantityType
+    quantityType?: EQuantityType,
 }
 
 export enum ESpecialInstruction {
@@ -310,20 +310,23 @@ export interface IOrderStrategy {
  * Replace an existing order by a specified account using the properly formatted orderJSON
  * The new order number can be parsed from the location property on the return object
  * See order examples at: https://developer.tdameritrade.com/content/place-order-samples
+ * Not rate limited so never queued unless specifically overridden.
  */
 export async function replaceOrder(config: IReplaceOrderConfig): Promise<IWriteResponse> {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
     config.bodyJSON = config.orderJSON;
-    return await apiPut(config);
+    return await apiPut({ queueSettings: { enqueue: false }, ...config });
 }
 
 /**
  * Place a new order for a specified account using the properly formatted orderJSON.
  * The order number can be parsed from the url returned in the location property.
  * See order examples at: https://developer.tdameritrade.com/content/place-order-samples
+ * Not rate limited so never queued unless specifically overridden.
  */
 export async function placeOrder(config: IPlaceOrderConfig): Promise<IWriteResponse> {
     return await apiPost({
+        queueSettings: { enqueue: false },
         ...config,
         bodyJSON: config.orderJSON,
         path: `/v1/accounts/${config.accountId}/orders`,
@@ -334,6 +337,7 @@ export async function placeOrder(config: IPlaceOrderConfig): Promise<IWriteRespo
  * Get all orders for a specified account, possibly filtered by time and order status
  * Takes accountId, and optionally: maxResults, fromEnteredTime, toEnteredTime
  * (times must either both be included or omitted), status (ENUM is ORDER_STATUS)
+ * Not rate limited so never queued unless specifically overridden.
  */
 export async function getOrdersByAccount(config: any): Promise<IOrderGet[]> {
     config.path = `/v1/accounts/${config.accountId}/orders?` +
@@ -342,11 +346,12 @@ export async function getOrdersByAccount(config: any): Promise<IOrderGet[]> {
         (config.toEnteredTime ? `toEnteredTime=${config.toEnteredTime}&` : "") +
         (config.status ? `status=${config.status}` : "");
 
-    return await apiGet(config);
+    return await apiGet({ queueSettings: { enqueue: false }, ...config });
 }
 
 /**
  * Get all orders for all linked accounts, or just a specified account if config.accountId is provided, possibly filtered by time and order status
+ * Not rate limited so never queued unless specifically overridden.
  */
 export async function getOrdersByQuery(config: IOrdersByQueryConfig): Promise<IOrderGet[]> {
     config.path = `/v1/orders?` +
@@ -356,23 +361,25 @@ export async function getOrdersByQuery(config: IOrdersByQueryConfig): Promise<IO
         (config.toEnteredTime ? `toEnteredTime=${config.toEnteredTime}&` : "") +
         (config.status ? `status=${config.status}` : "");
 
-    return await apiGet(config);
+    return await apiGet({ queueSettings: { enqueue: false }, ...config });
 }
 
 /**
  * Get a specific order for a specific account
+ * Not rate limited so never queued unless specifically overridden.
  */
 export async function getOrder(config: IGenericOrderConfig): Promise<IOrderGet> {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
-    return await apiGet(config);
+    return await apiGet({ queueSettings: { enqueue: false }, ...config });
 }
 
 /**
  * Cancel an order that was placed by the specified account
+ * Not rate limited so never queued unless specifically overridden.
  */
 export async function cancelOrder(config: IGenericOrderConfig): Promise<any> {
     config.path = `/v1/accounts/${config.accountId}/orders/${config.orderId}`;
-    return await apiDelete(config);
+    return await apiDelete({ queueSettings: { enqueue: false }, ...config });
 }
 
 /**

@@ -1,4 +1,4 @@
-import path from "path";
+import * as path from "path";
 import {TacRequestConfig} from "./tdapiinterface";
 import {
     EPrefAuthTokenTimeout,
@@ -9,7 +9,7 @@ import {
     IGetUserPreferencesConfig,
     IGetUserPrincipalsConfig,
     IPreferences, IPreferencesUpdate,
-    IStreamerSubKeys, IUpdateUserPrefConfig, IUserPrincipal, updateUserPreferences
+    IStreamerSubKeys, IUpdateUserPrefConfig, IUserPrincipal, updateUserPreferences,
 } from "./userinfo";
 import {getAccounts} from "./accounts";
 
@@ -60,7 +60,7 @@ describe("userinfo", () => {
                 EUserPrincipalFields.STREAMER_CONNECTION_INFO,
                 EUserPrincipalFields.PREFERENCES,
                 EUserPrincipalFields.STREAMER_SUB_KEYS,
-                EUserPrincipalFields.SURROGATE_IDS
+                EUserPrincipalFields.SURROGATE_IDS,
             ],
         };
 

@@ -1,4 +1,4 @@
-import path from "path";
+import * as path from "path";
 import {getAccounts} from "./accounts";
 import {IWriteResponse, TacRequestConfig} from "./tdapiinterface";
 import {
@@ -14,7 +14,7 @@ import {
     IWatchlist,
     IWatchlistReplaceConfig,
     IWatchlistUpdateConfig,
-    replaceWatchlist, updateWatchlist, IDeleteWatchlistConfig
+    replaceWatchlist, updateWatchlist, IDeleteWatchlistConfig,
 } from "./watchlists";
 
 const testauthpath = path.join(__dirname, "test_tdaclientauth.json");

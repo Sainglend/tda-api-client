@@ -4,11 +4,11 @@ import {
     getSingleMarketHours,
     IGetMultiMarketHoursConfig,
     IGetSingleMarketHoursConfig,
-    IMarketMarketHours
+    IMarketMarketHours,
 } from "./markethours";
 
 import testAuthConfig from "./test_tdaclientauth.json";
-import path from "path";
+import * as path from "path";
 const testauthpath = path.join(__dirname, "test_tdaclientauth.json");
 
 describe("markethours", () => {

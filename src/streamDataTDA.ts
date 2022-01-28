@@ -59,16 +59,16 @@ export interface IQueueConfig {
 export interface IStreamParams {
     fields?: string,
     keys?: string,
-    qoslevel?: EQosLevels,
+    qoslevel?: EQosLevels | number,
 }
 
 export interface IGenericStreamConfig {
-    service: EServices,
-    command: ECommands,
+    service: EServices | string,
+    command: ECommands | string,
     requestSeqNum?: number,
     account?: string,
     source?: string,
-    parameters?: IStreamParams,
+    parameters?: IStreamParams | any,
 }
 
 enum EQueueState {
@@ -79,7 +79,7 @@ enum EQueueState {
 
 export interface IChartHistoryFuturesGetConfig {
     symbol: string,
-    frequency: EChartHistoryFuturesFrequency,
+    frequency: EChartHistoryFuturesFrequency | string,
     /** period must be specified if start and end time aren't
      * Flexible time period examples:
      * d5, w4, n10, y1, y10
@@ -405,7 +405,7 @@ export class StreamDataTDA extends EventEmitter {
 
     private handleParamStorage(config: IGenericStreamConfig) {
         // handle param storage
-        if (!config.service || [EServices.ADMIN, EServices.CHART_HISTORY_FUTURES].includes(config.service)) return;
+        if (!config.service || [EServices.ADMIN, EServices.CHART_HISTORY_FUTURES].includes(config.service as EServices)) return;
         const currentParams = this.subParams[config.service];
         if (config.command === ECommands.SUBS) {
             // overwrite
@@ -649,10 +649,10 @@ export class StreamDataTDA extends EventEmitter {
 
         const parameters = { ...localConfig.parameters };
         const {requestSeqNum, service, command, account, source} = localConfig;
-        if ([ECommands.SUBS, ECommands.ADD].includes(command)) {
+        if ([ECommands.SUBS, ECommands.ADD].includes(command as ECommands)) {
             if (!parameters || !parameters.keys) throw "With commands ADD or SUBS, your config object must have parameters";
             if (!parameters.fields) {
-                parameters.fields = this.getDefaultFields(localConfig.service);
+                parameters.fields = this.getDefaultFields(localConfig.service as EServices);
             }
         }
 
@@ -948,7 +948,7 @@ export interface IQueueRequestConfig {
 }
 
 export interface IQosRequestConfig {
-    qosLevel: EQosLevels,
+    qosLevel: EQosLevels | number,
     requestSeqNum?: number,
 }
 

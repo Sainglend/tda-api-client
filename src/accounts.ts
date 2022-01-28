@@ -117,11 +117,11 @@ export interface ISecuritiesAccount {
 
 export interface IGetAccountConfig extends TacRequestConfig {
     accountId: string | number,
-    fields?: string | EGetAccountField[],
+    fields?: string | string[] | EGetAccountField[],
 }
 
 export interface IGetAccountsConfig extends TacRequestConfig {
-    fields?: string | EGetAccountField[],
+    fields?: string | string[] | EGetAccountField[],
 }
 
 export enum EGetAccountField {
@@ -134,24 +134,27 @@ export enum EGetAccountField {
  * Gets account info for a single account. You can request additional fields with config.fields as a comma-separated string
  * or as an array of string or an array of EGetAccountField
  * Possible values for fields are: positions, orders (or EGetAccountField.POSITIONS and .ORDERS)
+ * Not rate limited so never queued unless specifically overridden.
  */
 export async function getAccount(config: IGetAccountConfig): Promise<IAccount> {
     let fields = config.fields;
     if (Array.isArray(config.fields)) fields = config.fields.join(",");
     config.path = `/v1/accounts/${config.accountId}` +
         (fields ? `?fields=${fields}` : "");
-    return await apiGet(config);
+    return await apiGet({ queueSettings: { enqueue: false }, ...config });
 }
 
 /**
  * Gets account info for all accounts associated to your auth info. You can request additional fields with config.fields as a comma-separated string
  * or as an array of string or an array of EGetAccountField
  * Possible values for fields are: positions, orders (or EGetAccountField.POSITIONS and .ORDERS)
+ * Not rate limited so never queued unless specifically overridden.
  */
-export async function getAccounts(config: IGetAccountsConfig): Promise<IAccount[]> {
+export async function getAccounts(config?: IGetAccountsConfig): Promise<IAccount[]> {
+    config = config ?? {};
     let fields = config.fields;
     if (Array.isArray(config.fields)) fields = config.fields.join(",");
     config.path = `/v1/accounts` +
         (fields ? `?fields=${fields}` : "");
-    return await apiGet(config);
+    return await apiGet({ queueSettings: { enqueue: false }, ...config });
 }
