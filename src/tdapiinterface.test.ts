@@ -1,6 +1,6 @@
 import testAuthConfig from "../test_tdaclientauth.json";
 import * as path from "path";
-import {getQuote, IGetQuoteConfig} from "./quotes";
+import {getQuote, IGetQuoteConfig, IQuoteResult} from "./quotes";
 import {IQueuedRequest, TacRequestConfig, tdaRestQueue} from "./tdapiinterface";
 import {EMarkets, getSingleMarketHours, IGetSingleMarketHoursConfig} from "./markethours";
 import {EProjectionType, ISearchInstrumentsConfig, searchInstruments} from "./instruments";
@@ -15,17 +15,40 @@ interface TimeRecord {
     time: number,
 }
 
+interface ICallbackRecording {
+    enqueued?: CallbackRecord,
+    pre?: CallbackRecord,
+    result?: CallbackRecord,
+    post?: CallbackRecord,
+}
+
+interface CallbackRecord {
+    time: number,
+    data?: any,
+}
+
 function recordTime(arr: TimeRecord[], position: number) {
-    console.log("recordTime", position);
+    // console.log("recordTime", position);
     arr.push({ position, time: Date.now() });
 }
 
-describe("test queue", () => {
+function callbackCatcher(record: ICallbackRecording, name: string, data?: any) {
+    record[name] = { time: Date.now(), data };
+}
+
+async function waitPromise(ms: number): Promise<void> {
+    return new Promise<void>((res) => {
+        setTimeout(res, ms);
+    });
+}
+
+describe("test REST queue", () => {
     beforeEach(async () => {
+        tdaRestQueue.clearRestQueue();
+        tdaRestQueue.setRestQueueSpacing(0);
+        expect(tdaRestQueue.getRestQueueCount()).toBe(0);
         // use this to avoid rate restrictions during testing
-        await new Promise<void>((res) => {
-            setTimeout(res, 2000);
-        });
+        await waitPromise(2000);
     });
 
     test("default queue does fast requests", async () => {
@@ -103,7 +126,7 @@ describe("test queue", () => {
 
         expect(timeArray.length).toBe(resultPromises.length);
         for (let i = 1; i < results.length; i++) {
-            expect(timeArray[i].time - timeArray[i-1].time).toBeGreaterThanOrEqual(timeDiff);
+            expect(timeArray[i].time - timeArray[i-1].time).toBeGreaterThanOrEqual(.95*timeDiff);
         }
     });
 
@@ -169,8 +192,8 @@ describe("test queue", () => {
         expect(result2["MSFT"].symbol).toBe("MSFT");
 
         expect(timeArray.length).toBe(3);
-        expect(timeArray[1].time - timeArray[0].time).toBeGreaterThanOrEqual(timeDiff);
-        expect(timeArray[2].time - timeArray[1].time).toBeGreaterThanOrEqual(timeDiff);
+        expect(timeArray[1].time - timeArray[0].time).toBeGreaterThanOrEqual(.95*timeDiff);
+        expect(timeArray[2].time - timeArray[1].time).toBeGreaterThanOrEqual(.95*timeDiff);
     });
 
     test("test restQueueInfo returns correct results", async () => {
@@ -203,7 +226,7 @@ describe("test queue", () => {
         }
 
         const queueInfo: IQueuedRequest[] = tdaRestQueue.getRestQueueInfo();
-        tdaRestQueue.restQueueClear();
+        tdaRestQueue.clearRestQueue();
 
         expect(queueInfo.length).toBe(3);
         for (let i = 0; i < 3; i++) {
@@ -242,7 +265,7 @@ describe("test queue", () => {
         }
 
         const queueInfoPre: IQueuedRequest[] = tdaRestQueue.getRestQueueInfo();
-        tdaRestQueue.restQueueClear();
+        tdaRestQueue.clearRestQueue();
         const queueInfoPost: IQueuedRequest[] = tdaRestQueue.getRestQueueInfo();
 
         expect(queueInfoPre.length).toBe(3);
@@ -327,7 +350,7 @@ describe("test queue", () => {
 
         const queueInfoPre: IQueuedRequest[] = tdaRestQueue.getRestQueueInfo();
         expect(queueInfoPre.length).toBe(2);
-        tdaRestQueue.restQueueClear();
+        tdaRestQueue.clearRestQueue();
 
         for (let i = 0; i < 2; i++) {
             expect(queueInfoPre[i].queuedId).toBeTruthy();
@@ -371,7 +394,7 @@ describe("test queue", () => {
 
         const queueInfoPre: IQueuedRequest[] = tdaRestQueue.getRestQueueInfo();
         expect(queueInfoPre.length).toBe(2);
-        tdaRestQueue.restQueueClear();
+        tdaRestQueue.clearRestQueue();
 
         for (let i = 0; i < 2; i++) {
             expect(queueInfoPre[i].queuedId).toBeTruthy();
@@ -383,11 +406,181 @@ describe("test queue", () => {
         expect(Date.now() - timeArray[0].time).toBeLessThan(1000);
     });
 
-    test("test priority", () => {
-        expect(1).toBe(1);
+    test("test priority", async () => {
+        expect(testAuthConfig).toBeTruthy();
+        const timeDiff = 2000;
+        tdaRestQueue.setRestQueueSpacing(timeDiff);
+        expect(tdaRestQueue.getRestQueueSpacing()).toBe(timeDiff);
+
+        const timeArray: TimeRecord[] = [];
+        const symbols = ["MSFT", "TSLA", "GME", "T"];
+        const resultPromises = [];
+
+        for (let i = 0; i < 4; i++) {
+            const a = i;
+            resultPromises.push(getQuote({
+                authConfigFileLocation: testauthpath,
+                symbol: symbols[i],
+                queueSettings: {
+                    enqueue: true,
+                    isPriority: i === 3,
+                    cbPre: () => recordTime(timeArray, a),
+                },
+            }));
+        }
+
+        const results = await Promise.all(resultPromises);
+        expect(results.length).toBe(resultPromises.length);
+
+        expect(timeArray.length).toBe(resultPromises.length);
+        expect(timeArray[1].position).toBe(3);
+        expect(timeArray[1].time).toBeLessThan(timeArray[2].time);
+        expect(timeArray[1].time).toBeLessThan(timeArray[3].time);
     });
 
-    test("test callbacks", () => {
-        expect(1).toBe(1);
+    test("test callbacks", async () => {
+        expect(testAuthConfig).toBeTruthy();
+        const timeDiff = 2000;
+        tdaRestQueue.setRestQueueSpacing(timeDiff);
+        expect(tdaRestQueue.getRestQueueSpacing()).toBe(timeDiff);
+        const callbackRecorder: ICallbackRecording = {};
+        const startTime = Date.now();
+
+        const result: IQuoteResult = await getQuote({
+            authConfigFileLocation: testauthpath,
+            symbol: "T",
+            queueSettings: {
+                enqueue: true,
+                cbEnqueued: (requestId) => callbackCatcher(callbackRecorder, "enqueued", requestId),
+                cbPre: () => callbackCatcher(callbackRecorder, "pre"),
+                cbResult: (result1: IQuoteResult) => callbackCatcher(callbackRecorder, "result", result1),
+                cbPost: () => callbackCatcher(callbackRecorder, "post"),
+            },
+        });
+        expect(result["T"].symbol).toBe("T");
+        expect(callbackRecorder.enqueued).toBeTruthy();
+        expect(callbackRecorder.enqueued.time).toBeGreaterThanOrEqual(startTime);
+        // request id: random bytes
+        expect(callbackRecorder.enqueued.data).toBeTruthy();
+        expect(callbackRecorder.pre).toBeTruthy();
+        expect(callbackRecorder.pre.time).toBeGreaterThanOrEqual(callbackRecorder.enqueued.time);
+        expect(callbackRecorder.result).toBeTruthy();
+        expect(callbackRecorder.result.time).toBeGreaterThanOrEqual(callbackRecorder.pre.time);
+        expect(callbackRecorder.result.data).toEqual(result);
+        expect(callbackRecorder.post).toBeTruthy();
+        expect(callbackRecorder.post.time).toBeGreaterThanOrEqual(callbackRecorder.result.time);
+    });
+
+    test("queue works again after emptying naturally", async () => {
+        expect(testAuthConfig).toBeTruthy();
+        const timeDiff = 1000;
+        tdaRestQueue.setRestQueueSpacing(timeDiff);
+        expect(tdaRestQueue.getRestQueueSpacing()).toBe(timeDiff);
+
+        const timeArray: TimeRecord[] = [];
+        const symbols = ["MSFT", "AAPL", "TSLA", "IBM"];
+        const resultPromises = [];
+
+        for (let i = 0; i < 4; i++) {
+            const a = i;
+            resultPromises.push(getQuote({
+                authConfigFileLocation: testauthpath,
+                symbol: symbols[a],
+                queueSettings: {
+                    enqueue: true,
+                },
+            }));
+        }
+
+        await Promise.all(resultPromises);
+
+        // NOW FOR ROUND 2
+
+        const resultPromises2 = [];
+
+        for (let i = 0; i < 4; i++) {
+            const a = i;
+            resultPromises2.push(getQuote({
+                authConfigFileLocation: testauthpath,
+                symbol: symbols[a],
+                queueSettings: {
+                    enqueue: true,
+                    cbPre: () => recordTime(timeArray, a),
+                },
+            }));
+        }
+
+        const results = await Promise.all(resultPromises2);
+        expect(results.length).toBe(resultPromises2.length);
+        results.forEach((r: IQuoteResult, idx: number) => expect(r[symbols[idx]].symbol).toBe(symbols[idx]));
+        expect(timeArray.length).toBe(results.length);
+        for (let i = 0; i < timeArray.length; i++) {
+            expect(timeArray[i].position).toBe(i);
+            if (i > 0) {
+                expect(timeArray[i].time - timeArray[i-1].time).toBeGreaterThanOrEqual(.95*timeDiff);
+            }
+        }
+    });
+
+    test("queue works again after clearing", async () => {
+        expect(testAuthConfig).toBeTruthy();
+        const timeDiff = 3000;
+        tdaRestQueue.setRestQueueSpacing(timeDiff);
+        expect(tdaRestQueue.getRestQueueSpacing()).toBe(timeDiff);
+
+        const timeArray: TimeRecord[] = [];
+        const symbols = ["MSFT", "AAPL", "TSLA", "IBM"];
+        const resultPromises = [];
+
+        for (let i = 0; i < 4; i++) {
+            const a = i;
+            resultPromises.push(getQuote({
+                authConfigFileLocation: testauthpath,
+                symbol: symbols[a],
+                queueSettings: {
+                    enqueue: true,
+                },
+            }));
+        }
+
+        const queueInfoPre: IQueuedRequest[] = tdaRestQueue.getRestQueueInfo();
+        tdaRestQueue.clearRestQueue();
+        const queueInfoPost: IQueuedRequest[] = tdaRestQueue.getRestQueueInfo();
+
+        try {
+            expect(queueInfoPre.length).toBe(3);
+        } catch (e) {
+            expect(queueInfoPre).toBe({});
+        }
+        expect(queueInfoPost.length).toBe(0);
+
+        const newTimeDiff = 1000;
+        tdaRestQueue.setRestQueueSpacing(newTimeDiff);
+        expect(tdaRestQueue.getRestQueueSpacing()).toBe(newTimeDiff);
+
+        const resultPromises2 = [];
+
+        for (let i = 0; i < 4; i++) {
+            const a = i;
+            resultPromises2.push(getQuote({
+                authConfigFileLocation: testauthpath,
+                symbol: symbols[a],
+                queueSettings: {
+                    enqueue: true,
+                    cbPre: () => recordTime(timeArray, a),
+                },
+            }));
+        }
+
+        const results = await Promise.all(resultPromises2);
+        expect(results.length).toBe(resultPromises2.length);
+        results.forEach((r: IQuoteResult, idx: number) => expect(r[symbols[idx]].symbol).toBe(symbols[idx]));
+        expect(timeArray.length).toBe(results.length);
+        for (let i = 0; i < timeArray.length; i++) {
+            expect(timeArray[i].position).toBe(i);
+            if (i > 0) {
+                expect(timeArray[i].time - timeArray[i-1].time).toBeGreaterThanOrEqual(.95*newTimeDiff);
+            }
+        }
     });
 });

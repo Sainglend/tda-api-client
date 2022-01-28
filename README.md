@@ -149,7 +149,11 @@ const result: ISearchInstrumentResults = await searchInstrumentFundamentals(conf
 ## Queueing REST calls
 (For queueing of streaming requests, see the streaming README.)  
 You can put your REST API calls into a queue so that you don't have to worry about rate limiting. This is a strictly opt-in feature.  
-To turn on queueing you MUST set the desired spacing for request processing:
+To turn on queueing you MUST set the desired spacing for request processing. When doing so, keep in mind:
+- This isn't exact. The intent is that the request spacing is AT LEAST your set spacing, but it may be faster by a couple milliseconds because of how far up the chain the timer runs.
+- There will be an occasional auth call, which counts against the rate limit but is NOT accounted for here. Generally, an access_token is good for many minutes, able to be set to be up to 55 (configurable with updateUserPreferences()).
+
+Anyway, here is how to turn ON queueing:
 ```typescript
 import {tdaRestQueue} from "tda-api-client";
 // default value is 510 if you call without an input
@@ -160,17 +164,29 @@ Now all subsequent REST calls will be queued, except for those exempt, which are
 You can explicitly set a request to be queued or skip the queue (and can even though this for accounts, orders, saved order), but again, you must set the queue spacing first. You may also set callbacks to execute at four points in time. You may also optionally set something as a priority to move it to the front of the queue. A request with all of these parts looks like this:
 
 ```typescript
-import {IRestRequestQueueConfig, EProjectionType,
+import {
+  IRestRequestQueueConfig, EProjectionType,
   ISearchInstrumentResults, ISearchInstrumentsConfig,
-  searchInstruments} from "tda-api-client";
+  searchInstruments, tdaRestQueue
+} from "tda-api-client";
+
+tdaRestQueue.setRestQueueSpacing(550);
 
 const queueConfig: IRestRequestQueueConfig = {
   enqueue: true,
   isPriority: false,
-  cbEnqueued: () => { console.log("I was queued! Now I wait"); },
-  cbPre: () => { console.log("About to get sent over the interwebs! Bye!"); },
-  cbResult: (result: ISearchInstrumentResults) => { console.log(result); },
-  cbPost: () => { console.log("I guess my time here is done."); },
+  cbEnqueued: () => {
+    console.log("I was queued! Now I wait");
+  },
+  cbPre: () => {
+    console.log("About to get sent over the interwebs! Bye!");
+  },
+  cbResult: (result: ISearchInstrumentResults) => {
+    console.log(result);
+  },
+  cbPost: () => {
+    console.log("I guess my time here is done.");
+  },
 };
 
 const config: ISearchInstrumentsConfig = {
@@ -184,6 +200,14 @@ const searchResults: ISearchInstrumentResults = await searchInstruments(config);
 Notice that you can get the result a couple different ways. You can get it in the cbResult callback, or you can get it via the Promise returned from request method. Just know that the promise may take a while to resolve, so you probably shouldn't await it right at the moment you enqueue it.  
 For more generic use, you could have the return type from `cbResult` be `any`.
 
+FANTASTIC! NOW HOW DO I TURN IT OFF?  
+Depending on how you want it to end, you turn it off by either optionally clearing the queue, then setting the spacing to 0.
+```typescript
+import {tdaRestQueue} from "tda-api-client";
+tdaRestQueue.clearRestQueue();
+tdaRestQueue.setRestQueueSpacing(0);
+```
+Clearing the queue will cause each pending promise to get resolved with NULL and none of the pre, result, or post callbacks will be called. If you set spacing to 0 without clearing, all of the queued requests will be executed, which may be undesirable behavior.
 ## Available REST Methods
 The hierarchy is pretty flat. Under the library root, named "tda-api-client", we have (asterisks (**) indicate unauthenticated requests are possible):  
 ++ Indicates not rate limited, so won't be queued by default if you turn on REST request queueing.
