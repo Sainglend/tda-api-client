@@ -2,7 +2,7 @@
 # TDA API CLIENT
 https://www.github.com/sainglend/tda-api-client
 
-v2.1.0
+v2.1.1
 ## Summary
 This library is a client to use the API exposed by TD Ameritrade at https://developer.tdameritrade.com
 This project can also be used as a sort of command line utility.
@@ -12,7 +12,7 @@ TO REFER BACK TO V1.2 documentation, visit [https://github.com/sainglend/tda-api
 Other README files (also referenced in relevant sections below):
 - [Authentication](authREADME.md)
 - [Streaming](streamingREADME.md)
-- [Code Samples](samples/codesamples.md)
+- [Code Samples](codesamplesREADME.md)
 
 ## Installation
 
@@ -20,6 +20,11 @@ Other README files (also referenced in relevant sections below):
 npm i tda-api-client
 ```
 ## What's New
+v 2.1.1
+- Reinstated functioning of the CLI. I had accidentally left out the cli_index.js file from the package.
+- Fixed an issue when using passing in authConfig in the config to REST requests. It was still looking for a file to write to and through a file-not-found error.
+- Fixed the link to the Code Samples README (a few lines above) to be correct.
+
 v 2.1.0
 - REST Queueing! Note that streaming already has a queueing ability. Now you can queue your rest calls. This is useful because api calls, other than Accounts, Orders, Saved Orders, are rate limited to 120 requests per minute. Queueing is an opt-in feature and is described more below.
 - Loosened up the types on some Config objects. For example, changed some fields that wanted an enum to be enum | string.

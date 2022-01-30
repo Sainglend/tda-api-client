@@ -6,6 +6,11 @@ import path from "path";
 import crypto from "crypto";
 import qs from "qs";
 
+const localAuthData: IAuthConfig = {
+    refresh_token: "REPLACE_ME",
+    client_id: "EXAMPLE@AMER.OAUTHAP",
+};
+
 const instance: AxiosInstance = axios.create({
     baseURL: "https://api.tdameritrade.com",
     headers: {
@@ -101,17 +106,7 @@ export async function refreshAPIAuthorization(config?: TacBaseConfig): Promise<I
     if (config?.verbose) {
         console.log("refreshing authorization");
     }
-    let authConfig = config?.authConfig;
-    if (!authConfig && (!config?.authConfigFileAccess || config?.authConfigFileAccess !== "NONE")) {
-        authConfig = require(config?.authConfigFileLocation ?? path.join(process.cwd(), `/config/tdaclientauth.json`));
-    }
-    if (!authConfig) {
-        throw new Error("AuthConfig was not provided or the file was not found");
-    } else if (!authConfig.refresh_token) {
-        throw new Error("AuthConfig does not contain a refresh_token");
-    } else if (!authConfig.client_id) {
-        throw new Error("AuthConfig does not contain a client_id");
-    }
+    const authConfig = determineAuthConfig(config);
 
     return await doAuthRequest(
         authConfig,
@@ -127,6 +122,30 @@ export async function refreshAPIAuthorization(config?: TacBaseConfig): Promise<I
     );
 }
 
+function determineAuthConfig(config?: TacBaseConfig): IAuthConfig {
+    let authConfig = config?.authConfig;
+    if (!authConfig && (!config?.authConfigFileAccess || config?.authConfigFileAccess !== "NONE")) {
+        try {
+            authConfig = require(config?.authConfigFileLocation ?? path.join(process.cwd(), `/config/tdaclientauth.json`));
+        } catch (e) {
+            if (config?.authConfigFileLocation) {
+                throw new Error("AuthConfig was not provided and no file was found at the given location: " + config.authConfigFileLocation);
+            } else {
+                throw new Error("AuthConfig was not provided and no file was found at the default location: config/tdaclientauth.json");
+            }
+        }
+    }
+    if (!authConfig) {
+        throw new Error("AuthConfig was not provided or the file was not found");
+    } else if (!authConfig.refresh_token) {
+        throw new Error("AuthConfig does not contain a refresh_token");
+    } else if (!authConfig.client_id) {
+        throw new Error("AuthConfig does not contain a client_id");
+    }
+
+    return authConfig;
+}
+
 /**
  * Use this to force the refresh of the access_token, regardless of whether it is expired.
  * Returns auth info object with the all-important access_token.
@@ -136,17 +155,7 @@ export async function refreshAPIAuthentication(config?: TacBaseConfig): Promise<
     if (config?.verbose) {
         console.log("refreshing authentication");
     }
-    let authConfig = config?.authConfig;
-    if (!authConfig && (!config?.authConfigFileAccess || config?.authConfigFileAccess !== "NONE")) {
-        authConfig = require(config?.authConfigFileLocation ?? path.join(process.cwd(), `/config/tdaclientauth.json`));
-    }
-    if (!authConfig) {
-        throw new Error("AuthConfig was not provided or the file was not found");
-    } else if (!authConfig.refresh_token) {
-        throw new Error("AuthConfig does not contain a refresh_token");
-    } else if (!authConfig.client_id) {
-        throw new Error("AuthConfig does not contain a client_id");
-    }
+    const authConfig = determineAuthConfig(config);
 
     return await doAuthRequest(
         authConfig,
@@ -166,19 +175,22 @@ export async function refreshAPIAuthentication(config?: TacBaseConfig): Promise<
  * Use this to get authentication info. Will serve up local copy if not yet expired.
  */
 export async function getAPIAuthentication(config?: TacBaseConfig): Promise<IAuthConfig> {
-    let authConfig = config?.authConfig;
-    if (!authConfig && (!config?.authConfigFileAccess || config?.authConfigFileAccess !== "NONE")) {
-        authConfig = require(config?.authConfigFileLocation ?? path.join(process.cwd(), `/config/tdaclientauth.json`));
-    }
-    if (!authConfig) {
-        throw new Error("AuthConfig was not provided or the file was not found");
-    } else if (!authConfig.refresh_token) {
-        throw new Error("AuthConfig does not contain a refresh_token");
-    } else if (!authConfig.client_id) {
-        throw new Error("AuthConfig does not contain a client_id");
-    }
+    const authConfig = determineAuthConfig(config);
 
-    if (!authConfig.expires_on || authConfig.expires_on < Date.now() + (10 * 60 * 1000)) {
+    // if the authConfig came from the passed in object, we can look at the locally stored copy for expires_on
+    // Refresh is it is set to expire in the next minute
+    if (config?.authConfig
+        && ((authConfig.expires_on && authConfig.expires_on > Date.now() + 60000)
+            || (localAuthData.expires_on
+                && localAuthData.access_token
+                && localAuthData.refresh_token === authConfig.refresh_token
+                && localAuthData.client_id === authConfig.client_id
+                && localAuthData.expires_on > Date.now() + 60000))) {
+        if (config?.verbose) {
+            console.log("not refreshing authentication as it has not expired");
+        }
+        return authConfig;
+    } else if (!authConfig.expires_on || authConfig.expires_on < Date.now() + 60000) {
         return await refreshAPIAuthentication({...config, authConfig});
     } else {
         if (config?.verbose) {
@@ -247,11 +259,11 @@ async function apiWriteResource(config: TacRequestConfig, method: Method, skipAu
         requestConfig.headers["Authorization"] = `Bearer ${token}`;
     }
 
-    return await performAxiosRequest(requestConfig, false);
+    return await performAxiosRequest(requestConfig, false) as IWriteResponse;
 }
 
-async function performAxiosRequest(requestConfig: AxiosRequestConfig, expectData: boolean): Promise<IWriteResponse> {
-    return await new Promise<IWriteResponse>((res, rej) => {
+async function performAxiosRequest(requestConfig: AxiosRequestConfig, expectData: boolean): Promise<any> {
+    return await new Promise<any>((res, rej) => {
         instance.request(requestConfig)
             .then(function (response: AxiosResponse) {
                 if (expectData) {
@@ -284,7 +296,12 @@ async function performAxiosRequest(requestConfig: AxiosRequestConfig, expectData
 }
 
 async function writeOutAuthResultToFile(authConfig: IAuthConfig, config?: TacBaseConfig): Promise<IAuthConfig> {
-    if (config?.authConfigFileAccess && ["READ_ONLY", "NONE"].includes(config.authConfigFileAccess)) return authConfig;
+    // if authConfig was passed in without an explicit config file location, then we are
+    // assuming we aren't dealing with a default file and the file may not exist
+    if ((config?.authConfig && !config?.authConfigFileLocation)
+        || (config?.authConfigFileAccess && ["READ_ONLY", "NONE"].includes(config.authConfigFileAccess))) {
+        return authConfig;
+    }
 
     return await new Promise<IAuthConfig>((resolve, reject) => {
         const filePath = config?.authConfigFileLocation ?? path.join(process.cwd(), `/config/tdaclientauth.json`);
@@ -317,9 +334,12 @@ async function doAuthRequest(authConfig: IAuthConfig, data: any, config?: TacBas
     };
     const result = await performAxiosRequest(requestConfig, true);
 
-    authConfig.expires_on = Date.now() + (authConfig.expires_in ? authConfig.expires_in * 1000 : 0);
-    Object.assign(authConfig, result);
-    await writeOutAuthResultToFile(authConfig, config);
+    Object.assign(localAuthData, authConfig);
+    Object.assign(localAuthData, result);
+    localAuthData.expires_on = Date.now() + (result.expires_in ? result.expires_in * 1000 : 0);
+    await writeOutAuthResultToFile(localAuthData, config);
+    Object.assign(authConfig, localAuthData);
+
     return authConfig;
 }
 
@@ -379,7 +399,7 @@ class RequestQueue {
                     requestWrapper(req.config, req.method, false, req.res, req.rej);
                 }
             }
-            // if we don't have a timed interval set up but we should, then do it!
+            // if we don't have a timed interval set up, but we should, then do it!
             if (!this.timeoutIntervalId && this.minimumSpacingMS > 0) {
                 this.timeoutIntervalId = setInterval(this.dequeueAndProcess.bind(this), this.minimumSpacingMS);
             }
@@ -462,7 +482,7 @@ class TDARestRequestQueue {
     }
 }
 
-// initialize with tdatdaRestQueue.setRestQueueSpacing(number);
+// initialize with tdaRestQueue.setRestQueueSpacing(number);
 // shut down gracefully with tdaRestQueue.clearRestQueue(); tdaRestQueue.setRestQueueSpacing(0);
 export const tdaRestQueue = new TDARestRequestQueue();
 
