@@ -2,7 +2,7 @@
 # TDA API CLIENT
 https://www.github.com/sainglend/tda-api-client
 
-v2.1.1
+v2.1.2
 ## Summary
 This library is a client to use the API exposed by TD Ameritrade at https://developer.tdameritrade.com
 This project can also be used as a sort of command line utility.
@@ -20,6 +20,9 @@ Other README files (also referenced in relevant sections below):
 npm i tda-api-client
 ```
 ## What's New
+v 2.1.2
+- Handle an error event from the TDA stream. Emit a `streamError` and `streamClosed`
+
 v 2.1.1
 - Reinstated functioning of the CLI. I had accidentally left out the cli_index.js file from the package.
 - Fixed an issue when using passing in authConfig in the config to REST requests. It was still looking for a file to write to and through a file-not-found error.

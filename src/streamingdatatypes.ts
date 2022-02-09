@@ -778,6 +778,15 @@ export interface IStreamResponse {
     timestamp: number,
 }
 
+export interface IStreamClosed {
+    attemptingReconnect: boolean,
+}
+
+export interface IStreamError {
+    attemptingReconnect: boolean,
+    error: string,
+}
+
 export interface ILoginLogoutResponse {
     code: EAdminResponseCode,
     // streamer server id, or "SUCCESS" for logout

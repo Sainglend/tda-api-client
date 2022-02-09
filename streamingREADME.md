@@ -42,12 +42,14 @@ const streamConfig: IStreamDataTDAConfig = {
 const tdaStream = new StreamDataTDA(streamConfig);
 ```
 
-2. Set up your basic data stream subscriptions. There are 4 top-level event subscriptions and 4 other possible event subscriptions for each streaming sub.
-The 4 top-level events are:
+2. Set up your basic data stream subscriptions. There are 6 top-level event subscriptions and 4 other possible event subscriptions for each streaming sub.
+The 6 top-level events are:
    - heartbeat : A periodic, about every 15 seconds, stream event from TDA
    - response : Used to acknowledge a connection, new subscription, or QOS change
    - data : The streaming data
    - snapshot : This is for one-time data requests, such as CHART_HISTORY_FUTURES
+   - streamClosed : This is emitted whenever the stream is closed, either by you, by TDA, or via connection error. Included is `{attemptingReconnect: true}` (or `false` if you closed it with `doDataStreamLogout()`)
+   - streamError : This is emitted ALONG WITH `streamClosed` whenever the underlying TDA stream emits an error event. Included is `{attemptingReconnect: true, data: string}`, where data is a String() of the underlying error's data.
 
 Here is an example event subscription. It is quite possible you won't subscribe to these. If you set streamConfig.emitDataRaw to TRUE, then you need to subscribe to the "data" event to get the raw output.
 ```js
@@ -78,12 +80,14 @@ const tickerES = '/ES';
 const normalizedTickerES = normalizeSymbol(tickerES); // "_ES"
 const tickerNQ = '/NQ';
 const normalizedTickerNQ = normalizeSymbol(tickerNQ); // "_NQ"
-stream.on(`${service}_RAW`, (args: L1FuturesQuoteRough[]) => console.log('all the faw L1 Futures data from this tick', JSON.stringify(args, null, 2)));
-stream.on(`${service}_RAW_${normalizedTickerES}`, (args: L1FuturesQuoteRough) => console.log('raw /ES data', JSON.stringify(args, null, 2)));
-stream.on(`${service}_RAW_${normalizedTickerNQ}`, (args: L1FuturesQuoteRough) => console.log('raw /NQ data', JSON.stringify(args, null, 2)));
-stream.on(`${service}_TYPED`, (args: L1FuturesQuote[]) => console.log('all the L1 futures data from this tick, but typed', JSON.stringify(args, null, 2)));
-stream.on(`${service}_TYPED_${normalizedTickerES}`, (args: L1FuturesQuote) => console.log('typed /ES data', JSON.stringify(args, null, 2)));
-stream.on(`${service}_TYPED_${normalizedTickerNQ}`, (args: L1FuturesQuote) => console.log('typed /NQ data', JSON.stringify(args, null, 2)));
+tdaStream.on(`${service}_RAW`, (args: L1FuturesQuoteRough[]) => console.log('all the faw L1 Futures data from this tick', JSON.stringify(args, null, 2)));
+tdaStream.on(`${service}_RAW_${normalizedTickerES}`, (args: L1FuturesQuoteRough) => console.log('raw /ES data', JSON.stringify(args, null, 2)));
+tdaStream.on(`${service}_RAW_${normalizedTickerNQ}`, (args: L1FuturesQuoteRough) => console.log('raw /NQ data', JSON.stringify(args, null, 2)));
+tdaStream.on(`${service}_TYPED`, (args: L1FuturesQuote[]) => console.log('all the L1 futures data from this tick, but typed', JSON.stringify(args, null, 2)));
+tdaStream.on(`${service}_TYPED_${normalizedTickerES}`, (args: L1FuturesQuote) => console.log('typed /ES data', JSON.stringify(args, null, 2)));
+tdaStream.on(`${service}_TYPED_${normalizedTickerNQ}`, (args: L1FuturesQuote) => console.log('typed /NQ data', JSON.stringify(args, null, 2)));
+tdaStream.on('streamClosed', (obj: IStreamClosed) => { console.log("au noes, closed!", obj.attemptingReconnect); });
+tdaStream.on('streamError', (obj: IStreamError) => { console.log("au noes, error!", obj.attemptingReconnect, obj.error); });
 ```
 To note here is that the {service}_RAW and {service}_TYPED subscriptions only need to be subscribed to at the outset. All data will be returned as an array, which can be filtered by `.key` or `.symbol` (the same thing).
 
@@ -273,6 +277,8 @@ const normalizedSymbol: string = normalizedSymbol(symbol);
 
 tdaStream.on('heartbeat', (args: IStreamNotify[]) => console.log('heartbeat', JSON.stringify(args, null, 2)));
 tdaStream.on('response', (args: IStreamResponse[]) => console.log('response', JSON.stringify(args, null, 2)));
+tdaStream.on('streamClosed', (obj: IStreamClosed) => { console.log("au noes, closed!", obj.attemptingReconnect); });
+tdaStream.on('streamError', (obj: IStreamError) => { console.log("au noes, error!", obj.attemptingReconnect, obj.error); });
 tdaStream.on(`${service}_TYPED_${normalizedSymbol}`, (args: L1FuturesQuote) => console.log('l1fut typed es', JSON.stringify(args, null, 2)));
 
 tdaStream.once('response', (args: IStreamResponse[]) => {
@@ -312,6 +318,8 @@ const normalizedSymbol = normalizedSymbol(symbol);
 
 tdaStream.on('heartbeat', (args) => console.log('heartbeat', JSON.stringify(args, null, 2)));
 tdaStream.on('response', (args) => console.log('response', JSON.stringify(args, null, 2)));
+tdaStream.on('streamClosed', (obj) => { console.log("au noes, closed!", obj.attemptingReconnect); });
+tdaStream.on('streamError', (obj) => { console.log("au noes, error!", obj.attemptingReconnect, obj.error); });
 tdaStream.on(`${service}_TYPED_${normalizedSymbol}`, (args) => console.log('l1fut typed es', JSON.stringify(args, null, 2)));
 
 stream.once('response', (args) => {

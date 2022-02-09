@@ -488,7 +488,7 @@ export class StreamDataTDA extends EventEmitter {
         this.connectionRetryAttemptTimeouts.forEach(t => clearTimeout(t));
     }
 
-    private async handleStreamClose(): Promise<void> {
+    private async handleStreamClose(eventName?: string, data?: any): Promise<void> {
         if (this.verbose) console.log("handleStreamClose called");
         if (this.heartbeatCheckerInterval) clearInterval(this.heartbeatCheckerInterval);
         this.heartbeatCheckerInterval = 0;
@@ -500,6 +500,9 @@ export class StreamDataTDA extends EventEmitter {
             this.emit("streamClosed", {attemptingReconnect: false});
         } else {
             if (this.verbose) console.log("stream closed, not killed by user, attempting restart");
+            if (eventName && eventName === "error") {
+                this.emit("streamError", {attemptingReconnect: true, error: String(data)});
+            }
             this.emit("streamClosed", {attemptingReconnect: true});
             // attempt to reconnect
             await this.restartDataStream();
@@ -735,7 +738,9 @@ export class StreamDataTDA extends EventEmitter {
 
             this.dataStreamSocket.on("message", (response: string) => this.handleIncoming.call(this, response, resolve));
 
-            this.dataStreamSocket.on("close", () => this.handleStreamClose.call(this));
+            this.dataStreamSocket.on("close", () => this.handleStreamClose.call(this, "close"));
+
+            this.dataStreamSocket.on("error", (data: any) => this.handleStreamClose.call(this, "error", data));
 
             this.dataStreamSocket.on("open", () => this.open.call(this, loginRequest));
         });
