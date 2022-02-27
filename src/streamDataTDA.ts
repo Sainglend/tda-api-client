@@ -472,14 +472,19 @@ export class StreamDataTDA extends EventEmitter {
 
     private async restartDataStream(): Promise<void> {
         this.streamRestartsCount++;
-        if (this.heartbeatCheckerInterval) {
-            if (this.verbose) console.log("Clearing heartbeat checker for restart", this.streamRestartsCount, "time:", new Date().toISOString());
-            if (this.heartbeatCheckerInterval) clearInterval(this.heartbeatCheckerInterval);
-            this.heartbeatCheckerInterval = 0;
-            if (this.queueIntervalObj) clearInterval(this.queueIntervalObj);
-            this.queueIntervalObj = 0;
-            this.queueState = EQueueState.UN_INITIALIZED;
+
+        if (this.verbose) {
+            console.log("Attempting data stream estart", this.streamRestartsCount,
+                "time:", new Date().toISOString(),
+                (this.heartbeatCheckerInterval ? "Clearing heartbeat checker interval" : ""));
         }
+        if (this.heartbeatCheckerInterval) clearInterval(this.heartbeatCheckerInterval);
+        this.heartbeatCheckerInterval = 0;
+
+        if (this.queueIntervalObj) clearInterval(this.queueIntervalObj);
+        this.queueIntervalObj = 0;
+        this.queueState = EQueueState.UN_INITIALIZED;
+
         this.once("message", () => { this.clearRetryAttempts(); this.resubscribe(); }); // set this to trigger on successful login
         this.doDataStreamLogin();
     }
@@ -489,6 +494,8 @@ export class StreamDataTDA extends EventEmitter {
     }
 
     private async handleStreamClose(eventName?: string, data?: any): Promise<void> {
+        const restartDataStream = this.restartDataStream.bind(this);
+
         if (this.verbose) console.log("handleStreamClose called");
         if (this.heartbeatCheckerInterval) clearInterval(this.heartbeatCheckerInterval);
         this.heartbeatCheckerInterval = 0;
@@ -505,7 +512,7 @@ export class StreamDataTDA extends EventEmitter {
             }
             this.emit("streamClosed", {attemptingReconnect: true});
             // attempt to reconnect
-            await this.restartDataStream();
+            restartDataStream();
         }
         return;
     }
