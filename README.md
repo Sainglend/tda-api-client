@@ -75,7 +75,7 @@ For the methods that support it, ```apikey``` can be passed in as a config optio
 Example:
 ```typescript
 import {
-  SearchInstrumentsFundamentalsConfig,
+  ISearchInstrumentsFundamentalsConfig,
   searchInstrumentFundamentals,
   ISearchInstrumentResults
 } from "tda-api-client";
@@ -93,7 +93,7 @@ A list of methods allowing unauthenticated requests is presented below.
 The difference here is that you'd pass in your client_id and refresh_token in as ```config.authConfig``` like this:
 ```typescript
 import {
-  SearchInstrumentsFundamentalsConfig,
+  ISearchInstrumentsFundamentalsConfig,
   searchInstrumentFundamentals,
   ISearchInstrumentResults
 } from "tda-api-client";
@@ -129,7 +129,7 @@ ALTERNATIVELY, you can place your auth file anywhere you like that node has r/w 
 Example with the default file location. Note that no extra parameters are necessary:
 ```typescript
 import {
-  SearchInstrumentsFundamentalsConfig,
+  ISearchInstrumentsFundamentalsConfig,
   searchInstrumentFundamentals,
   ISearchInstrumentResults
 } from "tda-api-client";
@@ -144,7 +144,7 @@ const result: ISearchInstrumentResults = await searchInstrumentFundamentals(conf
 Example with a custom file location, using the parameter authConfigFileLocation:
 ```typescript
 import {
-  SearchInstrumentsFundamentalsConfig,
+  ISearchInstrumentsFundamentalsConfig,
   searchInstrumentFundamentals,
   ISearchInstrumentResults
 } from "tda-api-client";
