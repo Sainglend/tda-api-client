@@ -262,6 +262,19 @@ async function apiWriteResource(config: TacRequestConfig, method: Method, skipAu
     return await performAxiosRequest(requestConfig, false) as IWriteResponse;
 }
 
+function getCircularReplacer() {
+    const seen = new WeakSet();
+    return (key, value) => {
+        if (typeof value === "object" && value !== null) {
+            if (seen.has(value)) {
+                return;
+            }
+            seen.add(value);
+        }
+        return value;
+    };
+}
+
 async function performAxiosRequest(requestConfig: AxiosRequestConfig, expectData: boolean): Promise<any> {
     return await new Promise<any>((res, rej) => {
         instance.request(requestConfig)
@@ -280,15 +293,15 @@ async function performAxiosRequest(requestConfig: AxiosRequestConfig, expectData
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    rej(`ERROR [${error.response.status}] [${requestConfig.method} ${requestConfig.url}]: ${JSON.stringify(error.response.data)}`);
+                    rej(`ERROR [${error.response.status}] [${requestConfig.method} ${requestConfig.url}]: ${JSON.stringify(error.response.data, getCircularReplacer())}`);
                 } else if (error.request) {
                     // The request was made but no response was received
                     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
                     // http.ClientRequest in node.js
-                    rej(`The request was made but no response was received: ${JSON.stringify(error.request)}`);
+                    rej(`The request was made but no response was received: ${JSON.stringify(error.request, getCircularReplacer())}`);
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    rej(`An error occurred while setting up the request: ${JSON.stringify(error.message)}`);
+                    rej(`An error occurred while setting up the request: ${JSON.stringify(error.message, getCircularReplacer())}`);
                 }
                 rej(error.config);
             });
